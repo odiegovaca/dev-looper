@@ -21,34 +21,13 @@ git log origin/$PRODUCTION_BRANCH..HEAD --oneline 2>/dev/null | head -10
 git status --short
 ```
 
-**Versão atual** (detectar arquivo de versão):
+**Versão, cobertura, specs e último review:**
 
 ```bash
-grep '"version"' package.json 2>/dev/null | head -1
-grep '<version>' pom.xml 2>/dev/null | head -2
-cat VERSION 2>/dev/null
+.github/scripts/status-snapshot.sh
 ```
 
-**Specs disponíveis:**
-
-```bash
-ls docs/issues/spec-*.md 2>/dev/null
-```
-
-Para cada spec, extrair `Status`.
-
-**Último code review:**
-
-```bash
-ls -t docs/reviews/review-*.md 2>/dev/null | head -1
-```
-
-Se existir, extrair data e contagem de problemas por criticidade (critical/high/medium/low).
-
-**Cobertura atual:**
-
-Ler `copilot-instructions.md` (seção **Coverage Report**) e executar o comando documentado.
-Se a seção não existir ou o comando falhar: exibir `não disponível (rode /test)`.
+Uma única chamada agrega tudo: `VERSION`, `COVERAGE` (ou "não disponível" se o script falhar — sugerir `/test`), lista de `SPECS` (extrair `Status` de cada uma) e `LATEST_REVIEW` (caminho do review mais recente da feature atual — se existir, ler e extrair data e contagem de problemas por criticidade).
 
 ## Apresentar Resultado
 

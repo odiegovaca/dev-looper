@@ -80,12 +80,12 @@ Gerar `.github/copilot-instructions.md` com:
 5. **Integration Points**: APIs e sistemas externos detectados
 6. **Common Pitfalls**: Armadilhas óbvias do stack escolhido (ex: lazy loading JPA, serialização circular Node.js)
 7. **Testing Conventions**: Padrão de teste do projeto com exemplo real
-8. **Coverage Report**: Comando para ler a cobertura atual sem rodar os testes novamente. Exemplos por stack:
-   - **Node.js/Jest**: `cat coverage/coverage-summary.json | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'),j=JSON.parse(d);console.log(j.total.statements.pct+'%')"`
-   - **Java/JaCoCo**: `awk -F',' 'NR>1{c+=$4;t+=$3+$4}END{printf "%.1f%%\n",c/t*100}' target/site/jacoco/jacoco.csv`
+8. **Coverage Report**: aponta para `.github/scripts/coverage.sh` (preenchido no Step 3.5) em vez de embutir o comando bruto. Exemplos por stack usados para preencher o script:
+   - **Node.js/Jest**: `cat coverage/coverage-summary.json | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'),j=JSON.parse(d);console.log(j.total.statements.pct)"`
+   - **Java/JaCoCo**: `awk -F',' 'NR>1{c+=$4;t+=$3+$4}END{printf "%.1f\n",c/t*100}' target/site/jacoco/jacoco.csv`
    - **Python/pytest-cov**: `coverage report --format=total 2>/dev/null`
-   - **Go**: `go tool cover -func=coverage.out 2>/dev/null | grep total | awk '{print $3}'`
-   - Se não aplicável: deixar `[DEFINIR: comando para ler cobertura do relatório gerado]`
+   - **Go**: `go tool cover -func=coverage.out 2>/dev/null | grep total | awk '{print $3}' | tr -d '%'`
+   - Se não aplicável: deixar `[DEFINIR: comando para ler cobertura do relatório gerado]` no corpo de `read_coverage()`
 9. **Release Workflow**: Estratégia de branches detectada ou informada
 
 > ⚠️ **Regra**: Se não souber, deixe `[DEFINIR: ...]` — não invente. Melhor incompleto e correto do que completo e errado.
@@ -95,6 +95,15 @@ Após gerar o arquivo, remover o template (não é mais necessário):
 ```bash
 rm -f .github/copilot-instructions.template.md
 ```
+
+### Step 3.5 — Configurar Scripts Determinísticos
+
+Preencher `.github/scripts/*.sh` com os dados detectados no Step 1, para que versão, cobertura e diff de arquivos sejam calculados por script em vez de recalculados em prosa a cada execução:
+
+1. **`bump-version.sh`**: preencher o array `VERSION_FILES` com os arquivos de versão já detectados no Step 1 (ex: `package.json`, `package-lock.json`).
+2. **`coverage.sh`**: preencher o corpo de `read_coverage()` com o comando de cobertura por stack (a mesma tabela que hoje vai para a seção "Coverage Report" do `copilot-instructions.md`).
+3. `chmod +x .github/scripts/*.sh`.
+4. A seção "Coverage Report" do `copilot-instructions.md` passa a apontar para `.github/scripts/coverage.sh` em vez de embutir o comando bruto.
 
 ### Step 4 — Adaptar code.prompt.md
 

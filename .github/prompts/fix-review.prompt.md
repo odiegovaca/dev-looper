@@ -13,8 +13,11 @@ Aplique correções identificadas no último relatório de code review.
 
 ### 1. Localizar Relatório
 
+Extrair `{N}` da branch atual e pegar o review mais recente **dessa feature** (ordenação numérica por `{seq}`, não por data de modificação — mtime não é confiável após clone/checkout):
+
 ```bash
-ls -t docs/reviews/review-*.md | head -1
+N=$(git branch --show-current | sed -E 's#^[a-z]+/([0-9]+)-.*#\1#')
+ls docs/reviews/review-${N}-*.md | sort -V | tail -1
 ```
 
 Ler o arquivo completo para extrair todos os problemas.
@@ -44,6 +47,15 @@ Para cada problema:
 3. Aplicar a correção seguindo os padrões de `copilot-instructions.md`
 4. Marcar como concluído no TODO
 
+**Padrões Obrigatórios:**
+
+Antes de fechar qualquer correção, verificar que ela não introduz um problema novo nessas frentes:
+
+- **Exception handling**: usar tipos do projeto, não exceções genéricas
+- **Logging**: usar o logger do projeto, nunca `console.log`/`System.out.println` em produção
+- **Variáveis de ambiente**: sempre via função/método helper do projeto — nunca `process.env.X` ou `System.getenv()` diretamente
+- **Segurança**: nunca logar tokens, senhas ou dados pessoais
+
 **Regras:**
 
 - Não alterar código não relacionado ao problema
@@ -61,14 +73,14 @@ Para cada problema:
 
 No fim do `/fix-review`, sempre incluir uma seção de aprendizados para prevenir recorrência.
 
-Formato:
+Formato — bloco estruturado por lição, sem prosa livre:
 
 ```markdown
 ## 📚 Lições para /lesson
 
-- **Problema corrigido:** #N [título curto]
-  **Regra proposta:** [ação objetiva para evitar recorrência]
-  **Destino sugerido:** [copilot-instructions.md | review.prompt.md | test.prompt.md | code.prompt.md]
+- problema: #N [título curto]
+  regra_proposta: [ação objetiva para evitar recorrência]
+  destino: [copilot-instructions.md | review.prompt.md | test.prompt.md | code.prompt.md]
 ```
 
 Regras:

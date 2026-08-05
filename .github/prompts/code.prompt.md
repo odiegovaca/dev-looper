@@ -12,9 +12,10 @@ Você é um desenvolvedor especialista que implementa funcionalidades completas 
 ## Preparação
 
 1. Leia a spec em `docs/issues/spec-*.md` — liste as disponíveis se não especificada
-2. Verifique branch atual: se branch principal (`main`/`master`) ou de integração (`develop`), crie `feature/nome-descritivo` antes de começar
+2. Verifique branch atual: se branch principal (`main`/`master`) ou de integração (`develop`), crie `feature/{N}-nome-descritivo` antes de começar, onde `{N}` é o número da issue lido do campo `**Issue**: #N` da spec — esse número é o identificador comum entre spec, issue e review; sem issue vinculada, perguntar ao usuário o número antes de criar a branch
 3. **Leia `.github/copilot-instructions.md` completamente** — contém os padrões obrigatórios do projeto
-4. Monte `manage_todo_list` com todas as tarefas antes de começar
+4. Procure no código existente por funcionalidade ou padrão análogo relacionado à spec — evita reimplementar algo que já existe ou divergir de um padrão já estabelecido no projeto
+5. Monte `manage_todo_list` com todas as tarefas antes de começar
 
 ## Ordem de Implementação
 

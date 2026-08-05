@@ -42,14 +42,13 @@ git checkout $INTEGRATION_BRANCH && git pull origin $INTEGRATION_BRANCH
 ### Step 2 — Determinar Versão de Release
 
 ```bash
-# Ler versão atual do arquivo de versão (package.json, pom.xml, etc.)
-INTEGRATION_VERSION=$(# detectar e ler arquivo de versão)
+INTEGRATION_VERSION=$(.github/scripts/bump-version.sh current)
 RELEASE_VERSION=$(echo $INTEGRATION_VERSION | sed 's/-rc\..*//')
 echo "Versão RC atual: $INTEGRATION_VERSION"
 echo "Versão de release: $RELEASE_VERSION"
 ```
 
-Se usuário forneceu versão, usar a fornecida.
+Se usuário forneceu versão, usar a fornecida. `RELEASE_VERSION` aqui é só para nomear a branch no Step 3 — a gravação definitiva nos arquivos de versão acontece no Step 4 via script.
 
 ### Step 3 — Criar Branch de Release
 
@@ -59,12 +58,11 @@ git checkout -b release/v$RELEASE_VERSION
 
 ### Step 4 — Atualizar Versões
 
-Atualizar **todos** os arquivos de versão do projeto (listados em `copilot-instructions.md`) removendo o sufixo `-rc.N`:
+Remover o sufixo `-rc.N` e gravar em todos os arquivos de versão do projeto com uma chamada:
 
-- `package.json` + `package-lock.json` → `X.Y.Z`
-- `pom.xml` / `build.gradle` → `X.Y.Z`
-- `pyproject.toml` → `X.Y.Z`
-- Outros arquivos de versão detectados pelo projeto
+```bash
+RELEASE_VERSION=$(.github/scripts/bump-version.sh release)
+```
 
 ### Step 5 — Consolidar CHANGELOG.md
 

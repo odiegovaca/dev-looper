@@ -37,10 +37,8 @@ Se houver mudanças não commitadas: `git add . && git commit -m "chore: finaliz
 ### Step 3 — Determinar Tipo de Versão
 
 ```bash
-git fetch origin
 INTEGRATION_BRANCH=$(# ler de copilot-instructions.md, padrão: develop)
-MERGE_BASE=$(git merge-base HEAD origin/$INTEGRATION_BRANCH)
-CHANGED_FILES=$(git diff --name-only $MERGE_BASE..HEAD)
+CHANGED_FILES=$(.github/scripts/changed-files.sh $INTEGRATION_BRANCH)
 ```
 
 **Critérios (analisar arquivos reais):**
@@ -51,28 +49,10 @@ CHANGED_FILES=$(git diff --name-only $MERGE_BASE..HEAD)
 
 ### Step 4 — Calcular e Aplicar Versão RC
 
-Ler arquivo de versão do projeto (detectar: `package.json`, `pom.xml`, `build.gradle`, `version.go`, `pyproject.toml`, `VERSION`):
+O *tipo* (patch/minor/major) já foi decidido no Step 3. Calcular e gravar a próxima versão RC em todos os arquivos de versão do projeto com uma chamada:
 
 ```bash
-# Exemplo para package.json:
-MAIN_VERSION=$(git show origin/main:package.json | grep '"version"' | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
-INTEGRATION_VERSION=$(git show origin/$INTEGRATION_BRANCH:package.json | grep '"version"' | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
-```
-
-Calcular próxima versão RC:
-
-- Se `INTEGRATION_VERSION` já tem sufixo `-rc.N` para o mesmo bump → incrementar: `X.Y.Z-rc.(N+1)`
-- Senão → nova versão: `X.(Y+1).0-rc.1` para MINOR, `X.Y.(Z+1)-rc.1` para PATCH
-
-Atualizar **todos** os arquivos de versão do projeto (listados em `copilot-instructions.md`):
-
-```bash
-# Atualizar versão nos arquivos (variar por stack)
-# package.json + package-lock.json (Node.js)
-# pom.xml (Java Maven)
-# build.gradle (Java Gradle)
-# pyproject.toml (Python)
-# VERSION file (genérico)
+NEW_VERSION=$(.github/scripts/bump-version.sh <tipo>)
 ```
 
 Adicionar entrada no `CHANGELOG.md`:

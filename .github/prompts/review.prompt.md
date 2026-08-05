@@ -14,10 +14,8 @@ Execute revisão crítica do código modificado na branch atual.
 ### 1. Identificar Arquivos
 
 ```bash
-git fetch origin
 INTEGRATION_BRANCH=$(# ler de copilot-instructions.md)
-MERGE_BASE=$(git merge-base HEAD origin/$INTEGRATION_BRANCH)
-git diff --name-only $MERGE_BASE..HEAD
+.github/scripts/changed-files.sh $INTEGRATION_BRANCH
 ```
 
 ### 2. Analisar Cada Arquivo
@@ -38,9 +36,16 @@ Para cada arquivo modificado:
 
 ### 3. Gerar Relatório
 
-Criar `docs/reviews/review-YYYY-MM-DD-HHMMSS.md` com:
+Extrair `{N}` do nome da branch atual (`feature/{N}-nome-descritivo` → `{N}`) e calcular `{seq}`:
 
-1. **Summary**: estatísticas por criticidade, pontos fortes, veredicto
+```bash
+N=$(git branch --show-current | sed -E 's#^[a-z]+/([0-9]+)-.*#\1#')
+SEQ=$(( $(ls docs/reviews/review-${N}-*.md 2>/dev/null | wc -l) + 1 ))
+```
+
+Criar `docs/reviews/review-{N}-{seq}.md` com:
+
+1. **Summary**: `data` (YYYY-MM-DD-HHMMSS), estatísticas por criticidade, pontos fortes, veredicto
 2. **Análise por arquivo**: Problemas com numeração global contínua
 3. **Recomendações**: Must Have (bloqueantes) / Should Have / Nice to Have
 
@@ -49,7 +54,7 @@ Criar `docs/reviews/review-YYYY-MM-DD-HHMMSS.md` com:
 ```markdown
 ## Code Review Completo
 
-**Relatório:** `docs/reviews/review-YYYY-MM-DD-HHMMSS.md`
+**Relatório:** `docs/reviews/review-{N}-{seq}.md`
 **Problemas:** N critical, N high, N medium, N low
 
 ### Veredicto

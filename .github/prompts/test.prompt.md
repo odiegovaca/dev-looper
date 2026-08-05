@@ -13,7 +13,7 @@ Completar cobertura de testes até meta de **statements** (padrão: 80%). Os tes
 
 1. **Executar**: Usar comando de testes de `copilot-instructions.md` (seção Development Commands)
 2. **Corrigir**: Identificar falhas, analisar causa, aplicar correções (máx 3 iterações)
-3. **Analisar**: Extrair cobertura de statements do relatório (caminho em `copilot-instructions.md`)
+3. **Analisar**: Extrair cobertura de statements com `.github/scripts/coverage.sh`
 4. **Priorizar**: Arquivos modificados na branch primeiro (`git diff`, peso 100x), depois restante (peso 1x)
 5. **Completar**: Fase 1 — gaps nos arquivos da branch (casos de borda, edge cases); Fase 2 — até 10 do restante (se necessário)
 6. **Reportar**: Cobertura inicial → final (+ganho%), status da meta, arquivos testados

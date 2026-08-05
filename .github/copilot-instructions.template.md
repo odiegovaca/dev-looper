@@ -105,6 +105,12 @@ List<PedidoSummary> findAllSummaries();
 
 ---
 
+## Arquivos Protegidos
+
+`.github/prompts/*.md` e este arquivo (`copilot-instructions.md`) só podem ser alterados por `/setup` e `/lesson`. Nenhum outro comando (`/code`, `/fix-review`, etc.) deve editá-los, mesmo incidentalmente — mudanças nesses arquivos alteram o comportamento de todo o workflow e precisam passar pelo mecanismo de revisão deliberada que `/setup` e `/lesson` representam.
+
+---
+
 ## Development Commands
 
 <!-- IMPORTANTE: Preencha os comandos exatos do projeto — os prompts /test, /status e agents os utilizam -->
