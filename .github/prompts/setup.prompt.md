@@ -16,7 +16,7 @@ Configure o workflow de desenvolvimento com IA para este projeto. Detecta o stac
 ```bash
 command -v gh >/dev/null 2>&1 || {
   echo "❌ gh CLI não encontrado. Instale antes de continuar: https://cli.github.com"
-  echo "   Consulte SETUP.md para instruções detalhadas."
+  echo "   Consulte o README do dev-looper para instruções detalhadas."
   exit 1
 }
 ```

@@ -46,7 +46,7 @@ Se já existir regra similar: informar onde está e perguntar se deseja **comple
 
 ### 4. Verificar Impacto em Outros Arquivos
 
-Buscar em todo o `.github/` e nos docs do projeto (`SETUP.md`, `roteiro-*.md`, etc.) por termos-chave que serão alterados ou removidos pela nova regra.  
+Buscar em todo o `.github/` e no `README.md` do projeto por termos-chave que serão alterados ou removidos pela nova regra.  
 Se encontrar referências inconsistentes: listar os arquivos afetados e incluí-los na proposta de alteração (passo 5).
 
 ### 5. Formatar a Regra
