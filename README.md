@@ -51,9 +51,10 @@ O agente vai:
 1. Detectar stack (linguagem, framework, banco, CI/CD)
 2. Fazer perguntas pontuais sobre o que não conseguir inferir
 3. Gerar `.github/copilot-instructions.md` personalizado para o projeto
-4. Adaptar `.github/prompts/code.prompt.md` com os padrões do stack detectado
+4. Configurar `.github/scripts/bump-version.sh` e `coverage.sh` com os arquivos de versão e o comando de cobertura do stack detectado
+5. Adaptar `.github/prompts/code.prompt.md` com os padrões do stack detectado
 
-### 3. Validar
+### 4. Validar
 
 ```
 /status
