@@ -7,28 +7,30 @@ argument-hint: "Descrição da funcionalidade ou caminho da spec para refinar"
 
 # /spec - Criar Especificação
 
-Analista de sistemas especializado em transformar requisitos em **especificações estruturadas em linguagem natural**.
+Analista de sistemas especializado em transformar requisitos em **especificações estruturadas em linguagem natural**: criar ou refinar especificação compreensível sem código, legível por não-técnicos.
 
-## Task
+## Processo
 
-Criar ou refinar especificação compreensível sem código, legível por não-técnicos.
-
-### Modo 1: Nova Especificação
+### Modo 1 — Nova Especificação
 
 1. **Analise**: Problema, funcionalidade, restrições, integrações, regras de negócio
-2. **Estruture**: seguindo o template e convenções da seção Template abaixo
-3. **Crie**: `docs/issues/spec-[identificador-kebab-case].md`
-4. **Apresente**: Resumo, questões em aberto, caminho do arquivo
+2. **Classifique o Tipo**: `feature` se a capacidade não existia antes, `improvement` se muda/melhora algo que já existe
+3. **Estruture**: seguindo o template e convenções da seção Template abaixo
+4. **Derive o identificador**: kebab-case a partir do título (minúsculas, sem acentos, espaços e símbolos viram `-`)
+5. **Verifique conflito**: se `docs/issues/spec-[identificador].md` já existir, avise o usuário e pergunte se quer outro identificador ou tratar como refinamento (Modo 2)
+6. **Crie**: `docs/issues/spec-[identificador-kebab-case].md`
+7. **Apresente**: Resumo, questões em aberto, caminho do arquivo
 
-### Modo 2: Refinar Especificação
+### Modo 2 — Refinar Especificação
 
-Quando usuário menciona arquivo existente:
+Quando usuário menciona arquivo, identificador ou descrição de funcionalidade existente:
 
-1. **Busque** em `docs/issues/`
+1. **Busque** em `docs/issues/`. Não encontrou spec correspondente? Informe e sugira `/spec` para criar uma nova
 2. **Leia** especificação completa
-3. **Aplique mudanças**: Adicionar requisitos, responder questões em aberto
-4. **Ao responder questões**: remova da seção "Questões em Aberto" e incorpore na seção correta
-5. **Atualize**: Data, status se mudou
+3. **Se status for `Aprovada` ou `Issue criada`**: antes de alterar requisitos, regras de negócio ou critérios de aceite já existentes, confirme com o usuário — a mudança pode invalidar issue/código já criados a partir da spec
+4. **Aplique mudanças**: Adicionar requisitos, responder questões em aberto
+5. **Ao responder questões**: remova da seção "Questões em Aberto" e incorpore na seção correta
+6. **Atualize**: Data, status se mudou
 
 ## Regras
 
@@ -38,14 +40,21 @@ Quando usuário menciona arquivo existente:
 
 ## Próximos Passos
 
-Ao concluir, sugerir:
+Ao concluir, adapte a sugestão ao resultado:
 
-```
-✅ Spec criada. Próximo passo: revise as Questões em Aberto.
-   Quando aprovada: /issue para criar a issue GitHub.
-```
-
----
+- **Spec criada/atualizada com questões em aberto pendentes**:
+  ```
+  ✅ Spec [criada|atualizada]. Próximo passo: revise as Questões em Aberto.
+     Quando aprovada: /issue para criar a issue GitHub.
+  ```
+- **Sem questões pendentes e status `Aprovada`**:
+  ```
+  ✅ Spec aprovada, sem questões pendentes. Próximo passo: /issue para criar a issue GitHub.
+  ```
+- **Refinamento que só respondeu questões, sem mudar status**:
+  ```
+  ✅ Questão(ões) respondida(s). Spec segue como [status atual].
+  ```
 
 ## Template
 
@@ -57,7 +66,8 @@ Template e convenções para especificações de funcionalidade.
 # [Título Descritivo]
 
 **Data**: DD/MM/YYYY  
-**Status**: `Rascunho | Em Revisão | Aprovado`
+**Status**: `Rascunho | Em Revisão | Aprovada`  
+**Tipo**: `feature | improvement`
 
 ## O Que Será Feito
 
@@ -67,6 +77,10 @@ Descrição direta (2-4 parágrafos). Foque no "o quê" e "por quê", não no "c
 
 1. O sistema deve...
 2. O sistema deve...
+
+## Fora de Escopo (se houver)
+
+- [O que não será feito nesta funcionalidade, para evitar ambiguidade]
 
 ## Regras de Negócio
 
@@ -85,9 +99,9 @@ Descrição direta (2-4 parágrafos). Foque no "o quê" e "por quê", não no "c
 
 ## Critérios de Aceitação
 
-- [ ] Sistema permite [ação]
-- [ ] Validações impedem [comportamento indesejado]
-- [ ] Testes cobrem cenários principais
+- [ ] Sistema permite [ação] quando [condição específica]
+- [ ] Validação rejeita [entrada inválida] com mensagem "[mensagem exata]"
+- [ ] Testes cobrem [cenário principal] e [cenário de erro]
 
 ## Questões em Aberto (se houver)
 
@@ -115,7 +129,7 @@ Exemplos:
 | -------------- | ---------------------------------------------------- |
 | `Rascunho`     | Em elaboração                                        |
 | `Em Revisão`   | Aguardando aprovação de stakeholder                  |
-| `Aprovado`     | Pronto para criar issue e implementar (`/issue`)     |
+| `Aprovada`     | Pronto para criar issue e implementar (`/issue`)     |
 | `Issue criada` | Issue GitHub vinculada, desenvolvimento pode iniciar |
 
 ### Princípios

@@ -2,68 +2,74 @@
 description: Executar code review crítico do código modificado na branch atual
 agent: agent
 tools: [read, edit, search, execute]
-argument-hint: "Branch base (padrão: origin/develop ou branch de integração)"
+argument-hint: "Nome da branch de integração, sem prefixo origin/ (padrão: develop)"
 ---
 
 # /review - Code Review
 
 Execute revisão crítica do código modificado na branch atual.
 
-## Execução
+**Este comando é somente leitura sobre o código revisado** — a única escrita permitida é a criação do relatório em `docs/reviews/`. Nunca editar os arquivos analisados.
 
-### 1. Identificar Arquivos
+## Processo
 
-```bash
-INTEGRATION_BRANCH=$(# ler de copilot-instructions.md)
-.github/scripts/changed-files.sh $INTEGRATION_BRANCH
-```
-
-### 2. Analisar Cada Arquivo
-
-Para cada arquivo modificado:
-
-1. Ler conteúdo completo
-2. Ler diff: `git diff $MERGE_BASE..HEAD -- arquivo`
-3. Analisar em todas as categorias:
-   - **Padrões do projeto** (seguindo `copilot-instructions.md`)
-   - **Qualidade e legibilidade**
-   - **Simplicidade** (over-engineering?)
-   - **Testes** (cobertura adequada?)
-   - **Documentação** (pública e interna)
-   - **Performance** (N+1 queries, loops desnecessários)
-   - **Segurança** (OWASP Top 10, dados sensíveis expostos)
-4. Por problema: número sequencial, severidade (CRITICAL/HIGH/MEDIUM/LOW), local (arquivo:linha), código problemático, explicação, solução sugerida
-
-### 3. Gerar Relatório
-
-Extrair `{N}` do nome da branch atual (`feature/{N}-nome-descritivo` → `{N}`) e calcular `{seq}`:
+### 1 — Preparação
 
 ```bash
-N=$(git branch --show-current | sed -E 's#^[a-z]+/([0-9]+)-.*#\1#')
-SEQ=$(( $(ls docs/reviews/review-${N}-*.md 2>/dev/null | wc -l) + 1 ))
+INTEGRATION_BRANCH=$(# ler de copilot-instructions.md, padrão: develop)
+.github/scripts/review-prepare.sh "$INTEGRATION_BRANCH"
 ```
 
-Criar `docs/reviews/review-{N}-{seq}.md` com:
+Retorna, usados nos passos seguintes:
 
-1. **Summary**: `data` (YYYY-MM-DD-HHMMSS), estatísticas por criticidade, pontos fortes, veredicto
-2. **Análise por arquivo**: Problemas com numeração global contínua
-3. **Recomendações**: Must Have (bloqueantes) / Should Have / Nice to Have
+- `N` — número da feature (da branch atual)
+- `SEQ` — próximo sequencial do relatório dessa feature
+- `DATA` — timestamp de agora
+- `REPORT` — caminho do relatório (`docs/reviews/review-{N}-{SEQ}.md`)
+- `DIFF` — diff unificado dos arquivos alterados (já filtrado de lockfiles e reviews anteriores), um arquivo por seção `diff --git a/arquivo b/arquivo`
 
-### 4. Mostrar Sumário no Chat
+### 2 — Analisar Cada Arquivo
 
-```markdown
-## Code Review Completo
+Para cada arquivo em `$DIFF`, escrever em `$REPORT` um bloco por achado (template abaixo), a partir do conteúdo completo do arquivo — não só o diff —, seguindo estes critérios:
 
-**Relatório:** `docs/reviews/review-{N}-{seq}.md`
-**Problemas:** N critical, N high, N medium, N low
+- **Padrões do projeto** (seguindo `copilot-instructions.md`)
+- **Qualidade e legibilidade**
+- **Simplicidade** (over-engineering?)
+- **Testes** (cobertura adequada?)
+- **Documentação** (pública e interna)
+- **Performance** (queries N+1, loops/alocações desnecessárias, chamadas bloqueantes)
+- **Segurança** (OWASP Top 10, dados sensíveis expostos)
+- **Tratamento de erros e edge cases** (exceções engolidas, entradas nulas/vazias/limite não tratadas)
 
-### Veredicto
+#### 2.1 — Template do Bloco
 
-[APROVADO | APROVADO COM RESSALVAS | REPROVADO]
+````markdown
+#### Problema {i} — {SEVERIDADE}
+
+**Local:** `arquivo:linha`
+
+```<linguagem>
+[código problemático]
 ```
 
-## Próximos Passos
+**Explicação:** [por que é um problema]
 
-- ✅ **Sem critical ou high**: `/rc` para criar o PR
-- ⚠️ **Apenas high**: `/fix-review high` para corrigir problemas importantes, depois `/rc`
-- ❌ **Com critical**: `/fix-review critical` e `/fix-review high` antes de prosseguir
+**Solução:** [como corrigir]
+````
+
+- `{i}` — número sequencial do problema (não confundir com `N` da feature)
+- `{SEVERIDADE}`:
+  - **CRITICAL** — segurança (vulnerabilidade exploitável, dado sensível exposto), perda/corrupção de dados, crash em produção
+  - **HIGH** — bug funcional que afeta comportamento esperado do usuário/sistema
+  - **MEDIUM** — manutenibilidade (duplicação, acoplamento, complexidade desnecessária)
+  - **LOW** — estilo, nomenclatura, nitpick sem impacto funcional
+
+### 3 — Gerar Relatório
+
+```bash
+.github/scripts/review-finalize.sh "$REPORT" "$DATA"
+```
+
+### 4 — Confirmar
+
+Mostrar no chat, sem alterações, a saída de `review-finalize.sh` do passo anterior.

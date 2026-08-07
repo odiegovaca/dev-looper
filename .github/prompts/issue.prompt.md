@@ -7,70 +7,41 @@ argument-hint: "Caminho da spec (opcional, usa spec aprovada mais recente se omi
 
 # /issue - Criar Issue GitHub
 
-Cria issue GitHub a partir de uma especificação aprovada.
+Cria issue GitHub a partir de uma especificação aprovada. Título, corpo, label e atualização da spec são resolvidos por script — sem interpretação da LLM.
 
 ## Processo
 
-### 1. Localizar Spec
-
-Se caminho fornecido, usar diretamente. Senão, buscar em `docs/issues/`:
+### 1 — Executar o Script
 
 ```bash
-ls docs/issues/spec-*.md 2>/dev/null
+.github/scripts/create-issue.sh [caminho-da-spec]
 ```
 
-Para cada spec encontrada, verificar o `Status`. Usar a spec com status `Aprovado`.
+O script:
 
-Se múltiplas aprovadas: listar e pedir ao usuário para escolher.  
-Se nenhuma aprovada: informar e sugerir `/spec` para aprovar.
+- Localiza a spec (arg ou busca `Status: Aprovada` em `docs/issues/`)
+- Extrai o título (H1) da spec
+- Usa o conteúdo integral da spec como corpo da issue
+- Resolve o label a partir do campo `**Tipo**` da spec (`feature` ou `improvement`)
+- Cria a issue via `gh issue create`
+- Atualiza a própria spec: adiciona `**Issue**: #N` e muda `Status` para `Issue criada`
+- Imprime `ISSUE_NUMBER`, `ISSUE_URL` e `SPEC_PATH`
 
-### 2. Extrair Informações
+### 2 — Tratar Falhas do Script
 
-Da spec selecionada, extrair:
+O script falha com mensagem no stderr e não cria nada em caso de erro. Trate cada caso:
 
-- **Título**: Nome da funcionalidade
-- **Contexto e Objetivo**: Para o corpo da issue
-- **Critérios de Aceite**: Lista de checkboxes
-- **Labels**: Inferir (ex: `feature`, `bug`, `improvement`)
-- **Milestone**: Verificar se existe milestone adequado
+- **Nenhuma spec aprovada**: informar e sugerir `/spec` para aprovar uma
+- **Múltiplas specs aprovadas** (script lista os caminhos): apresentar a lista, perguntar ao usuário qual usar, rodar de novo passando o caminho escolhido
+- **Spec com `Status` diferente de `Aprovada`**: informar o status atual e sugerir `/spec [identificador]` para aprovar
+- **Campo `**Tipo**` ausente ou inválido**: informar e sugerir `/spec [identificador]` para preencher `feature` ou `improvement`
 
-### 3. Criar Issue
+Não tente contornar essas falhas preenchendo valores manualmente — cada uma indica que a spec precisa ser corrigida antes de virar issue.
 
-```bash
-gh issue create \
-  --title "[Título da funcionalidade]" \
-  --body "$(cat <<'EOF'
-## Contexto
-[contexto da spec]
-
-## Objetivo
-[objetivo da spec]
-
-## Critérios de Aceite
-- [ ] [critério 1]
-- [ ] [critério 2]
-
-## Spec
-`docs/issues/spec-[nome].md`
-EOF
-)" \
-  --label "feature"
-```
-
-### 4. Atualizar Spec
-
-Adicionar número da issue à spec:
-
-```markdown
-**Issue**: #[número]
-```
-
-Atualizar status para `Issue criada`.
-
-## Próximos Passos
-
-Ao concluir, sugerir:
+### 3 — Confirmar
 
 ```
-✅ Issue #N criada. Próximo passo: /code para começar o desenvolvimento.
+✅ Issue #[ISSUE_NUMBER] criada: [ISSUE_URL]
+   Spec atualizada: [SPEC_PATH] → Status: Issue criada
+   Próximo passo: /code para começar o desenvolvimento.
 ```

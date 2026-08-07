@@ -105,6 +105,17 @@ List<PedidoSummary> findAllSummaries();
 
 ---
 
+## Padrões Obrigatórios
+
+Checklist derivado das seções acima — vale para toda implementação ou correção de código, não só a fase em que o padrão foi introduzido. Verificar antes de considerar qualquer fase/correção concluída:
+
+- **Exception handling**: usar tipos do projeto, não exceções genéricas
+- **Logging**: usar o logger do projeto, nunca `console.log`/`System.out.println` em produção
+- **Variáveis de ambiente**: sempre via função/método helper do projeto — nunca `process.env.X` ou `System.getenv()` diretamente
+- **Segurança**: nunca logar tokens, senhas ou dados pessoais
+
+---
+
 ## Arquivos Protegidos
 
 `.github/prompts/*.md` e este arquivo (`copilot-instructions.md`) só podem ser alterados por `/setup` e `/lesson`. Nenhum outro comando (`/code`, `/fix-review`, etc.) deve editá-los, mesmo incidentalmente — mudanças nesses arquivos alteram o comportamento de todo o workflow e precisam passar pelo mecanismo de revisão deliberada que `/setup` e `/lesson` representam.
@@ -113,7 +124,7 @@ List<PedidoSummary> findAllSummaries();
 
 ## Development Commands
 
-<!-- IMPORTANTE: Preencha os comandos exatos do projeto — os prompts /test, /status e agents os utilizam -->
+<!-- IMPORTANTE: Preencha os comandos exatos do projeto — /setup usa esta seção para preencher .github/scripts/validate.sh (test/lint/build), consumido por /code, /test e /rc -->
 
 ```bash
 # Instalar dependências
@@ -208,5 +219,5 @@ describe("OrderService", () => {
 - **Branch de integração**: `develop` (staging)
 - **Features**: `feature/nome-descritivo` a partir de `develop`
 - **Versionamento**: Semver (`MAJOR.MINOR.PATCH`) — develop usa sufixo `-rc.N`
-- **Arquivos de versão**: `package.json`, `package-lock.json`
+- **Arquivos de versão**: [DEFINIR: ex. package.json + package-lock.json | pyproject.toml | pom.xml | Cargo.toml]
 - **CHANGELOG no desenvolvimento**: registrar cada entrega em seção versionada RC no topo, usando `Unreleased` no lugar da data (ex.: `## [2.3.0-rc.2] - Unreleased`)

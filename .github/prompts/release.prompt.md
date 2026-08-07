@@ -9,70 +9,28 @@ argument-hint: "Versão de release (opcional, ex: /release 2.5.0)"
 
 Prepara releases de produção consolidando versões RC da branch de integração em versões estáveis para produção.
 
-## Regra de Aceitação de Entrada
+## Processo
 
-Se o usuário informar versão (ex: `/release 2.5.0`), aceitar e pular a etapa de descoberta.
-
-## Workflow
-
-### Step 1 — Verificar Ponto de Partida
+### 1 — Preparar Branch, Versão e Branch de Release
 
 ```bash
-CURRENT_BRANCH=$(git branch --show-current)
+.github/scripts/release-prepare.sh "$ARGUMENTS"
 ```
 
-Ler `copilot-instructions.md` para identificar:
+Retorna, usados nos passos seguintes:
 
-- Branch de produção (ex: `main`, `master`)
-- Branch de integração (ex: `develop`, `staging`)
+- `PROD_BRANCH` / `INTEGRATION_BRANCH` — branches protegidas
+- `INTEGRATION_VERSION` — versão RC atual da integração
+- `RELEASE_VERSION` — versão final (informada pelo usuário ou derivada removendo `-rc.N`)
+- `COMMITS` — commits desde a última release em produção, um por linha
 
-Se **não** estiver na branch de integração:
+Montar `manage_todo_list` com os passos 2 a 6 antes de continuar.
 
-```bash
-git log origin/$INTEGRATION_BRANCH..HEAD --oneline
-```
+### 2 — Consolidar CHANGELOG.md
 
-- Se houver commits não mergeados: ⚠️ alertar — pode querer `/rc` primeiro
-- Se não houver: prosseguir
+A partir de `COMMITS` (retornado no passo 1), substituir **todas** as entradas RC por **uma única seção** de release, seguindo o template abaixo, e depois remover as seções `## [X.Y.Z-rc.N]` deste ciclo (entre a última release em produção e agora).
 
-```bash
-git checkout $INTEGRATION_BRANCH && git pull origin $INTEGRATION_BRANCH
-```
-
-### Step 2 — Determinar Versão de Release
-
-```bash
-INTEGRATION_VERSION=$(.github/scripts/bump-version.sh current)
-RELEASE_VERSION=$(echo $INTEGRATION_VERSION | sed 's/-rc\..*//')
-echo "Versão RC atual: $INTEGRATION_VERSION"
-echo "Versão de release: $RELEASE_VERSION"
-```
-
-Se usuário forneceu versão, usar a fornecida. `RELEASE_VERSION` aqui é só para nomear a branch no Step 3 — a gravação definitiva nos arquivos de versão acontece no Step 4 via script.
-
-### Step 3 — Criar Branch de Release
-
-```bash
-git checkout -b release/v$RELEASE_VERSION
-```
-
-### Step 4 — Atualizar Versões
-
-Remover o sufixo `-rc.N` e gravar em todos os arquivos de versão do projeto com uma chamada:
-
-```bash
-RELEASE_VERSION=$(.github/scripts/bump-version.sh release)
-```
-
-### Step 5 — Consolidar CHANGELOG.md
-
-Coletar commits desde a última release em produção:
-
-```bash
-git log origin/$PRODUCTION_BRANCH..origin/$INTEGRATION_BRANCH --oneline --no-merges
-```
-
-Substituir **todas** as entradas RC por **uma única seção** de release:
+#### 2.1 — Template da seção de release
 
 ```markdown
 ## [X.Y.Z] - DD/MM/AAAA
@@ -91,60 +49,34 @@ Substituir **todas** as entradas RC por **uma única seção** de release:
 - Melhoria Y
 ```
 
-Remover seções `## [X.Y.Z-rc.N]` antigas após consolidar.
-
-### Step 6 — Validar
+### 3 — Validar
 
 ```bash
-# Lint
-# Build
-# Testes
-# (usar comandos de copilot-instructions.md)
+.github/scripts/validate.sh test lint build
 ```
 
-Se qualquer etapa falhar: corrigir antes de prosseguir.
+Se falhar: identificar causa e corrigir antes de prosseguir (máx 3 iterações); se persistir, parar e reportar ao usuário.
 
-### Step 7 — Commit e PR
+### 4 — Commit e PR
 
-```bash
-git add .
-git commit -m "chore: release v$RELEASE_VERSION"
-git push origin release/v$RELEASE_VERSION
-```
-
-Criar Pull Request para a branch de produção:
+Definir resumo de 2-4 linhas (baseado no CHANGELOG consolidado) e chamar:
 
 ```bash
-gh pr create \
-  --base $PRODUCTION_BRANCH \
-  --title "release: v$RELEASE_VERSION" \
-  --body "$(cat <<'EOF'
-## Release v$RELEASE_VERSION
-
-### Resumo das mudanças
-[consolidado do CHANGELOG]
-
-### Checklist
-- [ ] Todos os testes passando
-- [ ] CHANGELOG consolidado
-- [ ] Versões atualizadas
-- [ ] Revisado por pelo menos 1 desenvolvedor
+.github/scripts/release-finalize.sh "$PROD_BRANCH" "$RELEASE_VERSION" <<'EOF'
+<resumo consolidado do CHANGELOG>
 EOF
-)"
 ```
 
-### Step 8 — Pós-merge (orientações)
+### 5 — Confirmar
 
-Após o PR ser aprovado e mergeado, informar ao usuário:
+Mostrar no chat, sem alterações, a saída de `release-finalize.sh` do passo 4.
+
+### 6 — Pós-merge (orientações)
+
+⚠️ **Não executar agora.** O PR ainda precisa ser revisado e mergeado por um humano. O comando abaixo é só para mostrar ao usuário como orientação, a ser executado por ele (ou por você, se pedido explicitamente) depois que o PR do passo 4 for aprovado e mergeado:
 
 ```bash
-# 1. Criar tag de release
-git checkout $PRODUCTION_BRANCH && git pull
-git tag -a v$RELEASE_VERSION -m "Release v$RELEASE_VERSION"
-git push origin v$RELEASE_VERSION
-
-# 2. Sincronizar develop
-git checkout $INTEGRATION_BRANCH
-git merge $PRODUCTION_BRANCH
-git push origin $INTEGRATION_BRANCH
+.github/scripts/release-postmerge.sh "$RELEASE_VERSION"
 ```
+
+Cria e publica a tag `v$RELEASE_VERSION` e sincroniza `$INTEGRATION_BRANCH` com `$PROD_BRANCH`. Aborta sem criar nada se `$PROD_BRANCH` ainda não tiver a versão do release — sinal de que o PR do passo 4 não foi mergeado.

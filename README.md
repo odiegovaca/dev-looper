@@ -51,7 +51,7 @@ O agente vai:
 1. Detectar stack (linguagem, framework, banco, CI/CD)
 2. Fazer perguntas pontuais sobre o que não conseguir inferir
 3. Gerar `.github/copilot-instructions.md` personalizado para o projeto
-4. Configurar `.github/scripts/bump-version.sh` e `coverage.sh` com os arquivos de versão e o comando de cobertura do stack detectado
+4. Configurar `.github/scripts/bump-version.sh`, `coverage.sh`, `validate.sh` e `release-branches.sh` com os arquivos de versão, o comando de cobertura, os comandos de test/lint/build e as branches de release do stack detectado
 5. Adaptar `.github/prompts/code.prompt.md` com os padrões do stack detectado
 
 ### 4. Validar
@@ -126,8 +126,7 @@ Os demais prompts buscam padrões e comandos em `copilot-instructions.md` — ne
 .github/
   copilot-instructions.md      ← Conhecimento do projeto (gerado por /setup)
   prompts/                     ← Todos os comandos / acessíveis no chat
-  skills/                      ← Conhecimento reutilizável (spec-template)
-  scripts/                     ← Versão, cobertura, diff de arquivos e instalação, calculados por script em vez de recalculados em prosa
+  scripts/                     ← Versão, cobertura, testes, PRs e branches, calculados por script em vez de recalculados em prosa
 ```
 
 Todos os comandos são prompts com `agent: agent` — executam em agent mode com acesso a ferramentas, invocados via `/comando` no chat.
@@ -144,5 +143,7 @@ O **dev-looper** funciona para qualquer projeto com git. O que muda entre projet
 | `prompts/code.prompt.md`          | Fases de implementação do stack           |
 | `scripts/bump-version.sh`         | Lista `VERSION_FILES` do projeto          |
 | `scripts/coverage.sh`             | Comando de cobertura do stack             |
+| `scripts/validate.sh`             | Comandos de test/lint/build do stack      |
+| `scripts/release-branches.sh`     | `PROD_BRANCH`/`INTEGRATION_BRANCH` do projeto |
 
 O restante (10+ arquivos) é copiado sem alteração.
