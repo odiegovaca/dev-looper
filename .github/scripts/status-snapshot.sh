@@ -46,14 +46,21 @@ COVERAGE_DISPLAY="$COVERAGE"
 [ "$COVERAGE" != "não disponível" ] && COVERAGE_DISPLAY="${COVERAGE}%"
 
 # Numa feature branch, N resolve e escopa para a spec vinculada à issue da
-# feature atual (mesmo campo **Issue**: #N que create-issue.sh grava) — não
+# feature atual (mesmo campo **Issue** que create-issue.sh grava) — não
 # faz sentido listar specs de outras features no status desta branch. Fora
 # de uma feature branch (main/develop/HEAD destacado), não há "feature
 # atual" — mostra o backlog inteiro pra ajudar a decidir o que puxar a
 # seguir.
+# O `[^0-9]|$` no fim do regex impede que a issue #7 case com a #70. Não achar
+# nada aqui é sempre defeito (spec arquivada, campo ausente, formato
+# alterado), então vira aviso: silêncio faria o /status mostrar "nenhuma spec"
+# como normal.
 N="$("$SCRIPT_DIR/feature-number.sh" 2>/dev/null || true)"
 if [ -n "$N" ]; then
-  SPEC_FILES="$(grep -lE "^\*\*Issue\*\*: #${N}\$" docs/issues/spec-*.md 2>/dev/null || true)"
+  SPEC_FILES="$(grep -lE "^\*\*Issue\*\*: \[?#${N}([^0-9]|\$)" docs/issues/spec-*.md 2>/dev/null || true)"
+  if [ -z "$SPEC_FILES" ]; then
+    echo "Aviso: nenhuma spec com '**Issue**: #${N}' em docs/issues/ — spec arquivada, campo ausente ou formato alterado?" >&2
+  fi
 else
   SPEC_FILES="$(ls docs/issues/spec-*.md 2>/dev/null || true)"
 fi

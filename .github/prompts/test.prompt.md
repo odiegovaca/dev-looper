@@ -65,5 +65,5 @@ Se a meta não for atingida após os 3 ciclos, parar mesmo assim e seguir para o
 
 ## Próximos Passos
 
-- ✅ **Meta atingida**: `git commit "test: completa cobertura"` como checkpoint, depois `/review` para revisão de qualidade antes do PR
+- ✅ **Meta atingida**: `git commit -m "test: completa cobertura"` como checkpoint, depois `/review` para revisão de qualidade antes do PR
 - ⚠️ **Meta não atingida**: Informar lacunas e arquivos prioritários para cobertura manual

@@ -16,7 +16,7 @@ Você é um desenvolvedor especialista que implementa funcionalidades completas 
 1. **Leia `.github/copilot-instructions.md` completamente** — contém os padrões obrigatórios do projeto e a seção Arquivos Protegidos (nunca editar por este comando)
 2. Leia a spec em `docs/issues/spec-*.md` — liste as disponíveis se não especificada. Se `Status` for `Rascunho`/`Em Revisão`, ou houver "Questões em Aberto" pendentes, avisar o usuário e confirmar antes de prosseguir — implementar spec incompleta gera requisito adivinhado
 3. Verifique branch atual: rode `eval "$(.github/scripts/release-branches.sh)"` e compare com `git branch --show-current` — se for `$PROD_BRANCH` ou `$INTEGRATION_BRANCH`, crie `feature/{N}-nome-descritivo` antes de começar
-   - `{N}` é o número da issue, lido do campo `**Issue**: #N` da spec — sem issue vinculada, perguntar ao usuário o número antes de criar a branch
+   - `{N}` é o número da issue, lido do campo `**Issue**` da spec — sem issue vinculada, perguntar ao usuário o número antes de criar a branch
    - Esse número é o identificador comum entre spec, issue e review
    - O padrão de nome da branch é lido de volta por `.github/scripts/feature-number.sh` (usado por `/review` e `/fix-review`) — não altere esse formato sem atualizar os dois
 4. Procure no código existente por funcionalidade ou padrão análogo relacionado à spec — evita reimplementar algo que já existe ou divergir de um padrão já estabelecido no projeto
@@ -83,7 +83,7 @@ Ao concluir, sugerir:
 ✅ Implementação concluída. Próximos passos:
 
 1. Revise as Changes da branch (git diff ou painel Source Control)
-2. Se aprovado: git commit "feat: <descrição>"  ← checkpoint antes do review
+2. Se aprovado: git commit -m "feat: <descrição>"  ← checkpoint antes do review
 3. /test    → completar cobertura até a meta do projeto (casos de borda e gaps)
 4. /review  → revisão de qualidade antes do PR
 5. /rc      → criar PR

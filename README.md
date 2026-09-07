@@ -4,6 +4,12 @@ Workflow de desenvolvimento com GitHub Copilot Agent Mode.
 
 Fornece um conjunto de comandos `/` que guiam o desenvolvedor por um ciclo completo de desenvolvimento — da especificação ao PR de produção — com guardrails, padrões do projeto e auto-melhoria incorporados.
 
+## Como o dev-looper é usado
+
+É um **ponto de partida**, não uma dependência. Você instala uma vez, roda o `/setup`, e a partir daí a cópia é do seu projeto: adapte os prompts e os scripts ao que o seu time precisa, sem se preocupar em manter compatibilidade com este repositório.
+
+Não existe atualização no lugar. Uma versão nova do dev-looper é um ponto de partida **novo** — para um projeto novo, ou para quem quiser reinstalar do zero e reaplicar as próprias adaptações. As [Releases](https://github.com/odiegovaca/dev-looper/releases) descrevem o que mudou entre uma versão e outra, e cada instalação registra no cabeçalho de `.github/prompts/README.md` de qual delas partiu.
+
 ---
 
 ## Pré-requisitos
@@ -26,7 +32,9 @@ Fornece um conjunto de comandos `/` que guiam o desenvolvedor por um ciclo compl
 .github/scripts/install.sh /caminho/do/seu/projeto
 ```
 
-O script é idempotente: por arquivo, se o destino já existe e é diferente do que está sendo instalado, ele pula e reporta em vez de sobrescrever — use `--force` para sobrescrever mesmo assim. Isso protege customizações locais (ex: `copilot-instructions.md` já preenchido) ao rodar de novo num projeto que já tem o dev-looper instalado.
+O script é idempotente: por arquivo, se o destino já existe e é diferente do que está sendo instalado, ele pula e reporta em vez de sobrescrever — use `--force` para sobrescrever mesmo assim. Isso protege o que o `/setup` preencheu (`bump-version.sh`, `coverage.sh`, `release-branches.sh` e `validate.sh`) caso o script rode uma segunda vez no mesmo projeto.
+
+`--force` sobrescreve **inclusive** esses quatro arquivos, devolvendo-os aos placeholders `[DEFINIR]` — depois dele o projeto precisa rodar `/setup` de novo. Não o use para trazer mudanças de uma versão nova para um projeto já configurado.
 
 > Alternativa sem o script: `cp -r .github/ /caminho/do/seu/projeto/.github/` — mas isso sobrescreve tudo cegamente, inclusive PRs/issues templates existentes.
 

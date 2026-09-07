@@ -53,7 +53,7 @@ Se falhar por causa de uma correção aplicada, corrigir antes de prosseguir (m�
 ```
 ✅ X correções aplicadas, lint/build/test OK.
    Pendências: [um por linha com o motivo — número inexistente, arquivo protegido, severidade não incluída — ou "nenhuma"]
-   Sugestão: git commit "fix: aplica correções do review #{N}" como checkpoint, depois /rc. Se houver pendências, `/fix-review` novamente para elas antes.
+   Sugestão: git commit -m "fix: aplica correções do review #{N}" como checkpoint, depois /rc. Se houver pendências, `/fix-review` novamente para elas antes.
 ```
 
 ### 6 — Listar Lições para `/lesson`

@@ -17,8 +17,8 @@ Analista de sistemas especializado em transformar requisitos em **especificaçõ
 2. **Classifique o Tipo**: `feature` se a capacidade não existia antes, `improvement` se muda/melhora algo que já existe
 3. **Estruture**: seguindo o template e convenções da seção Template abaixo
 4. **Derive o identificador**: kebab-case a partir do título (minúsculas, sem acentos, espaços e símbolos viram `-`)
-5. **Verifique conflito**: se `docs/issues/spec-[identificador].md` já existir, avise o usuário e pergunte se quer outro identificador ou tratar como refinamento (Modo 2)
-6. **Crie**: `docs/issues/spec-[identificador-kebab-case].md`
+5. **Verifique conflito**: se já houver spec com esse identificador (`docs/issues/spec-*-[identificador].md`), avise o usuário e pergunte se quer outro identificador ou tratar como refinamento (Modo 2)
+6. **Crie**: `docs/issues/spec-[AAAA-MM-DD]-[identificador-kebab-case].md`, com a data de hoje
 7. **Apresente**: Resumo, questões em aberto, caminho do arquivo
 
 ### Modo 2 — Refinar Especificação
@@ -30,7 +30,7 @@ Quando usuário menciona arquivo, identificador ou descrição de funcionalidade
 3. **Se status for `Aprovada` ou `Issue criada`**: antes de alterar requisitos, regras de negócio ou critérios de aceite já existentes, confirme com o usuário — a mudança pode invalidar issue/código já criados a partir da spec
 4. **Aplique mudanças**: Adicionar requisitos, responder questões em aberto
 5. **Ao responder questões**: remova da seção "Questões em Aberto" e incorpore na seção correta
-6. **Atualize**: Data, status se mudou
+6. **Atualize**: campo `**Data**`, status se mudou. **Não renomeie o arquivo**: a data do nome é a de criação e é ela que mantém a ordem cronológica da pasta
 
 ## Regras
 
@@ -55,6 +55,14 @@ Ao concluir, adapte a sugestão ao resultado:
   ```
   ✅ Questão(ões) respondida(s). Spec segue como [status atual].
   ```
+
+**Spec refinada que já tem o campo `**Issue**`**: acrescente sempre esta linha à sugestão, qualquer que seja o caso acima —
+
+```
+   A issue #[N] ainda está com o texto antigo: /issue propaga a spec revisada para ela.
+```
+
+O refinamento que fica só no arquivo é invisível para quem lê a issue. É o `/issue` que sincroniza (ele detecta a issue vinculada e atualiza em vez de abrir outra); nunca edite a issue na mão.
 
 ## Template
 
@@ -115,13 +123,13 @@ Descrição direta (2-4 parágrafos). Foque no "o quê" e "por quê", não no "c
 
 ### Nomenclatura de Arquivo
 
-Padrão: `docs/issues/spec-[identificador-kebab-case].md`
+Padrão: `docs/issues/spec-[AAAA-MM-DD]-[identificador-kebab-case].md`
 
 Exemplos:
 
-- `spec-agendamento-mensagens.md`
-- `spec-relatorio-vendas.md`
-- `spec-integracao-pagamentos.md`
+- `spec-2026-09-07-agendamento-mensagens.md`
+- `spec-2026-09-12-relatorio-vendas.md`
+- `spec-2026-10-01-integracao-pagamentos.md`
 
 ### Status Válidos
 

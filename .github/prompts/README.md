@@ -1,5 +1,7 @@
 # Prompts — Guia Rápido
 
+> Fluxo do [dev-looper](https://github.com/odiegovaca/dev-looper), versão de origem `__DEV_LOOPER_VERSION__`.
+
 Prompts aceitam parâmetros após o comando (ex: `/rc patch`, `/test 85`) — ver tabela em [Parâmetros](#parâmetros) abaixo.
 
 ## Fluxo Completo (Nova Funcionalidade)
