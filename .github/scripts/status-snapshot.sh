@@ -52,14 +52,13 @@ COVERAGE_DISPLAY="$COVERAGE"
 # atual" — mostra o backlog inteiro pra ajudar a decidir o que puxar a
 # seguir.
 # O `[^0-9]|$` no fim do regex impede que a issue #7 case com a #70. Não achar
-# nada aqui é sempre defeito (spec arquivada, campo ausente, formato
-# alterado), então vira aviso: silêncio faria o /status mostrar "nenhuma spec"
-# como normal.
+# nada aqui pode ser entrega (a spec foi
+# para docs/issues/arquivo/) ou defeito de formato
 N="$("$SCRIPT_DIR/feature-number.sh" 2>/dev/null || true)"
 if [ -n "$N" ]; then
   SPEC_FILES="$(grep -lE "^\*\*Issue\*\*: \[?#${N}([^0-9]|\$)" docs/issues/spec-*.md 2>/dev/null || true)"
   if [ -z "$SPEC_FILES" ]; then
-    echo "Aviso: nenhuma spec com '**Issue**: #${N}' em docs/issues/ — spec arquivada, campo ausente ou formato alterado?" >&2
+    echo "Aviso: nenhuma spec ativa com '**Issue**: #${N}' em docs/issues/ — feature já entregue (spec arquivada) ou campo/formato alterado." >&2
   fi
 else
   SPEC_FILES="$(ls docs/issues/spec-*.md 2>/dev/null || true)"

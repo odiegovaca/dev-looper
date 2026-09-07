@@ -17,7 +17,7 @@ if [[ "$PROD_BRANCH" == "[DEFINIR"* || "$INTEGRATION_BRANCH" == "[DEFINIR"* ]]; 
 fi
 
 # Avisa (stderr, não bloqueia) se origin/$PROD_BRANCH tem commits que
-# origin/$INTEGRATION_BRANCH ainda não tem — sinal de que o passo 6 do
+# origin/$INTEGRATION_BRANCH ainda não tem — sinal de que o encerramento do
 # /release (release-postmerge.sh) ficou pendente, ou que houve hotfix direto
 # em produção. Como isto roda no início de todo /code, /rc e /release, é o
 # ponto único onde esse esquecimento aparece antes de virar um problema
@@ -27,7 +27,7 @@ fi
 # release mergeado há poucos segundos.
 if git rev-parse --verify -q "origin/$PROD_BRANCH" >/dev/null && git rev-parse --verify -q "origin/$INTEGRATION_BRANCH" >/dev/null; then
   if ! git merge-base --is-ancestor "origin/$PROD_BRANCH" "origin/$INTEGRATION_BRANCH" 2>/dev/null; then
-    echo "⚠️ origin/$PROD_BRANCH tem commits que origin/$INTEGRATION_BRANCH não tem — se um release foi mergeado recentemente, rode .github/scripts/release-postmerge.sh (passo 6 do /release)." >&2
+    echo "⚠️ origin/$PROD_BRANCH tem commits que origin/$INTEGRATION_BRANCH não tem — se um release foi mergeado recentemente, rode .github/scripts/release-postmerge.sh (encerramento do /release)." >&2
   fi
 fi
 

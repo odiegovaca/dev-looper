@@ -24,7 +24,7 @@ Retorna, usados nos passos seguintes:
 - `RELEASE_VERSION` — versão final (informada pelo usuário ou derivada removendo `-rc.N`)
 - `COMMITS` — commits desde a última release em produção, um por linha
 
-Montar `manage_todo_list` com os passos 2 a 6 antes de continuar.
+Montar `manage_todo_list` com os passos 2 a 5 antes de continuar.
 
 ### 2 — Consolidar CHANGELOG.md
 
@@ -70,13 +70,3 @@ EOF
 ### 5 — Confirmar
 
 Mostrar no chat, sem alterações, a saída de `release-finalize.sh` do passo 4.
-
-### 6 — Pós-merge (orientações)
-
-⚠️ **Não executar agora.** O PR ainda precisa ser revisado e mergeado por um humano. O comando abaixo é só para mostrar ao usuário como orientação, a ser executado por ele (ou por você, se pedido explicitamente) depois que o PR do passo 4 for aprovado e mergeado:
-
-```bash
-.github/scripts/release-postmerge.sh "$RELEASE_VERSION"
-```
-
-Cria e publica a tag `v$RELEASE_VERSION` e sincroniza `$INTEGRATION_BRANCH` com `$PROD_BRANCH`. Aborta sem criar nada se `$PROD_BRANCH` ainda não tiver a versão do release — sinal de que o PR do passo 4 não foi mergeado.
