@@ -17,37 +17,11 @@ Prepara releases de produção consolidando versões RC da branch de integraçã
 .github/scripts/release-prepare.sh "$ARGUMENTS"
 ```
 
-Retorna, usados nos passos seguintes:
-
-- `PROD_BRANCH` / `INTEGRATION_BRANCH` — branches protegidas
-- `INTEGRATION_VERSION` — versão RC atual da integração
-- `RELEASE_VERSION` — versão final (informada pelo usuário ou derivada removendo `-rc.N`)
-- `COMMITS` — commits desde a última release em produção, um por linha
-
 Montar `manage_todo_list` com os passos 2 a 5 antes de continuar.
 
-### 2 — Consolidar CHANGELOG.md
+### 2 — Escrever a seção da release no CHANGELOG.md
 
-A partir de `COMMITS` (retornado no passo 1), substituir **todas** as entradas RC por **uma única seção** de release, seguindo o template abaixo, e depois remover as seções `## [X.Y.Z-rc.N]` deste ciclo (entre a última release em produção e agora).
-
-#### 2.1 — Template da seção de release
-
-```markdown
-## [X.Y.Z] - DD/MM/AAAA
-
-### Adicionado
-
-- Funcionalidade A (consolidado dos RCs)
-- Funcionalidade B
-
-### Corrigido
-
-- Bug X
-
-### Alterado
-
-- Melhoria Y
-```
+O passo 1 deixou a seção `## [X.Y.Z]` criada e vazia no topo do arquivo. Escrever o corpo dela a partir de `RC_SECTIONS` e `COMMITS`, descrevendo o estado final contra a última versão em produção: cada mudança aparece uma vez, e o que nasceu e morreu dentro do ciclo (bug introduzido e corrigido, item adicionado e removido) não aparece.
 
 ### 3 — Validar
 

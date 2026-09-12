@@ -2,9 +2,10 @@
 # release-finalize.sh <prod-branch> <release-version>
 # Resumo do PR via stdin.
 #
-# Faz a parte 100% mecânica do passo 4 do /release: commit das mudanças de
-# versão/CHANGELOG (sem falhar se não houver nada staged), push da branch
-# atual, checagem de PR já aberto (sem criar duplicado nem editar
+# Faz a parte 100% mecânica do passo 4 do /release: checagem de que o passo
+# 2 consolidou o CHANGELOG, commit das mudanças de versão/CHANGELOG (sem
+# falhar se não houver nada staged), push da branch atual, checagem de PR
+# já aberto (sem criar duplicado nem editar
 # automaticamente — só reporta, mesmo padrão do create-pr.sh) e a chamada
 # ao `gh pr create` com o checklist padrão de release.
 #
@@ -38,6 +39,40 @@ print_postmerge_hint() {
   echo "   Se preferir, é só me pedir depois do merge que eu executo por você."
 }
 
+# Contrato com o release-postmerge.sh, checado no último ponto antes do PR em
+# que ainda sai barato consertar. Ele monta o comentário de fechamento das
+# issues copiando a seção cujo header começa exatamente por
+# "## [$RELEASE_VERSION]" e, quando não acha, omite a lista em silêncio — a
+# issue fecharia só com "Entregue na vX.Y.Z.". Mesmo casamento por prefixo
+# usado lá, pra não divergirem. A segunda checagem é o outro lado: seção de RC
+# é provisória, e uma esquecida pelo passo 2 não some mais — vai para
+# produção e fica lá abaixo da seção boa, em toda release seguinte.
+if [ -f CHANGELOG.md ]; then
+  HOJE="$(date +%d/%m/%Y)"
+  RC_RESTANTE="$(grep -n "^## \[[^]]*-rc\." CHANGELOG.md 2>/dev/null || true)"
+  SECAO="$(awk -v hdr="## [$RELEASE_VERSION]" '
+    index($0, hdr) == 1 { found=1; next }
+    found && /^## / { exit }
+    found { print }
+  ' CHANGELOG.md 2>/dev/null | sed -e '/./,$!d' || true)"
+
+  if [ -n "$RC_RESTANTE" ] || [ -z "$SECAO" ]; then
+    echo "CHANGELOG.md não está consolidado — passo 2 do /release incompleto." >&2
+    if [ -n "$RC_RESTANTE" ]; then
+      echo "   Seções de RC ainda no arquivo:" >&2
+      echo "$RC_RESTANTE" | head -5 | sed 's/^/     linha /' >&2
+    fi
+    if [ -z "$SECAO" ]; then
+      if grep -q "^## \[$RELEASE_VERSION\]" CHANGELOG.md 2>/dev/null; then
+        echo "   A seção ## [$RELEASE_VERSION] existe mas está vazia." >&2
+      else
+        echo "   Não há seção começando por '## [$RELEASE_VERSION]'." >&2
+      fi
+    fi
+    echo "   Junte o conteúdo dos RCs em uma única seção '## [$RELEASE_VERSION] - $HOJE' e remova as seções -rc.N." >&2
+    exit 1
+  fi
+fi
 
 git add .
 "$SCRIPT_DIR/protect-stage.sh"
