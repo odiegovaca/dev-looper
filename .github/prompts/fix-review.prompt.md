@@ -52,14 +52,13 @@ Mostrar no chat, sem alterações, a saída do script.
 
 ### 6 — Listar Lições para `/lesson`
 
-Sempre incluir, para prevenir recorrência. De 1 a 6 lições, sem prosa livre fora do bloco:
+Só o que generaliza para além do arquivo corrigido. Nenhuma lição é resultado válido. Sem prosa livre fora do bloco:
 
 ```markdown
 ## 📚 Lições para /lesson
 
 - problema: #N [título curto]
-  regra_proposta: [texto pronto para colar como argumento de /lesson]
-  destino: [arquivo — mesmo critério de classificação do passo 2 de /lesson]
+  licao: [texto pronto para colar como argumento de /lesson]
 ```
 
-Sem correção aplicada: `Nenhuma lição nova identificada nesta execução.`
+Nada que generalize: `Nenhuma lição nova identificada nesta execução.`
