@@ -7,7 +7,7 @@ set -euo pipefail
 
 # Preenchido por /setup com os arquivos de versão detectados no Passo 1.
 VERSION_FILES=(
-  # [DEFINIR: ex. "package.json" "package-lock.json" | "pyproject.toml" | "pom.xml" | "Cargo.toml"]
+  # [DEFINIR: um caminho por linha, entre aspas — todo arquivo do projeto que carrega a versao]
 )
 
 ACTION="${1:-}"

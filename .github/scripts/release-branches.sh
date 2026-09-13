@@ -8,8 +8,8 @@ set -euo pipefail
 
 # Preenchidos por /setup a partir da seção Release Workflow do
 # copilot-instructions.md.
-PROD_BRANCH="[DEFINIR: ex. main]"
-INTEGRATION_BRANCH="[DEFINIR: ex. develop]"
+PROD_BRANCH="[DEFINIR: nome da branch de producao]"
+INTEGRATION_BRANCH="[DEFINIR: nome da branch de integracao]"
 
 if [[ "$PROD_BRANCH" == "[DEFINIR"* || "$INTEGRATION_BRANCH" == "[DEFINIR"* ]]; then
   echo "PROD_BRANCH/INTEGRATION_BRANCH não configurados — rode /setup" >&2

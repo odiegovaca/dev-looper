@@ -10,20 +10,25 @@
 # (ex: `validate.sh lint build`) para não precisar de uma linha por ação.
 set -euo pipefail
 
+# Contrato com o coverage.sh: este comando precisa GERAR o relatorio apontado em
+# COVERAGE_REPORT — o coverage.sh so le o que ja esta no disco. Sem isso nada
+# falha: o relatorio congela e o /test prioriza gaps ja cobertos e declara meta
+# atingida em cima de numero velho. Onde a cobertura sai de uma fase separada
+# (ex: JaCoCo no `verify`), e essa fase que vai aqui, nao o `test` puro.
 run_test() {
-  # [DEFINIR: ex. npm test | mvn test | go test ./... | pytest]
+  # [DEFINIR: comando de teste do projeto, gerando o relatorio de COVERAGE_REPORT]
   echo "run_test não configurado — rode /setup" >&2
   exit 1
 }
 
 run_lint() {
-  # [DEFINIR: ex. npm run lint | mvn checkstyle:check | golangci-lint run | ruff check .]
+  # [DEFINIR: comando de lint do projeto]
   echo "run_lint não configurado — rode /setup" >&2
   exit 1
 }
 
 run_build() {
-  # [DEFINIR: ex. npm run build | mvn package | go build ./... | docker build .]
+  # [DEFINIR: comando de build do projeto]
   echo "run_build não configurado — rode /setup" >&2
   exit 1
 }

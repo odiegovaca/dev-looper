@@ -3,29 +3,43 @@
 # gerado (sem rodar os testes de novo). Exit 1 silencioso se o relatório não existir.
 set -euo pipefail
 
-# Preenchido por /setup com o comando do stack detectado no Passo 1 (mesma
-# tabela que hoje vai para copilot-instructions.md → "Coverage Report").
-# Sem argumento, coverage.sh imprime só o número total (%) — usado por
-# /status e pela checagem de meta em /test.
+# Caminho do relatorio lido pelas duas funcoes abaixo — preenchido por /setup.
+# So alimenta warn_if_stale(); vazio, o aviso nao sai e o resto funciona igual.
+COVERAGE_REPORT=""  # [DEFINIR: caminho do relatorio que os testes geram]
+
+# Consumido pelo /status e pela checagem de meta do /test.
 read_coverage() {
-  # [DEFINIR: comando por stack, ex:]
-  # Node.js/Jest: cat coverage/coverage-summary.json | node -e "const j=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));console.log(j.total.statements.pct)"
-  # Java/JaCoCo:  awk -F',' 'NR>1{c+=$4;t+=$3+$4}END{printf "%.1f\n",c/t*100}' target/site/jacoco/jacoco.csv
-  # Python:       coverage report --format=total
-  # Go:           go tool cover -func=coverage.out | grep total | awk '{print $3}' | tr -d '%'
+  # [DEFINIR: comando que le COVERAGE_REPORT e imprime uma unica linha — a
+  # cobertura total de statements em %, so o numero, sem o sinal de porcento]
   return 1
 }
 
-# Saída "arquivo,pct,total_statements" — insumo de --priority via
-# rank_priority() abaixo. Usado por /test para priorizar onde escrever teste
-# sem depender de cálculo manual.
+# Insumo do --priority via rank_priority() abaixo, que o /test usa para escolher
+# onde escrever teste sem depender de cálculo manual.
 read_coverage_by_file() {
-  # [DEFINIR: comando por stack, ex:]
-  # Node.js/Jest: cat coverage/coverage-summary.json | node -e "const j=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));Object.entries(j).filter(([f])=>f!=='total').forEach(([f,d])=>console.log(f+','+d.statements.pct+','+d.statements.total))"
-  # Java/JaCoCo:  awk -F',' 'NR>1{printf "%s/%s,%.1f,%d\n",$2,$3,$5/($4+$5)*100,$4+$5}' target/site/jacoco/jacoco.csv
-  # Python:       coverage json -o /dev/stdout | python3 -c "import json,sys; d=json.load(sys.stdin)['files']; [print(f'{f},{v[\"summary\"][\"percent_covered\"]:.1f},{v[\"summary\"][\"num_statements\"]}') for f,v in d.items()]"
-  # Go:           go tool cover -func=coverage.out | grep -v ^total: | awk '{print $1","$3","}' | tr -d '%'  # 3ª coluna vazia — go tool cover não expõe total de statements por arquivo
+  # [DEFINIR: comando que le COVERAGE_REPORT e imprime uma linha por arquivo,
+  # sem cabecalho e sem a linha de total: caminho,pct,total_statements — pct so
+  # o numero, e 3a coluna vazia se o stack nao expuser total por arquivo]
   return 1
+}
+
+# Avisa quando o relatorio e mais velho que o ultimo commit — mede codigo que ja
+# mudou. E o unico detector do comando de teste sem cobertura (ver run_test no
+# validate.sh) depois da instalacao. Compara com o commit, e nao com o arquivo
+# mais novo da arvore, para nao gritar a cada edicao. Aviso em stderr, nunca
+# falha e nunca segura o numero.
+warn_if_stale() {
+  [ -n "$COVERAGE_REPORT" ] && [ -f "$COVERAGE_REPORT" ] || return 0
+
+  local head_ts report_ts
+  head_ts="$(git log -1 --format=%ct 2>/dev/null)" || return 0
+  report_ts="$(stat -c %Y "$COVERAGE_REPORT" 2>/dev/null || stat -f %m "$COVERAGE_REPORT" 2>/dev/null)" || return 0
+  [ -n "$head_ts" ] && [ -n "$report_ts" ] || return 0
+
+  if [ "$report_ts" -lt "$head_ts" ]; then
+    echo "Aviso: $COVERAGE_REPORT é mais antigo que o último commit — a cobertura abaixo pode não refletir o código atual." >&2
+    echo "       Se continuar assim depois de um \`validate.sh test\`, o comando de teste não está gerando cobertura." >&2
+  fi
 }
 
 # Lê "arquivo,pct,total_statements" do stdin, imprime "arquivo,rank_sum"
@@ -35,8 +49,7 @@ read_coverage_by_file() {
 # trivial sobre arquivo grande com gap real. É por isso que o /test segue esta
 # ordem em vez de estimar onde testar: o ganho no % global sai daqui calculado.
 # Genérica por construção — o /setup não preenche nada aqui; sem a 3ª coluna
-# (ex: `go tool cover`, que não expõe total por arquivo) cai para ordenar só
-# por pct.
+# cai para ordenar só por pct.
 rank_priority() {
   local tmp
   tmp="$(mktemp -d)"
@@ -69,7 +82,7 @@ rank_priority() {
 }
 
 case "${1:-}" in
-  --priority) read_coverage_by_file 2>/dev/null | rank_priority || exit 1 ;;
-  "") read_coverage 2>/dev/null || exit 1 ;;
+  --priority) warn_if_stale; read_coverage_by_file 2>/dev/null | rank_priority || exit 1 ;;
+  "") warn_if_stale; read_coverage 2>/dev/null || exit 1 ;;
   *) echo "Uso: coverage.sh [--priority]" >&2; exit 1 ;;
 esac

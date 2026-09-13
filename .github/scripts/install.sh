@@ -77,6 +77,11 @@ while IFS= read -r -d '' file; do
   fi
 done < <(find "$SRC" -type f -print0)
 
+# O `cp` propaga o modo da origem, e no Windows (core.filemode=false) todo
+# script nasce 100644. Os prompts chamam os scripts direto, sem `bash`, e um
+# script chama o outro igual — sem este chmod a chamada morre em Linux/macOS.
+find "$DEST_GITHUB" -type f -name '*.sh' -exec chmod +x {} +
+
 echo "Instalados/atualizados: ${#COPIED[@]}"
 if [ "${#COPIED[@]}" -gt 0 ]; then
   printf '  %s\n' "${COPIED[@]}"
@@ -93,4 +98,15 @@ if [ -n "$VERSION" ]; then
   echo "Versão de origem: $VERSION — registrada em .github/prompts/README.md"
 else
   echo "Versão de origem: desconhecida (a origem não é um clone git com tags)"
+fi
+
+# O chmod acima vale para a arvore, nao para o que sera commitado: com
+# core.filemode=false o git grava 100644 apesar dele. Corrigir exigiria mexer no
+# indice do destino, que pode ter trabalho ja staged — entao so se avisa.
+if [ "$(git -C "$DEST" config --get core.filemode 2>/dev/null || true)" = "false" ]; then
+  echo ""
+  echo "Aviso: este repositório está com core.filemode=false — o bit de execução"
+  echo "dos scripts não sobrevive ao commit. No diretório do projeto, antes de"
+  echo "commitar, rode (o add é necessário: update-index só aceita rastreado):"
+  echo "  git add .github/scripts && git update-index --chmod=+x .github/scripts/*.sh"
 fi
