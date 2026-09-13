@@ -57,12 +57,13 @@ else
   git push origin "$TAG"
 fi
 
-git checkout "$INTEGRATION_BRANCH"
-git pull origin "$INTEGRATION_BRANCH"
-git merge "$PROD_BRANCH"
-
 ENCERRAMENTO=()
 
+# O comentário é lido aqui, ainda em produção: é a versão publicada do arquivo,
+# a única onde a seção "## [$RELEASE_VERSION]" está garantida. Lido depois do
+# merge abaixo, dependeria de o merge ter dado certo — e num merge abortado a
+# integração não tem essa seção, então SECAO sairia vazia e a issue fecharia só
+# com "Entregue na vX.Y.Z.", em silêncio.
 COMENTARIO="Entregue na $TAG."
 if [ -f CHANGELOG.md ]; then
   # index()==1 em vez de regex dinâmico
@@ -74,6 +75,21 @@ if [ -f CHANGELOG.md ]; then
   [ -z "$SECAO" ] || COMENTARIO="$COMENTARIO
 
 $SECAO"
+fi
+
+git checkout "$INTEGRATION_BRANCH"
+git pull origin "$INTEGRATION_BRANCH"
+
+# Sob `set -e` um merge conflitado mataria o script aqui: tag já publicada,
+# nenhuma issue encerrada, árvore em conflito e a reexecução barrada pelo guard
+# de árvore suja da abertura. Abortar e seguir encerra as issues; a sincronização
+# fica pendente, e quem a cobra é o aviso do release-branches.sh no próximo
+# /code, /rc ou /release.
+SINCRONIZADA=1
+if ! git merge "$PROD_BRANCH"; then
+  git merge --abort || true
+  SINCRONIZADA=""
+  ENCERRAMENTO+=("⚠️ Merge de $PROD_BRANCH em $INTEGRATION_BRANCH conflitou e foi abortado — resolva à mão (git merge $PROD_BRANCH) e commite. A tag e o encerramento das issues abaixo não dependem disso.")
 fi
 
 ISSUES=""
@@ -144,7 +160,11 @@ git diff --cached --quiet || git commit -m "chore: arquiva specs e reviews entre
 
 git push origin "$INTEGRATION_BRANCH"
 
-echo "✅ Tag $TAG publicada e $INTEGRATION_BRANCH sincronizada com $PROD_BRANCH."
+if [ -n "$SINCRONIZADA" ]; then
+  echo "✅ Tag $TAG publicada e $INTEGRATION_BRANCH sincronizada com $PROD_BRANCH."
+else
+  echo "✅ Tag $TAG publicada. $INTEGRATION_BRANCH ainda NÃO sincronizada com $PROD_BRANCH (ver abaixo)."
+fi
 if [ "${#ENCERRAMENTO[@]}" -gt 0 ]; then
   for LINHA in "${ENCERRAMENTO[@]}"; do
     echo "   $LINHA"

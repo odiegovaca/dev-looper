@@ -36,7 +36,7 @@ Montar `manage_todo_list` com os passos 2 a 5 antes de continuar.
 NEW_VERSION=$(.github/scripts/bump-version.sh $TIPO)
 ```
 
-Adicionar entrada no `CHANGELOG.md`, usando `Unreleased` no lugar da data enquanto a versão está em RC (a data real entra quando o `/release` consolida):
+O ciclo tem **uma única seção** no `CHANGELOG.md`: reescrever a do topo (criando-a na primeira vez) com o header na versão nova e o delta acumulado do ciclo, descrito contra a última versão em produção — cada mudança aparece uma vez, e o que nasceu e morreu dentro do ciclo não aparece.
 
 ```markdown
 ## [X.Y.Z-rc.N] - Unreleased

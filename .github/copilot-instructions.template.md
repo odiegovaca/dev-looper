@@ -220,4 +220,4 @@ describe("OrderService", () => {
 - **Features**: `feature/nome-descritivo` a partir de `develop`
 - **Versionamento**: Semver (`MAJOR.MINOR.PATCH`) — develop usa sufixo `-rc.N`
 - **Arquivos de versão**: [DEFINIR: ex. package.json + package-lock.json | pyproject.toml | pom.xml | Cargo.toml]
-- **CHANGELOG no desenvolvimento**: registrar cada entrega em seção versionada RC no topo, usando `Unreleased` no lugar da data (ex.: `## [2.3.0-rc.2] - Unreleased`)
+- **CHANGELOG no desenvolvimento**: uma única seção por ciclo, sempre consolidada — cada RC reescreve a do topo com o delta acumulado, header na versão RC atual e `Unreleased` no lugar da data (ex.: `## [2.3.0-rc.2] - Unreleased`); o `/release` troca esse header pela versão final

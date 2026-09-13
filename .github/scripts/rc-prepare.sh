@@ -30,6 +30,16 @@ if [ "$CURRENT_BRANCH" = "$PROD_BRANCH" ] || [ "$CURRENT_BRANCH" = "$INTEGRATION
   echo "Branch protegida ($CURRENT_BRANCH) — troque para uma branch de feature/fix antes de rodar /rc." >&2
   exit 1
 fi
+# Branch de release não é feature: aqui /rc abriria PR para a integração (base
+# errada) e bumparia um -rc.N novo sobre uma versão já fechada. O ajuste que
+# precisa entrar numa release já cortada é commitado na própria branch dela.
+case "$CURRENT_BRANCH" in
+  release/v*)
+    echo "Branch de release ($CURRENT_BRANCH) — /rc abriria PR para $INTEGRATION_BRANCH, base errada." >&2
+    echo "   Commite o ajuste aqui mesmo e rode /release ${CURRENT_BRANCH#release/v} de novo: o PR já aberto recebe o push." >&2
+    exit 1
+    ;;
+esac
 
 FEATURE_N="$("$SCRIPT_DIR/feature-number.sh" 2>/dev/null || true)"
 

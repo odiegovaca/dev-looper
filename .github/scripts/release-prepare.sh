@@ -1,16 +1,11 @@
 #!/usr/bin/env bash
 # release-prepare.sh [versão]
 #
-# Resolve tudo que o passo 1 do /release precisa, e deixa o CHANGELOG pronto
-# para o passo 2 escrever (nenhuma decisão aqui depende de julgamento do agente).
+# Resolve tudo que o passo 1 do /release precisa, e carimba o header da release
+# no CHANGELOG (nenhuma decisão aqui depende de julgamento do agente).
 #
-# Imprime primeiro as variáveis, uma por linha em KEY=value:
-# PROD_BRANCH/INTEGRATION_BRANCH/INTEGRATION_VERSION/RELEASE_VERSION.
-# Depois dois blocos de texto, cada um aberto pelo próprio
-# rótulo e terminado pelo rótulo seguinte ou pelo fim da saída (mesmo formato
-# do "CHANGED_FILES:" em rc-prepare.sh): "RC_SECTIONS:" com o texto das
-# seções de RC deste ciclo, na ordem em que aconteceram, e "COMMITS:" com os
-# commits desde a última release. Só o bloco KEY=value serve para `eval`.
+# Imprime as variáveis, uma por linha em KEY=value, e todo o bloco serve para
+# `eval`: PROD_BRANCH/INTEGRATION_BRANCH/INTEGRATION_VERSION/RELEASE_VERSION.
 # RELEASE_VERSION é a versão definitiva, usada em todos os passos seguintes
 # de /release.
 set -euo pipefail
@@ -69,80 +64,37 @@ fi
 
 "$SCRIPT_DIR/bump-version.sh" release "$RELEASE_VERSION" >/dev/null
 
-# Commits desde a última release em produção — insumo somente-leitura para
-# a consolidação do CHANGELOG no passo 2, que aí sim exige julgamento do agente.
-COMMITS="$(git log "origin/$PROD_BRANCH..origin/$INTEGRATION_BRANCH" --oneline --no-merges)"
+# Commit feito na própria branch de release não passou pelo /rc — e é o único
+# jeito de algo entrar nesta release depois do corte —, então a linha dele pode
+# não estar na seção do CHANGELOG. Aviso derivado em vez de um passo de prosa
+# pedindo ao agente que confira: quem sabe o que escrever é quem fez o ajuste, e
+# assunto de commit é fonte pior do que isso. O commit do próprio /release é
+# excluído pelo assunto, senão ele se auto-denunciaria em toda reexecução.
+INT_REF="origin/$INTEGRATION_BRANCH"
+git rev-parse --verify -q "$INT_REF" >/dev/null || INT_REF="$INTEGRATION_BRANCH"
+PROPRIOS="$(git log "$INT_REF..HEAD" --oneline --no-merges --invert-grep --grep="^chore: release v" 2>/dev/null || true)"
+if [ -n "$PROPRIOS" ]; then
+  echo "⚠️ Commit(s) nesta branch de release e ausentes de $INTEGRATION_BRANCH — confira se estão na seção do CHANGELOG:" >&2
+  echo "$PROPRIOS" | sed 's/^/     /' >&2
+fi
 
-# O passo 2 do /release recebe o CHANGELOG num estado único, igual em toda
-# rodada: a seção da release criada e vazia no topo, as seções de RC deste
-# ciclo fora do arquivo, e o texto delas devolvido em RC_SECTIONS. Assim o
-# passo 2 nunca renomeia header nem apaga seção — só escreve o corpo, do zero,
-# a partir de RC_SECTIONS e COMMITS.
+# A seção do ciclo já vem consolidada do /rc, então aqui só falta trocar o header
+# do RC pelo da release e carimbar a data. Não há seção a apagar — e era a
+# remoção delas que punha esta branch e a integração em intenções opostas no
+# mesmo trecho do arquivo, fazendo todo merge entre as duas conflitar.
 #
-# RC_SECTIONS sai do CHANGELOG no merge-base com a integração, não do arquivo
-# local: o local já perdeu as seções de RC numa rodada anterior, o merge-base
-# não. É isso que faz a reexecução ser idêntica à primeira rodada, sem estado
-# a comunicar ao passo 2. Se a branch de release mergear a integração depois,
-# o merge-base avança e os RCs novos entram junto — mas esse merge conflita
-# no próprio CHANGELOG.md (a branch de release apagou seções que a integração
-# mantém) e precisa de resolução manual; depois dela, isto aqui funciona.
-#
-# "Este ciclo" são as seções -rc.N contíguas no topo da lista de versões. Uma
-# seção de RC perdida abaixo da última release é defeito de outro ciclo, não
-# deste — quem barra isso é o release-finalize.sh, antes do PR.
-RC_SECTIONS=""
-if [ -f CHANGELOG.md ]; then
-  # A branch local de integração é o segundo lugar a olhar: em repo sem
-  # remoto (ou com origin/ desatualizado), ela ainda tem as seções de RC.
-  # O arquivo local só serve de último recurso — numa reexecução ele já é a
-  # fonte errada, e daí RC_SECTIONS sai vazio em silêncio.
-  BASE_REF=""
-  for REF in "origin/$INTEGRATION_BRANCH" "$INTEGRATION_BRANCH"; do
-    BASE_REF="$(git merge-base HEAD "$REF" 2>/dev/null || true)"
-    [ -z "$BASE_REF" ] || break
-  done
-  BASE_CHANGELOG=""
-  [ -z "$BASE_REF" ] || BASE_CHANGELOG="$(git show "$BASE_REF:CHANGELOG.md" 2>/dev/null || true)"
-  [ -n "$BASE_CHANGELOG" ] || BASE_CHANGELOG="$(cat CHANGELOG.md)"
-
-  RC_SECTIONS="$(echo "$BASE_CHANGELOG" | awk '
-    /^## \[/ {
-      if ($0 !~ /^## \[[^]]*-rc\./) exit
-      incycle = 1
-    }
-    incycle { print }
-  ')"
-
-  # A seção da release é carimbada uma vez, quando ainda não existe; existindo,
-  # o header fica como está (a data é a da criação) e só o corpo é esvaziado.
-  HAS_REL=""
-  if grep -q "^## \[$RELEASE_VERSION\]" CHANGELOG.md; then HAS_REL=1; fi
-  HEADER="## [$RELEASE_VERSION] - $(date +%d/%m/%Y)"
-
-  if grep -q '^## \[' CHANGELOG.md; then
-    awk -v hdr="$HEADER" -v ver="## [$RELEASE_VERSION]" -v has_rel="$HAS_REL" '
-      /^## \[/ {
-        isrel = (index($0, ver) == 1)
-        isrc  = ($0 ~ /^## \[[^]]*-rc\./)
-        if (!has_rel && !inserted) { print hdr; print ""; inserted = 1 }
-        if (isrel) { print; print ""; skip = 1; next }
-        if (isrc && !passou) { skip = 1; next }
-        passou = 1; skip = 0
-        print; next
-      }
-      skip { next }
-      { print }
-    ' CHANGELOG.md > CHANGELOG.md.tmp && mv CHANGELOG.md.tmp CHANGELOG.md
-  elif [ -z "$HAS_REL" ]; then
-    { echo; echo "$HEADER"; } >> CHANGELOG.md
-  fi
+# Renomeia só a primeira seção -rc.N. Se sobrar outra abaixo, ou não houver
+# nenhuma, quem reclama é o release-finalize.sh antes do PR — nada é inventado
+# aqui. E a checagem de $RELEASE_VERSION torna a reexecução inócua: o header já
+# carimbado fica como está, com a data da primeira rodada.
+if [ -f CHANGELOG.md ] && ! grep -q "^## \[$RELEASE_VERSION\]" CHANGELOG.md; then
+  awk -v hdr="## [$RELEASE_VERSION] - $(date +%d/%m/%Y)" '
+    !carimbado && /^## \[[^]]*-rc\./ { print hdr; carimbado = 1; next }
+    { print }
+  ' CHANGELOG.md > CHANGELOG.md.tmp && mv CHANGELOG.md.tmp CHANGELOG.md
 fi
 
 echo "PROD_BRANCH=$PROD_BRANCH"
 echo "INTEGRATION_BRANCH=$INTEGRATION_BRANCH"
 echo "INTEGRATION_VERSION=$INTEGRATION_VERSION"
 echo "RELEASE_VERSION=$RELEASE_VERSION"
-echo "RC_SECTIONS:"
-echo "$RC_SECTIONS"
-echo "COMMITS:"
-echo "$COMMITS"

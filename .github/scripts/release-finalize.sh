@@ -2,8 +2,8 @@
 # release-finalize.sh <prod-branch> <release-version>
 # Resumo do PR via stdin.
 #
-# Faz a parte 100% mecânica do passo 4 do /release: checagem de que o passo
-# 2 consolidou o CHANGELOG, commit das mudanças de versão/CHANGELOG (sem
+# Faz a parte 100% mecânica do passo 3 do /release: checagem de que o
+# CHANGELOG está consolidado, commit das mudanças de versão/CHANGELOG (sem
 # falhar se não houver nada staged), push da branch atual, checagem de PR
 # já aberto (sem criar duplicado nem editar
 # automaticamente — só reporta, mesmo padrão do create-pr.sh) e a chamada
@@ -45,8 +45,9 @@ print_postmerge_hint() {
 # "## [$RELEASE_VERSION]" e, quando não acha, omite a lista em silêncio — a
 # issue fecharia só com "Entregue na vX.Y.Z.". Mesmo casamento por prefixo
 # usado lá, pra não divergirem. A segunda checagem é o outro lado: seção de RC
-# é provisória, e uma esquecida pelo passo 2 não some mais — vai para
-# produção e fica lá abaixo da seção boa, em toda release seguinte.
+# é provisória, e uma que sobrou — porque um /rc abriu seção nova em vez de
+# reescrever a única do ciclo — não some mais: vai para produção e fica lá
+# abaixo da seção boa, em toda release seguinte.
 if [ -f CHANGELOG.md ]; then
   HOJE="$(date +%d/%m/%Y)"
   RC_RESTANTE="$(grep -n "^## \[[^]]*-rc\." CHANGELOG.md 2>/dev/null || true)"
@@ -57,7 +58,7 @@ if [ -f CHANGELOG.md ]; then
   ' CHANGELOG.md 2>/dev/null | sed -e '/./,$!d' || true)"
 
   if [ -n "$RC_RESTANTE" ] || [ -z "$SECAO" ]; then
-    echo "CHANGELOG.md não está consolidado — passo 2 do /release incompleto." >&2
+    echo "CHANGELOG.md não está consolidado — a seção do ciclo vem do /rc." >&2
     if [ -n "$RC_RESTANTE" ]; then
       echo "   Seções de RC ainda no arquivo:" >&2
       echo "$RC_RESTANTE" | head -5 | sed 's/^/     linha /' >&2
@@ -69,7 +70,7 @@ if [ -f CHANGELOG.md ]; then
         echo "   Não há seção começando por '## [$RELEASE_VERSION]'." >&2
       fi
     fi
-    echo "   Junte o conteúdo dos RCs em uma única seção '## [$RELEASE_VERSION] - $HOJE' e remova as seções -rc.N." >&2
+    echo "   Deixe uma única seção '## [$RELEASE_VERSION] - $HOJE' com o delta do ciclo, sem nenhuma -rc.N." >&2
     exit 1
   fi
 fi
