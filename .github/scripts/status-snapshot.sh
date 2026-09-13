@@ -89,12 +89,16 @@ LATEST_REVIEW="$("$SCRIPT_DIR/latest-review.sh" 2>/dev/null || echo "nenhum")"
 # ("**Data:**"/"**Estatísticas:**"/"**Veredito:**") — lê eles de volta em
 # vez de reparsear os blocos "#### Problema" e recalcular do zero.
 VEREDITO=""
+STATUS_POS_FIX=""
 REVIEW_SUMMARY="Nenhum review realizado ainda."
 if [ "$LATEST_REVIEW" != "nenhum" ] && [ -f "$LATEST_REVIEW" ]; then
   VEREDITO="$(grep -m1 '^\*\*Veredito:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Veredito:\*\*[[:space:]]*//')"
+  # O veredito é o retrato do código no momento do /review; se um /fix-review
+  # rodou depois, quem vale é o status que ele gravou na seção "## Pós-fix".
+  STATUS_POS_FIX="$(grep -m1 '^\*\*Status pós-fix:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Status pós-fix:\*\*[[:space:]]*//' || true)"
   REVIEW_DATA="$(grep -m1 '^\*\*Data:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Data:\*\*[[:space:]]*//')"
   REVIEW_STATS="$(grep -m1 '^\*\*Estatísticas:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Estatísticas:\*\*[[:space:]]*//')"
-  REVIEW_SUMMARY="${REVIEW_DATA} — ${REVIEW_STATS}"
+  REVIEW_SUMMARY="${REVIEW_DATA} — ${REVIEW_STATS}${STATUS_POS_FIX:+ (pós-fix: $STATUS_POS_FIX)}"
 fi
 
 IS_PROTECTED=false
@@ -115,6 +119,12 @@ elif [ "$COVERAGE" = "não disponível" ]; then
   NEXT_STEP="/test — cobertura não disponível"
 elif [ "$LATEST_REVIEW" = "nenhum" ]; then
   NEXT_STEP="/review — sem review para essa feature ainda"
+elif [ "$STATUS_POS_FIX" = "bloqueado" ]; then
+  NEXT_STEP="/fix-review — ainda restam problemas bloqueantes no último review"
+elif [ "$STATUS_POS_FIX" = "revisar" ]; then
+  NEXT_STEP="/review — bloqueante corrigido pelo /fix-review, aguardando revalidação"
+elif [ "$STATUS_POS_FIX" = "liberado" ]; then
+  NEXT_STEP="/rc — correções aplicadas e nenhum bloqueante pendente"
 else
   case "$VEREDITO" in
     APROVADO) NEXT_STEP="/rc — review aprovado, sem problemas bloqueantes" ;;

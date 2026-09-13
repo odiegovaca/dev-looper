@@ -2,43 +2,33 @@
 description: Aplicar correções do último code review por número, severidade ou todas
 agent: agent
 tools: [read, edit, search, execute, todo]
-argument-hint: "Número(s), 'todos', 'critical' ou 'high' (ex: /fix-review 3, /fix-review 1 2 5, /fix-review critical)"
+argument-hint: "Números e/ou severidades, combináveis, ou 'todos' (ex: /fix-review 3, /fix-review critical 7, /fix-review medium low)"
 ---
 
 # /fix-review - Aplicar Correções do Code Review
 
-Aplique correções identificadas no último relatório de code review.
-
-**Arquivos Protegidos** (ver `copilot-instructions.md`): se uma correção sugerida no relatório apontar para `.github/prompts/*.md` ou `copilot-instructions.md`, sinalizar ao usuário e pular o item.
-
 ## Processo
 
-### 1 — Localizar Relatório
+### 1 — Selecionar
+
+Sem argumento, perguntar ao usuário o que corrigir antes de seguir.
 
 ```bash
 REPORT=$(.github/scripts/latest-review.sh)
+.github/scripts/fix-review-select.sh "$REPORT" $ARGUMENTS
 ```
 
-### 2 — Identificar Problemas
+Com mais de um `SELECIONADOS`, montar `manage_todo_list` com um item por problema.
 
-Selecionar os problemas em `$REPORT` conforme o argumento:
+### 2 — Aplicar
 
-- **Número(s)** (ex: `3`, `1 2 5`): problemas com esses números; inexistente no relatório → avisar e ignorar, sem interromper os demais
-- **Severidade(s)** (`critical`, `high`, case-insensitive e combináveis, ex: `critical high`): todos os problemas dessa(s) severidade(s)
-- **`todos`**: todos os problemas
-- **Sem argumento**: perguntar ao usuário quais deseja corrigir
+Para cada problema em `SELECIONADOS`: ler o arquivo inteiro, aplicar a correção seguindo os "Padrões Obrigatórios" de `copilot-instructions.md`, sem tocar em código não relacionado, e marcar no TODO.
 
-Se mais de um problema for selecionado, montar `manage_todo_list` com um item por problema (número + descrição breve) antes de aplicar as correções.
+**Se a solução do relatório parecer errada, não aplicar e não interromper** — anotar como contestado e seguir para o próximo.
 
-### 3 — Aplicar Correções
+### 3 — Resolver os Contestados
 
-Para cada problema:
-
-1. Ler o arquivo mencionado (arquivo:linha do relatório)
-2. Entender o problema e a solução sugerida; se parecer errada, informar e propor alternativa em vez de aplicar
-3. Aplicar a correção seguindo os padrões de `copilot-instructions.md`, sem alterar código não relacionado ao problema
-4. Verificar contra a seção "Padrões Obrigatórios" de `copilot-instructions.md` e confirmar que não quebra testes existentes
-5. Marcar como concluído no TODO, se houver
+Apresentar os contestados de uma vez, cada um com o que o relatório propôs, por que parece errado e a alternativa. **A decisão é do usuário**; aplicar o que ele aceitar ainda aqui, para o passo 4 validar a alternativa.
 
 ### 4 — Validar
 
@@ -50,17 +40,19 @@ Se falhar por causa de uma correção aplicada, corrigir antes de prosseguir (m�
 
 ### 5 — Confirmar
 
+```bash
+.github/scripts/fix-review-finalize.sh "$REPORT" \
+  --applied "#1, #3" \
+  --dismissed "#4: o usuário concordou que não é problema"
 ```
-✅ X correções aplicadas, lint/build/test OK.
-   Pendências: [um por linha com o motivo — número inexistente, arquivo protegido, severidade não incluída — ou "nenhuma"]
-   Sugestão: git commit -m "fix: aplica correções do review #{N}" como checkpoint, depois /rc. Se houver pendências, `/fix-review` novamente para elas antes.
-```
+
+`--applied`: corrigidos, inclusive por alternativa aceita no passo 3. `--dismissed`: nada a corrigir, com a decisão do usuário como motivo, uma flag por problema.
+
+Mostrar no chat, sem alterações, a saída do script.
 
 ### 6 — Listar Lições para `/lesson`
 
-No fim do `/fix-review`, sempre incluir uma seção de aprendizados para prevenir recorrência.
-
-Formato — bloco estruturado por lição, sem prosa livre:
+Sempre incluir, para prevenir recorrência. De 1 a 6 lições, sem prosa livre fora do bloco:
 
 ```markdown
 ## 📚 Lições para /lesson
@@ -70,8 +62,4 @@ Formato — bloco estruturado por lição, sem prosa livre:
   destino: [arquivo — mesmo critério de classificação do passo 2 de /lesson]
 ```
 
-Regras:
-
-- 1 a 6 lições por execução
-- Lições específicas e acionáveis
-- Se não houver correção aplicada: `Nenhuma lição nova identificada nesta execução.`
+Sem correção aplicada: `Nenhuma lição nova identificada nesta execução.`

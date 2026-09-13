@@ -30,6 +30,13 @@ read_coverage_by_file() {
 
 # Lê "arquivo,pct,total_statements" do stdin, imprime "arquivo,rank_sum"
 # ordenado por prioridade (menor rank_sum primeiro).
+# A soma dos dois ranks abaixo combina pct baixo E alto volume de statements
+# não cobertos, em vez do pior pct isolado — que favoreceria arquivo pequeno e
+# trivial sobre arquivo grande com gap real. É por isso que o /test segue esta
+# ordem em vez de estimar onde testar: o ganho no % global sai daqui calculado.
+# Genérica por construção — o /setup não preenche nada aqui; sem a 3ª coluna
+# (ex: `go tool cover`, que não expõe total por arquivo) cai para ordenar só
+# por pct.
 rank_priority() {
   local tmp
   tmp="$(mktemp -d)"

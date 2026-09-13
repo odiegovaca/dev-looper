@@ -7,7 +7,7 @@ argument-hint: "Descrição da funcionalidade ou caminho da spec para refinar"
 
 # /spec - Criar Especificação
 
-Analista de sistemas especializado em transformar requisitos em **especificações estruturadas em linguagem natural**: criar ou refinar especificação compreensível sem código, legível por não-técnicos.
+A spec é legível por não-técnicos: linguagem natural, sem código.
 
 ## Processo
 
@@ -62,13 +62,9 @@ Ao concluir, adapte a sugestão ao resultado:
    A issue #[N] ainda está com o texto antigo: /issue propaga a spec revisada para ela.
 ```
 
-O refinamento que fica só no arquivo é invisível para quem lê a issue. É o `/issue` que sincroniza (ele detecta a issue vinculada e atualiza em vez de abrir outra); nunca edite a issue na mão.
+Nunca edite a issue na mão — é o `/issue` que sincroniza.
 
 ## Template
-
-Template e convenções para especificações de funcionalidade.
-
-### Template Completo
 
 ```markdown
 # [Título Descritivo]

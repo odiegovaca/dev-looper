@@ -7,7 +7,7 @@ argument-hint: "Meta de cobertura em % (padrão: 80)"
 
 # /test - Completar Cobertura de Testes
 
-Completar cobertura de testes até meta de **statements** (padrão: 80%, ou o valor passado em `$ARGUMENTS`), priorizando pelo maior ganho real no `%` global — não pelo pior percentual isolado (ver Passo 3).
+Meta de **statements**: 80%, ou o valor passado em `$ARGUMENTS`.
 
 **Arquivos Protegidos** (ver `copilot-instructions.md`): não editar `.github/prompts/*.md` nem `copilot-instructions.md`.
 
@@ -25,7 +25,7 @@ Falhas identificadas (máx 3 iterações). Se persistir após o limite, parar e 
 
 ### 3 — Priorizar
 
-Cruzar arquivos da branch (`.github/scripts/changed-files.sh $INTEGRATION_BRANCH` — mesmo script usado pelo `/review`; `$INTEGRATION_BRANCH` lido de `copilot-instructions.md`) com a saída de `.github/scripts/coverage.sh --priority` (linhas `arquivo,rank_sum`, já ordenadas por prioridade — menor `rank_sum` primeiro). Essa ordem combina `pct` baixo **e** alto volume de statements não cobertos — não o pior `%` isolado, que favorece arquivo pequeno e trivial sobre arquivo grande com gap real. É cálculo do script, não estimativa manual.
+Cruzar arquivos da branch (`.github/scripts/changed-files.sh $INTEGRATION_BRANCH` — mesmo script usado pelo `/review`; `$INTEGRATION_BRANCH` lido de `copilot-instructions.md`) com a saída de `.github/scripts/coverage.sh --priority` (linhas `arquivo,rank_sum`, já ordenadas por prioridade — menor `rank_sum` primeiro).
 
 Montar `manage_todo_list` com o resultado antes de completar (Passo 4).
 
@@ -58,8 +58,6 @@ Se a meta não for atingida após os 3 ciclos, parar mesmo assim e seguir para o
 ## Regras
 
 - Não reescrever testes existentes que já passam — apenas complementar
-- Priorizar trabalho recente (arquivos da branch) antes de expandir para o restante — ver Passo 3 para a ordem dentro de cada grupo
-- Meta padrão: **80%** de statements — é o critério de parada, não o critério de escolha de onde testar
 - Nunca alterar código de produção para facilitar testes — adaptar os testes
 - Consultar `copilot-instructions.md` (seção Testing Conventions) para estrutura padrão dos testes, mocks e localização dos arquivos
 

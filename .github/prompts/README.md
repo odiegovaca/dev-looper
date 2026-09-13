@@ -11,7 +11,7 @@ Prompts aceitam parâmetros após o comando (ex: `/rc patch`, `/test 85`) — ve
 3. `/code` → Código + testes básicos (happy path + erros esperados)
    - `/test` → _se cobertura abaixo da meta após `/code`_
 4. `/review` → Revisão de qualidade por criticidade
-   - `/fix-review [alvo]` → _se houver problemas critical ou high a tratar_
+   - `/fix-review [alvo]` → _se houver problemas a tratar; critical e high bloqueiam o `/rc`_
 5. `/rc` → PR → branch de integração (versão RC)
 6. `/release` → PR → produção (versão estável)
 
@@ -32,7 +32,7 @@ Fonte da verdade é o `argument-hint` de cada `.prompt.md` — atualize aqui jun
 | `/code`       | Caminho da spec ou descrição da funcionalidade                              | `/code docs/issues/spec-checkout-pix.md`          |
 | `/test`       | Meta de cobertura em % (opcional, padrão 80)                                | `/test 85`                                        |
 | `/review`     | Nome da branch de integração, sem prefixo `origin/` (opcional, padrão `develop`) | `/review develop`                             |
-| `/fix-review` | Número(s), `todos`, `critical` ou `high`                                    | `/fix-review 1 2 5`, `/fix-review critical`       |
+| `/fix-review` | Números e/ou severidades (`critical`, `high`, `medium`, `low`), combináveis, ou `todos` | `/fix-review 1 2 5`, `/fix-review critical 7`  |
 | `/rc`         | Tipo de versão: `patch`, `minor` ou `major` (opcional, inferido se omitido) | `/rc patch`                                       |
 | `/release`    | Versão de release (opcional, deriva da RC atual se omitido)                 | `/release 2.5.0`                                  |
 | `/setup`      | Descrição do projeto (opcional, usada só se não houver README)              | —                                                  |

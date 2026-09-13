@@ -7,8 +7,6 @@ argument-hint: "Descrição do aprendizado (ex: /lesson Controllers void não de
 
 # /lesson - Formalizar Aprendizado em Instrução
 
-Transforme uma correção ou observação em regra permanente no projeto.
-
 ## Processo
 
 ### 1 — Capturar o Aprendizado

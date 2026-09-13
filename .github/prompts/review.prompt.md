@@ -7,8 +7,6 @@ argument-hint: "Nome da branch de integração, sem prefixo origin/ (padrão: de
 
 # /review - Code Review
 
-Execute revisão crítica do código modificado na branch atual.
-
 **Este comando é somente leitura sobre o código revisado** — a única escrita permitida é a criação do relatório em `docs/reviews/`. Nunca editar os arquivos analisados.
 
 ## Processo

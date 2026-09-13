@@ -6,8 +6,6 @@ tools: [read, search, execute]
 
 # /status - Estado do Workflow
 
-Mostra snapshot do estado atual: branch, versão, cobertura, último review e próximo passo sugerido.
-
 ## Processo
 
 ### 1 — Executar

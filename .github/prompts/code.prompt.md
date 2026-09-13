@@ -7,28 +7,20 @@ argument-hint: "Caminho da spec ou descrição da funcionalidade"
 
 # /code - Implementar Funcionalidade
 
-Você é um desenvolvedor especialista que implementa funcionalidades completas seguindo as especificações e padrões do projeto.
-
 ## Processo
 
 ### 1 — Preparação
 
-1. **Leia `.github/copilot-instructions.md` completamente** — contém os padrões obrigatórios do projeto e a seção Arquivos Protegidos (nunca editar por este comando)
+1. **Leia `.github/copilot-instructions.md` completamente** — contém os padrões obrigatórios do projeto e a seção Arquivos Protegidos (nunca editar por este comando). Os "Padrões Obrigatórios" valem para todas as fases — reverificar antes de considerar qualquer fase concluída
 2. Leia a spec em `docs/issues/spec-*.md` — liste as disponíveis se não especificada. Se `Status` for `Rascunho`/`Em Revisão`, ou houver "Questões em Aberto" pendentes, avisar o usuário e confirmar antes de prosseguir — implementar spec incompleta gera requisito adivinhado
 3. Verifique branch atual: rode `eval "$(.github/scripts/release-branches.sh)"` e compare com `git branch --show-current` — se for `$PROD_BRANCH` ou `$INTEGRATION_BRANCH`, crie `feature/{N}-nome-descritivo` antes de começar
    - `{N}` é o número da issue, lido do campo `**Issue**` da spec — sem issue vinculada, perguntar ao usuário o número antes de criar a branch
-   - Esse número é o identificador comum entre spec, issue e review
-   - O padrão de nome da branch é lido de volta por `.github/scripts/feature-number.sh` (usado por `/review` e `/fix-review`) — não altere esse formato sem atualizar os dois
 4. Procure no código existente por funcionalidade ou padrão análogo relacionado à spec — evita reimplementar algo que já existe ou divergir de um padrão já estabelecido no projeto
 5. Monte `manage_todo_list` com todas as tarefas antes de começar
 
-### 2 — Padrões Obrigatórios
+### 2 — Implementação
 
-Ler a seção "Padrões Obrigatórios" de `copilot-instructions.md`. Vale para todas as fases da implementação — verificar antes de considerar qualquer fase concluída.
-
-### 3 — Implementação
-
-#### 3.1 — Persistência (se houver)
+#### 2.1 — Persistência (se houver)
 
 Criar model/entity e repository seguindo os padrões em `copilot-instructions.md`:
 
@@ -36,7 +28,7 @@ Criar model/entity e repository seguindo os padrões em `copilot-instructions.md
 - Transações quando necessário
 - **Sempre retornar plain objects/DTOs do repository** — nunca expor objetos ORM diretamente
 
-#### 3.2 — Lógica de Negócio
+#### 2.2 — Lógica de Negócio
 
 - **DTOs de entrada/saída**: validação nos campos com annotations ou validators do stack
 - **DTOs de integração externa**: quando o pacote da integração fornece interfaces tipadas, sempre implementá-las nas classes DTO (`implements IMinhaInterface`); manter esses DTOs simples e sem decorators/annotations extras — campos idênticos à interface
@@ -44,18 +36,18 @@ Criar model/entity e repository seguindo os padrões em `copilot-instructions.md
 - **Service**: lógica de negócio, validações, sem lógica de infraestrutura
 - **Tratamento de erros**: usar exceções/error types customizados do projeto (ver `copilot-instructions.md`)
 
-#### 3.3 — Exposição (se houver)
+#### 2.3 — Exposição (se houver)
 
 - Seguir convenções REST/RPC/CLI/scheduler do projeto, conforme o paradigma da funcionalidade
 - HTTP codes corretos para cada operação (quando houver API)
 - Autenticação/autorização conforme padrão em `copilot-instructions.md`
 
-#### 3.4 — Configuração
+#### 2.4 — Configuração
 
 - Registrar componentes no container de DI (injeção de dependência) do framework
 - **Docs**: variáveis de ambiente novas, documentação pública afetada (README, comentários de API, OpenAPI/Swagger) conforme convenção do projeto
 
-#### 3.5 — Testes Básicos
+#### 2.5 — Testes Básicos
 
 Criar testes unitários para o código implementado, cobrindo:
 
@@ -67,13 +59,13 @@ Consultar `copilot-instructions.md` (seção Testing Conventions) para estrutura
 
 > Testes de borda, cobertura de branches e casos extras ficam para o `/test`.
 
-### 4 — Validação Final
+### 3 — Validação Final
 
 ```bash
 .github/scripts/validate.sh lint build test
 ```
 
-Precisa terminar sem erro antes de prosseguir. `test` roda a suíte completa do projeto, não só os testes criados em 3.5.
+Precisa terminar sem erro antes de prosseguir. `test` roda a suíte completa do projeto, não só os testes criados em 2.5.
 
 ## Próximos Passos
 
@@ -88,6 +80,3 @@ Ao concluir, sugerir:
 4. /review  → revisão de qualidade antes do PR
 5. /rc      → criar PR
 ```
-
-> O commit após sua revisão serve como checkpoint: qualquer diff posterior mostra
-> apenas o que o review e o fix-review alteraram, separado da implementação original.

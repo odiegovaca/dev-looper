@@ -7,8 +7,6 @@ argument-hint: "Tipo de versão: patch, minor ou major (ex: /rc patch)"
 
 # /rc - RC Pull Request
 
-Finaliza feature/fix branches e cria Pull Requests para a branch de integração com versionamento RC.
-
 ## Processo
 
 ### 1 — Preparar Branch e Determinar Tipo de Versão

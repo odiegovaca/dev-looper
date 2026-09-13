@@ -7,8 +7,6 @@ argument-hint: "Versão de release (opcional, ex: /release 2.5.0)"
 
 # /release - Release
 
-Prepara releases de produção consolidando versões RC da branch de integração em versões estáveis para produção.
-
 ## Processo
 
 ### 1 — Preparar Branch, Versão e Branch de Release

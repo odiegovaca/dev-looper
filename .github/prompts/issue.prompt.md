@@ -7,8 +7,6 @@ argument-hint: "Caminho da spec (opcional, usa a unica spec aprovada se omitido)
 
 # /issue - Criar ou Atualizar Issue GitHub
 
-Sincroniza a issue GitHub com a especificação: cria na primeira vez, atualiza a issue já vinculada quando a spec foi refinada. Título, corpo, label e atualização da spec são resolvidos por script — sem interpretação da LLM.
-
 ## Processo
 
 ### 1 — Executar o Script

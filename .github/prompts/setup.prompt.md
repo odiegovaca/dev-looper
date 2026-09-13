@@ -7,26 +7,15 @@ argument-hint: "Descrição do projeto (opcional, usada se não houver README)"
 
 # /setup - Bootstrap do Workflow de IA
 
-Configure o workflow de desenvolvimento com IA para este projeto. Detecta o stack automaticamente, faz perguntas pontuais e gera `.github/copilot-instructions.md` personalizado.
-
 ## Processo
 
 ### 1 — Verificar Pré-requisitos
 
 ```bash
-command -v gh >/dev/null 2>&1 || {
-  echo "❌ gh CLI não encontrado. Instale antes de continuar: https://cli.github.com"
-  echo "   Consulte o README do dev-looper para instruções detalhadas."
-  exit 1
-}
-
-gh auth status >/dev/null 2>&1 || {
-  echo "❌ gh CLI não autenticado. Rode: gh auth login"
-  exit 1
-}
+.github/scripts/check-prereqs.sh
 ```
 
-Se qualquer um dos comandos falhar, interromper imediatamente com a mensagem correspondente. Não prosseguir para os próximos passos — `/issue`, `/rc` e `/release` dependem de `gh` instalado e autenticado.
+Se falhar, repassar a mensagem e parar — não prosseguir para os próximos passos.
 
 ### 2 — Detectar Stack
 
@@ -65,7 +54,7 @@ rm -f .github/copilot-instructions.template.md
 Preencher `.github/scripts/*.sh` com os dados detectados no Passo 2: versão (`bump-version.sh`), cobertura (`coverage.sh`), comandos de teste/lint/build (`validate.sh`) e branches de release (`release-branches.sh`) — para que sejam calculados por script em vez de recalculados em prosa a cada execução.
 
 1. **`bump-version.sh`**: preencher o array `VERSION_FILES` com os arquivos de versão detectados no Passo 2 — exemplos já no cabeçalho do script.
-2. **`coverage.sh`**: preencher o corpo de `read_coverage()` (total) e `read_coverage_by_file()` (por arquivo, saída `arquivo,pct,total_statements`) com os comandos de cobertura do stack — exemplos de ambos já no cabeçalho do script. `rank_priority()` (usada por `/test` via `coverage.sh --priority` para ranquear gaps por ganho real, não só por %) já é genérica e não precisa ser preenchida — só processa a saída de `read_coverage_by_file()`. Se o stack não expuser total de statements por arquivo (ex: `go tool cover`), deixar a 3ª coluna vazia — `rank_priority()` cai de volta para ordenar só por pct nesse caso.
+2. **`coverage.sh`**: preencher o corpo de `read_coverage()` (total) e `read_coverage_by_file()` (por arquivo, saída `arquivo,pct,total_statements`) com os comandos de cobertura do stack — exemplos de ambos já no cabeçalho do script.
 3. **`validate.sh`**: preencher os corpos de `run_test()`, `run_lint()` e `run_build()` com os comandos reais de teste, lint e build do stack detectado (a mesma tabela que hoje vai para a seção "Development Commands" do `copilot-instructions.md`).
 4. **`release-branches.sh`**: preencher `PROD_BRANCH` e `INTEGRATION_BRANCH` com as branches detectadas no Passo 2 (a mesma info que hoje vai para a seção "Release Workflow" do `copilot-instructions.md`).
 5. `chmod +x .github/scripts/*.sh`.
@@ -76,7 +65,7 @@ Preencher `.github/scripts/*.sh` com os dados detectados no Passo 2: versão (`b
 
 Ler `.github/prompts/code.prompt.md`.
 
-Substituir as fases da seção **"Implementação"** (Passo 3, subseções `3.N`) com fases específicas do stack detectado, seguindo o critério:
+Substituir as fases da seção **"Implementação"** (Passo 2, subseções `2.N`) com fases específicas do stack detectado, seguindo o critério:
 
 1. **Persistência** — modelos, entidades, migrations, repositórios (se houver banco)
 2. **Lógica de negócio** — serviços, validações, DTOs, mapeamentos
