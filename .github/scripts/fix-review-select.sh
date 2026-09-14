@@ -1,26 +1,20 @@
 #!/usr/bin/env bash
-# fix-review-select.sh <relatório.md> <seletor>...
+# fix-review-select.sh <seletor>...
 #
-# Resolve os seletores do /fix-review nos problemas a corrigir. Seletor é
-# número, severidade (atalho para os números dela) ou `todos`, combináveis em
-# qualquer ordem — o conjunto é a união de tudo que casar. Imprime SELECIONADOS
-# e IGNORADOS, cada problema com severidade e Local.
-#
-# Existe para o passo da seleção não ser prosa que o agente tem de honrar:
-# severidade escrita errada é erro em vez de seleção vazia silenciosa, número
-# fora do relatório é aviso em vez de interrupção, e Arquivo Protegido sai da
-# lista antes de alguém abrir o arquivo.
+# Resolve os seletores do /fix-review nos problemas a corrigir, no relatório mais
+# recente da feature. Seletor é número, severidade ou `todos`, combináveis em
+# qualquer ordem — o conjunto é a união. Imprime SELECIONADOS e IGNORADOS.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TAB="$(printf '\t')"
 
-REPORT="${1:-}"
-if [ -z "$REPORT" ] || [ ! -f "$REPORT" ] || [ "$#" -lt 2 ]; then
-  echo 'Uso: fix-review-select.sh <relatório.md> <seletor>...  (número, critical|high|medium|low, ou todos)' >&2
+if [ "$#" -lt 1 ]; then
+  echo 'Uso: fix-review-select.sh <seletor>...  (número, critical|high|medium|low, ou todos)' >&2
   exit 1
 fi
-shift
+
+REPORT="$("$SCRIPT_DIR/latest-review.sh")"
 
 PROBLEMS="$("$SCRIPT_DIR/review-problems.sh" "$REPORT")"
 
@@ -75,10 +69,8 @@ for n in $(tr ' ' '\n' <<< "$DESCONHECIDOS" | grep -E '^[0-9]+$' | sort -n -u ||
 "
 done
 
-# Problema protegido é motivo para seguir ao passo 5 mesmo sem nada a aplicar:
-# é lá que a dispensa é registrada, e sem ela o /status ficaria recomendando
-# /fix-review para um problema que ninguém pode corrigir. Só número inventado,
-# não: aí não há o que fazer nem o que registrar.
+# Problema protegido segue para a finalização mesmo sem nada a aplicar — é lá que
+# a dispensa fica registrada. Só número inventado não: não há o que registrar.
 if [ -z "$SELECIONADOS" ] && [ -z "$PROTEGIDOS" ]; then
   echo "Nenhum problema casou com os seletores em $REPORT — rode /fix-review com um número ou uma severidade presentes no relatório (ou 'todos')." >&2
   [ -n "$IGNORADOS" ] && printf '%s' "$IGNORADOS" >&2

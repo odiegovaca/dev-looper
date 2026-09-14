@@ -5,7 +5,7 @@
 # Imprime só a versão resultante no stdout — capture com NEW_VERSION=$(bump-version.sh patch).
 set -euo pipefail
 
-# Preenchido por /setup com os arquivos de versão detectados no Passo 1.
+# Arquivos que carregam a versão do projeto — preenchido por /setup.
 VERSION_FILES=(
   # [DEFINIR: um caminho por linha, entre aspas — todo arquivo do projeto que carrega a versao]
 )
@@ -41,6 +41,8 @@ read_version() {
   esac
 }
 
+# O `0,/re/s//` troca só a primeira ocorrência: a versão do próprio projeto vem
+# antes das dependências.
 write_version() {
   local file="$1" new="$2"
   case "$file" in
@@ -59,9 +61,7 @@ write_version() {
   esac
 }
 
-# Sem o `|| true` e a guarda, um arquivo de versão sem o campo esperado (ou um
-# caminho errado em VERSION_FILES) mataria o script aqui em silêncio, no meio do
-# /rc ou do /release: read_version é um grep|sed sob `set -euo pipefail`.
+# `|| true` para arquivo de versão ilegível virar a mensagem abaixo, não morte silenciosa.
 CURRENT="$(read_version "${VERSION_FILES[0]}" || true)"
 if ! [[ "$CURRENT" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
   echo "Versão não lida de ${VERSION_FILES[0]} (valor: '${CURRENT:-vazio}') — confira o arquivo e a lista VERSION_FILES em bump-version.sh (preenchida pelo /setup)" >&2
@@ -81,13 +81,10 @@ PATCH="$(echo "$BASE" | cut -d. -f3)"
 
 case "$ACTION" in
   release)
-    # Remove o sufixo -rc.N. Se [versão] foi passada (override do usuário em
-    # /release), grava essa versão em vez de só derivar da atual — evita
-    # branch/PR nomeados com uma versão e arquivos gravados com outra.
+    # Remove o sufixo -rc.N; com [versão], grava essa em vez de derivar da atual.
     if [ -n "$VERSION_ARG" ]; then
-      # Rejeita [versão] menor que a atual — evita publicar uma tag pública
-      # "regressiva". Igual à atual é permitido, pra não quebrar reexecução
-      # idempotente.
+      # Rejeita versão menor que a atual (tag pública regressiva); igual passa,
+      # para não quebrar reexecução.
       SMALLER="$(printf '%s\n%s\n' "$BASE" "$VERSION_ARG" | sort -V | head -1)"
       if [ "$SMALLER" = "$VERSION_ARG" ] && [ "$VERSION_ARG" != "$BASE" ]; then
         echo "Versão $VERSION_ARG é menor que a atual ($BASE) — use uma versão maior ou igual (igual é permitido pra reexecução idempotente)." >&2
@@ -98,13 +95,8 @@ case "$ACTION" in
     ;;
   patch|minor|major)
     if [[ "$CURRENT" == *-rc.* ]]; then
-      # Já em RC (o bump de base já foi aplicado ao sair da versão estável): só incrementa o rc.
-      #
-      # O tipo pedido não entra nessa conta, e é a base que diz qual ciclo está
-      # aberto (X.0.0 = major, X.Y.0 = minor). Pedir um tipo maior do que o ciclo
-      # aberto é publicar breaking change como minor/patch — avisa, em vez de
-      # perder o pedido em silêncio. Avisa e não falha: travar aqui pararia o /rc
-      # no meio, e a saída é decisão de versionamento, não argumento a corrigir.
+      # Já em RC: só o -rc.N avança, porque a base subiu na entrada do ciclo. Pedir mais
+      # do que o ciclo aberto (X.0.0 = major, X.Y.0 = minor) avisa sem falhar.
       PERDIDO=""
       case "$ACTION" in
         major) [ "$MINOR.$PATCH" = "0.0" ] || PERDIDO="major" ;;

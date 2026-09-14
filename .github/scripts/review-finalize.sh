@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
 # review-finalize.sh <relatório.md> <data>
 #
-# Recompõe o relatório de /review na ordem final Summary → Análise por
-# Arquivo → Recomendações, a partir de um arquivo bruto escrito pelo agente
-# com blocos "#### Problema {i} — {SEVERIDADE}" (única parte do processo que
-# exige leitura semântica — o resto deste script é derivação mecânica).
-#
-# Termina imprimindo o sumário já pronto para colar no chat — usar a saída
-# sem alterações.
+# Recompõe o relatório de /review na ordem final Summary → Análise por Arquivo →
+# Recomendações, a partir do arquivo bruto com os blocos "#### Problema {i} — {SEVERIDADE}".
+# Termina imprimindo o sumário pronto para o chat — usar a saída sem alterações.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -34,9 +30,8 @@ while IFS='=' read -r key value; do
   esac
 done <<< "$STATS"
 
-# Numa reexecucao (passo 3 rodado de novo) o arquivo ja esta na ordem final, e
-# ler tudo poria o relatorio inteiro — Summary e Recomendacoes incluidos —
-# dentro da secao de analise, uma camada por rodada. Recupera so a analise.
+# Numa reexecução o arquivo já está na ordem final: recupera só a análise, senão
+# o relatório inteiro entraria dentro dela, uma camada por rodada.
 if grep -q '^## Análise por Arquivo$' "$REPORT"; then
   ANALISE="$(awk '
     /^## Análise por Arquivo$/ { found = 1; next }
@@ -81,17 +76,7 @@ NICE_TO_HAVE="$(grep -oE '^#### Problema [0-9]+ — LOW$' "$REPORT" | sed 's/^##
   echo "${NICE_TO_HAVE:-- Nenhum.}"
 } > "$REPORT"
 
-case "$VEREDITO" in
-  APROVADO)
-    PROXIMOS_PASSOS="✅ Sem problemas bloqueantes: \`/rc\` para criar o PR."
-    ;;
-  "APROVADO COM RESSALVAS")
-    PROXIMOS_PASSOS="⚠️ \`/fix-review high\` para corrigir os problemas importantes, depois \`/rc\`."
-    ;;
-  REPROVADO)
-    PROXIMOS_PASSOS="❌ \`/fix-review critical\` e \`/fix-review high\` antes de prosseguir."
-    ;;
-esac
+PROXIMOS_PASSOS="$("$SCRIPT_DIR/next-step.sh" "$VEREDITO")"
 
 echo "## Code Review Completo"
 echo

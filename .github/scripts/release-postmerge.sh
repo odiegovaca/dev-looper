@@ -1,15 +1,10 @@
 #!/usr/bin/env bash
 # release-postmerge.sh <release-version>
 #
-# Encerramento do /release — só deve ser chamado depois que o PR de release
-# (passo 4) foi aprovado e mergeado em produção, nunca automaticamente
-# durante o resto do fluxo. É oferecido ao usuário como texto na saída do
-# release-finalize.sh, e rodado a pedido dele. Idempotente: não recria tag nem republica se já
-# existir, e não reclama de issue já fechada nem de spec já arquivada.
-#
-# É aqui que a entrega termina: publica a tag, sincroniza a integração com
-# produção e encerra o ciclo de cada issue da release (fecha a issue, arquiva
-# a spec e os relatórios de review).
+# Encerra a entrega, depois que o PR de release já foi mergeado em produção:
+# publica a tag, sincroniza a integração com produção e fecha o ciclo de cada
+# issue da release (fecha a issue, arquiva a spec e os reviews).
+# Idempotente — tag já publicada, issue já fechada e spec já arquivada não são erro.
 set -euo pipefail
 
 RELEASE_VERSION="${1:-}"
@@ -26,11 +21,8 @@ fi
 git checkout "$PROD_BRANCH"
 git pull origin "$PROD_BRANCH"
 
-# Confere que a versão em produção já bate com RELEASE_VERSION antes de
-# criar/publicar a tag: se o merge ainda não aconteceu, a tag ficaria
-# apontando pro commit errado (código anterior ao release) e, uma vez
-# publicada, corrigir isso exige forçar a recriação de uma ref pública —
-# pior que só abortar aqui.
+# Confere a versão em produção antes da tag: sem o merge, ela apontaria para o
+# commit errado, e recriar uma ref pública é pior do que abortar aqui.
 CURRENT_PROD_VERSION="$("$SCRIPT_DIR/bump-version.sh" current)"
 if [ "$CURRENT_PROD_VERSION" != "$RELEASE_VERSION" ]; then
   echo "$PROD_BRANCH está em $CURRENT_PROD_VERSION, não $RELEASE_VERSION — o PR de release ainda não foi mergeado. Aborte e rode de novo depois do merge." >&2
@@ -39,10 +31,8 @@ fi
 
 TAG="v$RELEASE_VERSION"
 
-# Fronteira da release anterior, lida antes de criar a tag desta — é o que
-# delimita quais PRs de RC entraram neste ciclo. O --exclude é o que mantém
-# isto correto numa reexecução: sem ele, a tag já criada seria a própria
-# fronteira e a lista de issues sairia vazia.
+# Fronteira da release anterior: delimita quais PRs de RC entraram neste ciclo.
+# O --exclude segura a reexecução, em que a tag desta seria a própria fronteira.
 PREV_TAG="$(git describe --tags --abbrev=0 --exclude "$TAG" 2>/dev/null || true)"
 
 if git rev-parse --verify "refs/tags/$TAG" >/dev/null 2>&1; then
@@ -59,14 +49,11 @@ fi
 
 ENCERRAMENTO=()
 
-# O comentário é lido aqui, ainda em produção: é a versão publicada do arquivo,
-# a única onde a seção "## [$RELEASE_VERSION]" está garantida. Lido depois do
-# merge abaixo, dependeria de o merge ter dado certo — e num merge abortado a
-# integração não tem essa seção, então SECAO sairia vazia e a issue fecharia só
-# com "Entregue na vX.Y.Z.", em silêncio.
+# Lido ainda em produção, a única cópia onde a seção está garantida: depois do
+# merge abaixo, um conflito abortado deixaria a issue fechando sem a lista.
 COMENTARIO="Entregue na $TAG."
 if [ -f CHANGELOG.md ]; then
-  # index()==1 em vez de regex dinâmico
+  # Casa por prefixo: o header da seção traz a data depois da versão.
   SECAO="$(awk -v hdr="## [$RELEASE_VERSION]" '
     index($0, hdr) == 1 { found=1; next }
     found && /^## / { exit }
@@ -80,11 +67,8 @@ fi
 git checkout "$INTEGRATION_BRANCH"
 git pull origin "$INTEGRATION_BRANCH"
 
-# Sob `set -e` um merge conflitado mataria o script aqui: tag já publicada,
-# nenhuma issue encerrada, árvore em conflito e a reexecução barrada pelo guard
-# de árvore suja da abertura. Abortar e seguir encerra as issues; a sincronização
-# fica pendente, e quem a cobra é o aviso do release-branches.sh no próximo
-# /code, /rc ou /release.
+# Conflito aqui mataria o script com a tag já publicada e nenhuma issue encerrada:
+# aborta e segue, e quem cobra a sincronização pendente é o release-branches.sh.
 SINCRONIZADA=1
 if ! git merge "$PROD_BRANCH"; then
   git merge --abort || true
@@ -96,10 +80,10 @@ ISSUES=""
 if ! command -v gh >/dev/null 2>&1; then
   ENCERRAMENTO+=("⚠️ Issues não encerradas: gh não encontrado. Feche e arquive manualmente.")
 else
-  # Recorte: PRs mergeados na integração
-  # depois do commit da release anterior; sem release anterior, todos.
+  # PRs mergeados na integração depois da release anterior; sem ela, todos.
   SINCE=""
   [ -z "$PREV_TAG" ] || SINCE="$(git log -1 --format=%cI "$PREV_TAG" 2>/dev/null || true)"
+  # Comparação de string: ISO-8601 ordena lexicograficamente, então `>` é "mergeado depois".
   if [ -n "$SINCE" ]; then
     JQ_FILTER="map(select(.mergedAt > \"$SINCE\")) | .[].closingIssuesReferences[].number"
   else
@@ -122,13 +106,11 @@ for N in $ISSUES; do
     ENCERRAMENTO+=("⚠️ Issue #$N não fechada (gh falhou). Feche manualmente.")
   fi
 
-  # Spec: resolvida pelo campo **Issue** do cabeçalho, nunca pelo nome do
-  # arquivo. O `([^0-9]|$)` impede que #3 case com #30.
+  # Spec resolvida pelo campo **Issue**, nunca pelo nome do arquivo; o `([^0-9]|$)`
+  # impede que #3 case com #30.
   SPEC="$(grep -lE "^\*\*Issue\*\*: \[?#${N}([^0-9]|$)" docs/issues/spec-*.md 2>/dev/null | head -1 || true)"
   if [ -z "$SPEC" ]; then
-    # Não achar a spec na raiz é o estado normal de uma reexecução, e defeito
-    # em qualquer outro caso — o arquivo/ é o que separa os dois. Sem essa
-    # distinção, rodar este script duas vezes acusaria um problema inexistente.
+    # Olhar em arquivo/ separa a reexecução normal do defeito de formato.
     if grep -lqE "^\*\*Issue\*\*: \[?#${N}([^0-9]|$)" docs/issues/arquivo/spec-*.md 2>/dev/null; then
       ENCERRAMENTO+=("Spec da issue #$N já estava arquivada.")
     else
@@ -140,8 +122,7 @@ for N in $ISSUES; do
     ENCERRAMENTO+=("⚠️ Spec $(basename "$SPEC") não arquivada. Mova para docs/issues/arquivo/ manualmente.")
   fi
 
-  # Relatórios de review: resolvidos pelo {N} do próprio nome, e vão todos os
-  # {seq} do ciclo de uma vez — não há um "relatório final" a preservar.
+  # Vão todos os {seq} do ciclo de uma vez — não há um "relatório final" a preservar.
   REVIEWS="$(ls docs/reviews/review-"${N}"-*.md 2>/dev/null || true)"
   if [ -n "$REVIEWS" ]; then
     if mkdir -p docs/reviews/arquivo 2>/dev/null && echo "$REVIEWS" | xargs -r -I{} mv {} docs/reviews/arquivo/ 2>/dev/null; then
@@ -152,9 +133,7 @@ for N in $ISSUES; do
   fi
 done
 
-# Só entra em commit se docs/ for versionado no projeto — onde a pasta é
-# gitignorada (o arquivamento é um mv local), nada é staged e isto não faz
-# nada, sem precisar saber qual dos dois casos é.
+# Onde docs/ é gitignorado nada fica staged e isto não faz nada, sem precisar saber qual caso é.
 git add -A docs/issues docs/reviews >/dev/null 2>&1 || true
 git diff --cached --quiet || git commit -m "chore: arquiva specs e reviews entregues na $TAG"
 

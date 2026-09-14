@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # changed-files.sh <branch_integracao>
 # Lista, uma linha por arquivo, os arquivos alterados desde o merge-base com a
-# branch de integração. Sem default: um default aqui seria uma segunda cópia do
-# valor que o release-branches.sh é dono, comparando contra a branch errada em
-# silêncio no projeto em que ela não bate.
+# branch de integração. Sem default para a branch — o valor tem dono
+# (release-branches.sh), e um default aqui compararia contra a branch errada em silêncio.
 set -euo pipefail
 
 INTEGRATION_BRANCH="${1:-}"

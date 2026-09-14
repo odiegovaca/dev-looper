@@ -11,58 +11,46 @@ A spec é legível por não-técnicos: linguagem natural, sem código.
 
 ## Processo
 
-### Modo 1 — Nova Especificação
+### 1 — Resolver o Arquivo
 
-1. **Analise**: Problema, funcionalidade, restrições, integrações, regras de negócio
-2. **Classifique o Tipo**: `feature` se a capacidade não existia antes, `improvement` se muda/melhora algo que já existe
-3. **Estruture**: seguindo o template e convenções da seção Template abaixo
-4. **Derive o identificador**: kebab-case a partir do título (minúsculas, sem acentos, espaços e símbolos viram `-`)
-5. **Verifique conflito**: se já houver spec com esse identificador (`docs/issues/spec-*-[identificador].md`), avise o usuário e pergunte se quer outro identificador ou tratar como refinamento (Modo 2)
-6. **Crie**: `docs/issues/spec-[AAAA-MM-DD]-[identificador-kebab-case].md`. A data vem de `date +%F` (e o campo `**Data**` de `date +%d/%m/%Y`) — nunca da suposição do agente: é ela que ordena a pasta, e o nome não pode ser corrigido depois
-7. **Apresente**: Resumo, questões em aberto, caminho do arquivo
+```bash
+.github/scripts/spec-path.sh "$ARGUMENTS"
+```
 
-### Modo 2 — Refinar Especificação
+- `MODO=nova` → escrever o arquivo do zero, com o template abaixo
+- `MODO=refinamento` → ler a spec inteira antes de alterar
+- `MODO=conflito` → perguntar ao usuário qual das `CANDIDATAS` refinar
 
-Quando usuário menciona arquivo, identificador ou descrição de funcionalidade existente:
+**Se veio `MODO=nova` mas o usuário falava de uma spec que já existe**, não crie: diga que não encontrou, liste as de `docs/issues/` e confirme antes de seguir. O script só compara identificadores — quem lê a intenção do pedido é você.
 
-1. **Busque** em `docs/issues/`. Não encontrou spec correspondente? Informe e sugira `/spec` para criar uma nova
-2. **Leia** especificação completa
-3. **Se status for `Aprovada` ou `Issue criada`**: antes de alterar requisitos, regras de negócio ou critérios de aceite já existentes, confirme com o usuário — a mudança pode invalidar issue/código já criados a partir da spec
-4. **Aplique mudanças**: Adicionar requisitos, responder questões em aberto
-5. **Ao responder questões**: remova da seção "Questões em Aberto" e incorpore na seção correta
-6. **Atualize**: campo `**Data**` (de `date +%d/%m/%Y`), status se mudou. **Não renomeie o arquivo**: a data do nome é a de criação e é ela que mantém a ordem cronológica da pasta
+O campo `**Data**` recebe `DATA_CAMPO` nos dois modos. O nome do arquivo nunca muda num refinamento.
+
+### 2 — Escrever
+
+**Nova**: analisar problema, restrições, integrações e regras de negócio; classificar o **Tipo** (`feature` se a capacidade não existia, `improvement` se muda algo que já existe); preencher o template.
+
+**Refinamento**: adicionar requisitos e responder questões em aberto — cada resposta sai da seção "Questões em Aberto" e é incorporada na seção correta, e o `**Status**` acompanha se mudou. Se o `Status` for `Aprovada` ou `Issue criada`, confirmar com o usuário antes de alterar requisito, regra de negócio ou critério de aceite já existente: a mudança pode invalidar issue e código já feitos a partir da spec.
+
+### 3 — Apresentar
+
+```bash
+.github/scripts/spec-status.sh <arquivo> [nova|refinamento]
+```
+
+Acrescentar um resumo do que mudou. Nunca editar a issue na mão — é o `/issue` que sincroniza.
 
 ## Regras
 
-✅ **SEMPRE**: Voz ativa, específico, exemplos concretos, parágrafos curtos, questões em aberto listadas
+❌ **NUNCA**: código fonte, termos técnicos sem explicação, ambiguidades, suposições não documentadas
 
-❌ **NUNCA**: Código fonte, termos técnicos sem explicação, ambiguidades, suposições não documentadas
+✅ **SEMPRE**:
 
-## Próximos Passos
-
-Ao concluir, adapte a sugestão ao resultado:
-
-- **Spec criada/atualizada com questões em aberto pendentes**:
-  ```
-  ✅ Spec [criada|atualizada]. Próximo passo: revise as Questões em Aberto.
-     Quando aprovada: /issue para criar a issue GitHub.
-  ```
-- **Sem questões pendentes e status `Aprovada`**:
-  ```
-  ✅ Spec aprovada, sem questões pendentes. Próximo passo: /issue para criar a issue GitHub.
-  ```
-- **Refinamento que só respondeu questões, sem mudar status**:
-  ```
-  ✅ Questão(ões) respondida(s). Spec segue como [status atual].
-  ```
-
-**Spec refinada que já tem o campo `**Issue**`**: acrescente sempre esta linha à sugestão, qualquer que seja o caso acima —
-
-```
-   A issue #[N] ainda está com o texto antigo: /issue propaga a spec revisada para ela.
-```
-
-Nunca edite a issue na mão — é o `/issue` que sincroniza.
+- Frases curtas (máximo 2 linhas por item)
+- Voz ativa: "Sistema valida campo X", não "O campo X deve ser validado"
+- Exemplos concretos de valores, formatos e fluxos
+- Questões em aberto numeradas (**Q1**, **Q2**)
+- Critérios de aceite como checkboxes testáveis, não afirmações genéricas
+- Omitir seções vazias — sem integrações, não inclua a seção
 
 ## Template
 
@@ -89,7 +77,6 @@ Descrição direta (2-4 parágrafos). Foque no "o quê" e "por quê", não no "c
 ## Regras de Negócio
 
 - **RN01**: [Regra] — [Justificativa]
-- **RN02**: [Regra] — [Justificativa]
 
 ## Validações
 
@@ -98,8 +85,7 @@ Descrição direta (2-4 parágrafos). Foque no "o quê" e "por quê", não no "c
 
 ## Integrações (se houver)
 
-- **Sistema X**: para [propósito]
-- Especificar formato da requisição/resposta de cada integração
+- **Sistema X**: para [propósito], com formato da requisição/resposta
 
 ## Critérios de Aceitação
 
@@ -110,37 +96,10 @@ Descrição direta (2-4 parágrafos). Foque no "o quê" e "por quê", não no "c
 ## Questões em Aberto (se houver)
 
 - ❓ **Q1**: [Questão que precisa de resposta antes de implementar]
-- ❓ **Q2**: [Questão]
 
 ## Referências (se houver)
 
 - [ADR ou documento relacionado]
 ```
 
-### Nomenclatura de Arquivo
-
-Padrão: `docs/issues/spec-[AAAA-MM-DD]-[identificador-kebab-case].md`
-
-Exemplos:
-
-- `spec-2026-09-07-agendamento-mensagens.md`
-- `spec-2026-09-12-relatorio-vendas.md`
-- `spec-2026-10-01-integracao-pagamentos.md`
-
-### Status Válidos
-
-| Status         | Significado                                          |
-| -------------- | ---------------------------------------------------- |
-| `Rascunho`     | Em elaboração                                        |
-| `Em Revisão`   | Aguardando aprovação de stakeholder                  |
-| `Aprovada`     | Pronto para criar issue e implementar (`/issue`)     |
-| `Issue criada` | Issue GitHub vinculada, desenvolvimento pode iniciar |
-
-### Princípios
-
-✅ Frases curtas (máximo 2 linhas por item)  
-✅ Voz ativa: "Sistema valida campo X" vs "O campo X deve ser validado"  
-✅ Exemplos concretos de valores, formatos e fluxos  
-✅ Numerar questões em aberto (**Q1**, **Q2**) para referência fácil  
-✅ Omitir seções vazias — sem integrações? não inclua a seção  
-✅ Critérios de aceite como checkboxes testáveis, não afirmações genéricas
+O `Status` anda `Rascunho` → `Em Revisão` → `Aprovada`; `Issue criada` é gravado pelo `/issue`, não aqui.

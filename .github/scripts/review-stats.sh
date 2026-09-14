@@ -1,14 +1,9 @@
 #!/usr/bin/env bash
 # review-stats.sh <relatório.md>
 #
-# Conta problemas por severidade num relatório gerado por /review (blocos
-# "#### Problema {i} — {SEVERIDADE}") e deriva o veredito. Valida que a soma
-# das quatro severidades bate com o total de blocos — aborta com erro se
-# algum problema não seguiu o formato esperado, em vez de silenciosamente
-# reportar uma contagem errada.
-#
-# Imprime CRITICAL_COUNT/HIGH_COUNT/MEDIUM_COUNT/LOW_COUNT/VEREDITO, uma
-# variável por linha (mesma convenção do status-snapshot.sh).
+# Conta os problemas de um relatório de /review por severidade e deriva o veredito.
+# Imprime CRITICAL_COUNT/HIGH_COUNT/MEDIUM_COUNT/LOW_COUNT/VEREDITO em KEY=value.
+# Aborta se algum bloco ficou sem severidade reconhecida, em vez de contar errado.
 set -euo pipefail
 
 REPORT="${1:-}"

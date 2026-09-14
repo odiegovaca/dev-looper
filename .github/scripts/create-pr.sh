@@ -2,18 +2,10 @@
 # create-pr.sh <patch|minor|major> <título>
 # Resumo do PR via stdin.
 #
-# Faz a parte 100% mecânica do passo 4 do /rc: push da branch atual, checagem
-# de PR já aberto (sem criar duplicado nem editar automaticamente — só
-# reporta), mapeamento tipo→prefixo de commit convencional e a chamada ao
-# `gh pr create`. Título e resumo continuam vindo de fora porque exigem
-# leitura dos commits — o script não infere nada, só monta e executa.
-#
-# Branch base, versão e número da issue não entram por argumento: saem dos
-# mesmos scripts que já os calcularam no passo 1. Recebê-los de novo era o
-# mesmo estado atravessando o contexto do agente entre um passo e outro.
-#
-# Termina imprimindo a confirmação já pronta para colar no chat (mesmo
-# padrão do review-finalize.sh) — usar a saída sem alterações.
+# Push da branch, checagem de PR já aberto, tipo→prefixo de commit convencional
+# e `gh pr create`. Título e resumo vêm de fora porque exigem leitura dos commits.
+# Branch base, versão e número da issue saem dos scripts que já os calcularam, não de argumento.
+# Imprime a confirmação pronta para o chat — usar a saída sem alterações.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -38,16 +30,14 @@ BODY_SUMMARY="$(cat)"
 BRANCHES="$("$SCRIPT_DIR/release-branches.sh")" || exit 1
 eval "$BRANCHES"
 NEW_VERSION="$("$SCRIPT_DIR/bump-version.sh" current)"
-# Sem issue vinculada a branch não há "Closes #N" — não é erro, é um /rc de
-# branch fora do padrão {tipo}/{N}-nome.
+# Sem issue vinculada não há "Closes #N" — não é erro, é branch fora do padrão.
 FEATURE_N="$("$SCRIPT_DIR/feature-number.sh" 2>/dev/null || true)"
 
 CURRENT_BRANCH="$(git branch --show-current)"
 git push origin "$CURRENT_BRANCH"
 
-# Só PR aberto conta. Sem o filtro de estado, o `gh pr view` de uma branch
-# reaproveitada devolve o PR já mergeado, e o script reportaria "já existe um PR
-# aberto" e sairia com 0 — o /rc mostraria sucesso sem PR nenhum criado.
+# Filtra por estado: sem isso, uma branch reaproveitada devolve o PR já mergeado
+# e o script sai com 0.
 EXISTING_PR="$(gh pr view "$CURRENT_BRANCH" --json url,state --jq 'select(.state == "OPEN") | .url' 2>/dev/null || true)"
 if [ -n "$EXISTING_PR" ]; then
   echo "⚠️ Já existe um PR aberto para esta branch: $EXISTING_PR"

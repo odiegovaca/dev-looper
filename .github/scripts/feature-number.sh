@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # feature-number.sh
 #
-# Extrai {N} da branch atual, no padrão {tipo}/{N}-nome-descritivo criado
-# pelo /code (ex: feature/42-checkout-pix → 42). Esse número é o
-# identificador comum entre spec, issue, review e fix-review — centralizado
-# aqui para /review e /fix-review não duplicarem o mesmo regex.
+# Extrai {N} da branch atual, no padrão {tipo}/{N}-nome-descritivo
+# (ex: feature/42-checkout-pix → 42) — o identificador comum entre spec,
+# issue e review. Falha com exit 1 se a branch não segue o padrão.
 set -euo pipefail
 
 BRANCH="$(git branch --show-current)"

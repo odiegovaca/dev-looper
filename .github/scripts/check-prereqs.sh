@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # check-prereqs.sh
 #
-# Confere o que o fluxo precisa antes do /setup configurar o projeto: `gh`
-# instalado e autenticado, de que dependem /issue, /rc e /release. Falha com
-# exit 1 e a correção na própria mensagem.
+# Confere o que o fluxo precisa antes do /setup: `gh` instalado e autenticado.
+# Falha com exit 1 e a correção na própria mensagem.
 set -euo pipefail
 
 if ! command -v gh >/dev/null 2>&1; then

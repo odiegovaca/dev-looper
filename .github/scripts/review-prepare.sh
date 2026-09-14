@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
-# review-prepare.sh <integration-branch>
+# review-prepare.sh [branch-de-integração]
 #
 # Resolve tudo que o /review precisa antes de analisar: arquivos alterados
-# (filtrados de lockfiles e relatórios de review anteriores), identificador
-# de feature, próximo {seq}, data e caminho do relatório. Falha com exit 1
-# e mensagem no stderr se não houver mudanças em relação à branch de
-# integração — nada para revisar, evita gastar análise à toa.
+# (sem lockfiles e reviews anteriores), {N} da feature, próximo {seq}, data e
+# caminho do relatório. Falha com exit 1 se não houver o que revisar.
 #
-# Imprime N/SEQ/DATA/REPORT (uma variável por linha), seguido de "DIFF:" e o
-# diff unificado de todos os arquivos alterados contra o merge-base, numa
-# chamada só — cada arquivo vem delimitado pelo próprio cabeçalho
-# "diff --git a/arquivo b/arquivo", dispensando uma lista de arquivos à parte.
+# Imprime N/SEQ/DATA/REPORT em KEY=value, seguido de "DIFF:" e o diff dos
+# arquivos alterados contra o merge-base (cada um delimitado pelo próprio "diff --git").
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Sem argumento, usa a branch de integração do projeto.
 INTEGRATION_BRANCH="${1:-}"
-[ -n "$INTEGRATION_BRANCH" ] || { echo "Uso: review-prepare.sh <integration-branch>" >&2; exit 1; }
+if [ -z "$INTEGRATION_BRANCH" ]; then
+  BRANCHES="$("$SCRIPT_DIR/release-branches.sh")" || exit 1
+  eval "$BRANCHES"
+fi
 
 if ! RAW_CHANGED_FILES="$("$SCRIPT_DIR/changed-files.sh" "$INTEGRATION_BRANCH")"; then
   echo "Falha ao obter arquivos alterados em relação a $INTEGRATION_BRANCH — rode 'git fetch origin $INTEGRATION_BRANCH' e, se a branch não existir no remoto, confira INTEGRATION_BRANCH em .github/scripts/release-branches.sh" >&2
@@ -32,8 +32,7 @@ fi
 
 N="$("$SCRIPT_DIR/feature-number.sh")"
 mkdir -p docs/reviews
-# Qual e o relatorio mais recente e pergunta do latest-review.sh — daqui sai so
-# o proximo {seq}. Repetir o ls aqui era a mesma ordenacao escrita duas vezes.
+# Daqui sai só o próximo {seq}; quem ordena os relatórios é o latest-review.sh.
 LAST_REPORT="$("$SCRIPT_DIR/latest-review.sh" 2>/dev/null || true)"
 LAST_SEQ="$(sed -E "s#.*review-${N}-([0-9]+)\.md#\1#" <<< "$LAST_REPORT")"
 SEQ=$(( ${LAST_SEQ:-0} + 1 ))

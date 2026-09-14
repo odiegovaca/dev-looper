@@ -2,21 +2,11 @@
 # release-finalize.sh
 # Resumo do PR via stdin.
 #
-# Faz a parte 100% mecânica do passo 3 do /release: checagem de que o
-# CHANGELOG está consolidado, commit das mudanças de versão/CHANGELOG (sem
-# falhar se não houver nada staged), push da branch atual, checagem de PR
-# já aberto (sem criar duplicado nem editar
-# automaticamente — só reporta, mesmo padrão do create-pr.sh) e a chamada
-# ao `gh pr create` com o checklist padrão de release.
-#
-# Sem argumentos: a branch de produção vem do release-branches.sh e a versão é
-# lida dos próprios arquivos de versão, que o release-prepare.sh acabou de
-# gravar. Recebê-las do prompt era estado atravessando o contexto do agente
-# entre o passo 1 e o passo 3 — e, no caso da versão, uma chance de o PR sair
-# nomeado com uma versão diferente da que está gravada nos arquivos.
-#
-# Termina imprimindo a confirmação já pronta para colar no chat (mesmo
-# padrão do create-pr.sh) — usar a saída sem alterações.
+# Confere o CHANGELOG consolidado, commita versão e CHANGELOG, faz push e abre o
+# PR de release com o checklist padrão. Sem argumentos: branch de produção e
+# versão saem do release-branches.sh e dos arquivos que o release-prepare.sh gravou,
+# para o PR não sair nomeado com uma versão diferente da gravada.
+# Imprime a confirmação pronta para o chat — usar a saída sem alterações.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -46,18 +36,12 @@ print_postmerge_hint() {
   echo "   Se preferir, é só me pedir depois do merge que eu executo por você."
 }
 
-# Contrato com o release-postmerge.sh, checado no último ponto antes do PR em
-# que ainda sai barato consertar. Ele monta o comentário de fechamento das
-# issues copiando a seção cujo header começa exatamente por
-# "## [$RELEASE_VERSION]" e, quando não acha, omite a lista em silêncio — a
-# issue fecharia só com "Entregue na vX.Y.Z.". Mesmo casamento por prefixo
-# usado lá, pra não divergirem. A segunda checagem é o outro lado: seção de RC
-# é provisória, e uma que sobrou — porque um /rc abriu seção nova em vez de
-# reescrever a única do ciclo — não some mais: vai para produção e fica lá
-# abaixo da seção boa, em toda release seguinte.
+# Contrato com o release-postmerge.sh, checado enquanto ainda sai barato: sem a seção
+# da versão ele fecha as issues sem a lista, e uma -rc.N que sobrou vai para produção.
 if [ -f CHANGELOG.md ]; then
   HOJE="$(date +%d/%m/%Y)"
   RC_RESTANTE="$(grep -n "^## \[[^]]*-rc\." CHANGELOG.md 2>/dev/null || true)"
+  # Casa por prefixo: o header da seção traz a data depois da versão.
   SECAO="$(awk -v hdr="## [$RELEASE_VERSION]" '
     index($0, hdr) == 1 { found=1; next }
     found && /^## / { exit }
@@ -89,9 +73,8 @@ git diff --cached --quiet || git commit -m "chore: release v$RELEASE_VERSION"
 CURRENT_BRANCH="$(git branch --show-current)"
 git push origin "$CURRENT_BRANCH"
 
-# Só PR aberto conta — ver a mesma checagem no create-pr.sh: sem o filtro de
-# estado, uma branch de release reaberta devolveria o PR já mergeado e o script
-# sairia com 0 dizendo "já existe um PR aberto", sem criar nada.
+# Filtra por estado: sem isso, uma branch reaproveitada devolve o PR já mergeado
+# e o script sai com 0.
 EXISTING_PR="$(gh pr view "$CURRENT_BRANCH" --json url,state --jq 'select(.state == "OPEN") | .url' 2>/dev/null || true)"
 if [ -n "$EXISTING_PR" ]; then
   echo "⚠️ Já existe um PR aberto para esta branch: $EXISTING_PR"

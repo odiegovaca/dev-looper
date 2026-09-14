@@ -1,34 +1,23 @@
 #!/usr/bin/env bash
-# fix-review-finalize.sh <relatório.md> [--applied <números>] [--dismissed "#N: motivo"]...
+# fix-review-finalize.sh [--applied <números>] [--dismissed "#N: motivo"]...
 #
-# Fecha uma rodada de /fix-review: registra no relatório o que foi aplicado e o
-# que foi dispensado, deriva o status pós-fix e imprime a confirmação pronta
-# para o chat — usar a saída sem alterações.
+# Fecha uma rodada de /fix-review no relatório mais recente da feature: registra o
+# que foi aplicado e o que foi dispensado, deriva o status pós-fix e imprime a
+# confirmação pronta para o chat — usar a saída sem alterações.
 #
-# O status não é argumento. Ele sai do cruzamento entre a severidade de cada
-# bloco "#### Problema" e os números acumulados no relatório: status declarado
-# pelo agente é o mesmo estado escrito em dois lugares, e é o lugar derivável
-# que sai de sincronia.
-#
-# Os números acumulam entre rodadas — corrigir os critical numa chamada e os
-# high na seguinte não apaga o registro da primeira.
+# O status não é argumento: sai do cruzamento entre a severidade de cada bloco e
+# os números acumulados no relatório, que acumulam entre rodadas.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TAB="$(printf '\t')"
 
 usage() {
-  echo 'Uso: fix-review-finalize.sh <relatório.md> [--applied "#1, #3"] [--dismissed "#4: motivo"]...' >&2
+  echo 'Uso: fix-review-finalize.sh [--applied "#1, #3"] [--dismissed "#4: motivo"]...' >&2
   exit 1
 }
 
-REPORT="${1:-}"
-[ -n "$REPORT" ] || usage
-if [ ! -f "$REPORT" ]; then
-  echo "Relatório não encontrado: $REPORT — o caminho sai do .github/scripts/latest-review.sh (passo 1); rode /review se a feature ainda não tem relatório" >&2
-  exit 1
-fi
-shift
+REPORT="$("$SCRIPT_DIR/latest-review.sh")"
 
 APPLIED_RAW=""
 DISMISSED_RAW=""
@@ -52,8 +41,7 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-# Número, severidade, Local e flag de protegido — um por problema. O formato do
-# bloco é interpretado só lá, e a guarda de consistência do relatório vem junto.
+# Número, severidade, Local e flag de protegido — um por problema.
 PROBLEMS="$("$SCRIPT_DIR/review-problems.sh" "$REPORT")"
 if [ -z "$PROBLEMS" ]; then
   echo "Nenhum bloco '#### Problema' em $REPORT — nada a finalizar. Se o review apontou problemas, rode /review de novo: é o passo 2 dele que escreve os blocos." >&2
@@ -70,6 +58,7 @@ sorted() {
   tr -s ' ,\n' '\n\n\n' <<< "${1:-}" | sed 's/^#//' | grep -E '^[0-9]+$' | sort -n -u || true
 }
 
+# Testa pertinência à lista; os espaços em volta impedem que 3 case com 30.
 contains() {
   case " $(tr '\n' ' ' <<< "$2") " in
     *" $1 "*) return 0 ;;
@@ -110,9 +99,7 @@ while IFS= read -r line; do
 "
 done <<< "$DISMISSED_RAW"
 
-# Arquivo protegido é consulta, não juízo: quem mora num deles já vem marcado
-# pelo review-problems.sh. Pedir ao agente que declarasse seria pedir juízo
-# para o que se lê.
+# Arquivo protegido já vem marcado pelo review-problems.sh.
 PROTEGIDOS="$(awk -F"$TAB" '$4 != "" { print $1 }' <<< "$PROBLEMS" || true)"
 while IFS="$TAB" read -r num sev local protegido; do
   [ -n "$num" ] && [ -n "$protegido" ] || continue
@@ -130,9 +117,8 @@ while IFS= read -r line; do
   fi
 done <<< "$PREV_DISMISSED"
 
-# Protegido vence "aplicado": se o agente diz ter corrigido um problema em
-# arquivo protegido, o que houve foi uma edição que não devia existir — some da
-# lista de aplicados e sai como aviso, em vez de contar como bloqueante resolvido.
+# Protegido vence "aplicado": corrigir um problema ali foi uma edição que não devia
+# existir, então sai como aviso em vez de contar como bloqueante resolvido.
 VIOLACOES=""
 for n in $(sorted "$PROTEGIDOS"); do
   if contains "$n" "$APPLIED"; then
@@ -141,9 +127,8 @@ for n in $(sorted "$PROTEGIDOS"); do
   fi
 done
 
-# Número que não existe no relatório não entra na derivação — viraria um
-# "bloqueante resolvido" inventado. Sai como aviso nas pendências, sem
-# interromper o resto (mesma tolerância que o passo 2 do prompt promete).
+# Número fora do relatório viraria um "bloqueante resolvido" inventado: sai como
+# aviso nas pendências, sem interromper o resto.
 UNKNOWN=""
 KNOWN_APPLIED=""
 for n in $(sorted "$APPLIED"); do
@@ -194,9 +179,8 @@ for n in $(sorted "$APPLIED"); do
   fi
 done
 
-# Um bloqueante corrigido torna o relatório obsoleto como retrato do código, e
-# isso vale até o próximo /review — por isso "revisar" olha o acumulado, não só
-# esta rodada: senão corrigir um medium depois de um high apagaria a reanálise.
+# "revisar" olha o acumulado, não só esta rodada: um bloqueante corrigido deixa o
+# relatório obsoleto até o próximo /review, e corrigir um medium depois não desfaz isso.
 if [ -n "$PENDING_BLOCKERS" ]; then
   STATUS="bloqueado"
 elif [ -n "$APPLIED_BLOCKERS" ]; then
@@ -265,16 +249,4 @@ echo
 echo "   Checkpoint sugerido: git commit -m \"fix: aplica correções do review${N:+ #$N}\""
 echo
 echo "   Próximo passo:"
-case "$STATUS" in
-  bloqueado)
-    # Números crus porque é o comando que o usuário vai digitar (o seletor
-    # aceita as duas formas — o fix-review-select.sh tira o "#").
-    echo "   - /fix-review $(sorted "$PENDING_BLOCKERS" | tr '\n' ' ' | sed 's/ $//') — bloqueantes ainda pendentes."
-    ;;
-  revisar)
-    echo "   - /review — bloqueante corrigido, revalidar antes de seguir para /rc."
-    ;;
-  liberado)
-    echo "   - /rc — nenhum bloqueante pendente."
-    ;;
-esac
+echo "   - $("$SCRIPT_DIR/next-step.sh" "" "$STATUS" "$(sorted "$PENDING_BLOCKERS" | tr '\n' ' ' | sed 's/ $//')")"

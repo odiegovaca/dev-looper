@@ -1,16 +1,12 @@
 #!/usr/bin/env bash
 # list-lesson-targets.sh
 #
-# Lista os destinos elegíveis para /lesson: cada .github/prompts/*.prompt.md
-# com sua description (frontmatter) como sinal de classificação, mais
-# copilot-instructions.md e README.md (destinos fixos, sem frontmatter).
-# Reflete o estado real do .github/ na execução — nenhum prompt novo,
-# removido ou renomeado passa batido, como passaria com uma lista mantida
-# manualmente.
+# Lista os destinos elegíveis para /lesson: cada .github/prompts/*.prompt.md com
+# sua description, mais copilot-instructions.md e README.md (destinos fixos).
+# Derivado do .github/ na execução, para prompt novo ou renomeado não passar batido.
 set -euo pipefail
 
-# O `|| true` evita que um prompt sem `description:` no frontmatter derrube a
-# lista inteira: sob `set -euo pipefail` o grep sem match mata a atribuição.
+# `|| true` para prompt sem `description:` não derrubar a lista.
 for f in .github/prompts/*.prompt.md; do
   DESC="$(grep -m1 '^description:' "$f" | sed -E 's/^description:\s*//' || true)"
   echo "$f: ${DESC:-[sem description no frontmatter]}"

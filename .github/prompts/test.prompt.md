@@ -9,49 +9,39 @@ argument-hint: "Meta de cobertura em % (opcional, padrão: a meta do projeto)"
 
 Meta de **statements**: `.github/scripts/coverage.sh --target`, ou o valor passado em `$ARGUMENTS`.
 
-**Arquivos Protegidos** (ver `copilot-instructions.md`): não editar `.github/prompts/*.md` nem `copilot-instructions.md`.
-
 ## Processo
 
-### 1 — Executar
+### 1 — Executar e Corrigir
 
 ```bash
 .github/scripts/validate.sh test
 ```
 
-### 2 — Corrigir
+Corrigir as falhas identificadas antes de seguir.
 
-Falhas identificadas (máx 3 iterações). Se persistir após o limite, parar e reportar ao usuário — não prosseguir.
-
-### 3 — Priorizar
-
-Cruzar os arquivos da branch com a saída de `.github/scripts/coverage.sh --priority`, atacando na ordem em que ela vem:
+### 2 — Priorizar
 
 ```bash
-eval "$(.github/scripts/release-branches.sh)"
-.github/scripts/changed-files.sh "$INTEGRATION_BRANCH"
 .github/scripts/coverage.sh --priority
 ```
 
-Montar `manage_todo_list` com o resultado antes de completar (Passo 4).
+`FASE1` traz os arquivos da branch, `FASE2` o resto do projeto, os dois já na ordem de ataque. Montar `manage_todo_list` com a `FASE1` antes de escrever.
 
-### 4 — Completar
+### 3 — Completar
 
-Escrever testes em até 3 ciclos de **escrever → `.github/scripts/validate.sh test` → `coverage.sh` → `coverage.sh --priority`**. O `validate.sh test` de cada ciclo regera o relatório e confirma que os testes novos passam; o `coverage.sh` (total) logo em seguida diz se a meta já foi atingida — se sim, parar o loop e ir para o Passo 5; se não, `coverage.sh --priority` recalcula o próximo gap a cobrir. Se um teste novo falhar, corrigir antes de seguir para o próximo gap.
+Escrever testes em até 3 ciclos de **escrever → `validate.sh test` → `coverage.sh` → `coverage.sh --priority`**, esgotando a `FASE1` antes de tocar na `FASE2`. Parar assim que a meta for atingida.
 
-Se a meta não for atingida após os 3 ciclos, parar mesmo assim e seguir para o Passo 5 — o `%` do último ciclo é o que vai para o relatório final, marcado como meta não atingida.
+Se a meta não sair em 3 ciclos, seguir para o passo 4 mesmo assim e reportar como não atingida.
 
-- **Fase 1**: gaps nos arquivos da branch, na ordem do `coverage.sh --priority` — casos de borda, branches não cobertas. Só avançar para a Fase 2 depois de esgotar os gaps aqui
-- **Fase 2**: se a meta ainda não foi atingida, até 10 arquivos do restante do projeto, na mesma ordem (recalculada sobre o restante)
-- Ignorar código gerado, migrations e arquivos de configuração — não contam para a meta
+Ignorar código gerado, migrations e arquivos de configuração — não contam para a meta.
 
-### 5 — Validar
+### 4 — Validar
 
 ```bash
 .github/scripts/validate.sh lint build
 ```
 
-### 6 — Confirmar
+### 5 — Confirmar
 
 ```markdown
 ## Cobertura de Testes
@@ -65,9 +55,9 @@ Se a meta não for atingida após os 3 ciclos, parar mesmo assim e seguir para o
 
 - Não reescrever testes existentes que já passam — apenas complementar
 - Nunca alterar código de produção para facilitar testes — adaptar os testes
-- Consultar `copilot-instructions.md` (seção Testing Conventions) para estrutura padrão dos testes, mocks e localização dos arquivos
+- Estrutura, mocks e localização seguem a seção Testing Conventions de `copilot-instructions.md`
 
 ## Próximos Passos
 
-- ✅ **Meta atingida**: `git commit -m "test: completa cobertura"` como checkpoint, depois `/review` para revisão de qualidade antes do PR
-- ⚠️ **Meta não atingida**: Informar lacunas e arquivos prioritários para cobertura manual
+- ✅ **Meta atingida**: `git commit -m "test: completa cobertura"` como checkpoint, depois `/review`
+- ⚠️ **Meta não atingida**: informar lacunas e arquivos prioritários para cobertura manual

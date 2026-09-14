@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
 # install.sh <caminho-do-projeto> [--force]
 #
-# Instala os arquivos do dev-looper (.github/) num projeto de destino sem
-# sobrescrever customizações locais: por arquivo, se o destino já existe e
-# difere do que está sendo instalado, pula e reporta. Só sobrescreve com
-# --force, que devolve os scripts configurados aos placeholders [DEFINIR] e
-# obriga a rodar /setup de novo.
+# Instala o .github/ do dev-looper num projeto: arquivo que já existe e difere é
+# pulado e reportado. --force sobrescreve, devolvendo os scripts aos [DEFINIR].
 set -euo pipefail
 
 DEST=""
@@ -22,8 +19,7 @@ if [ -z "$DEST" ]; then
   exit 1
 fi
 
-# Sem esta checagem, um caminho com typo virava uma árvore .github/ nova num
-# diretório vazio e o script terminava dizendo "Instalados: N".
+# Destino tem de existir: um typo criaria uma árvore .github/ nova e o script diria "Instalados: N".
 if [ ! -d "$DEST" ]; then
   echo "Destino não encontrado: $DEST — confira o caminho (ou crie o diretório do projeto) antes de instalar" >&2
   exit 1
@@ -55,17 +51,14 @@ while IFS= read -r -d '' file; do
   rel="${file#"$SRC"/}"
   dest_file="$DEST_GITHUB/$rel"
 
-  # O /setup gera o copilot-instructions.md a partir do template e apaga o
-  # template. Sem esta guarda, o destino "não tem" o arquivo e o install.sh o
-  # recria, devolvendo ao projeto uma semente que ele já consumiu.
+  # O /setup consome o template e o apaga: sem esta guarda, o install.sh devolveria
+  # ao projeto uma semente que ele já usou.
   if [ "$rel" = "copilot-instructions.template.md" ] && [ -f "$DEST_GITHUB/copilot-instructions.md" ]; then
     continue
   fi
 
-  # O guia dos comandos carrega a versão de origem da instalação. A
-  # substituição acontece antes da comparação, e não depois da cópia, para o
-  # arquivo instalado ser idêntico ao que este script produziria de novo —
-  # senão toda reexecução o apontaria como divergente.
+  # A versão entra antes da comparação, não depois da cópia, senão toda reexecução
+  # apontaria o arquivo instalado como divergente.
   src_file="$file"
   if [ "$rel" = "prompts/README.md" ]; then
     sed "s|__DEV_LOOPER_VERSION__|${VERSION:-desconhecida}|" "$file" > "$RENDERED"
@@ -90,9 +83,8 @@ while IFS= read -r -d '' file; do
   fi
 done < <(find "$SRC" -type f -print0)
 
-# O `cp` propaga o modo da origem, e no Windows (core.filemode=false) todo
-# script nasce 100644. Os prompts chamam os scripts direto, sem `bash`, e um
-# script chama o outro igual — sem este chmod a chamada morre em Linux/macOS.
+# Prompts e scripts se chamam direto, sem `bash`: sem o bit de execução a chamada
+# morre em Linux/macOS, e o `cp` traz 100644 de um Windows com core.filemode=false.
 find "$DEST_GITHUB" -type f -name '*.sh' -exec chmod +x {} +
 
 echo "Instalados/atualizados: ${#COPIED[@]}"
@@ -113,9 +105,8 @@ else
   echo "Versão de origem: desconhecida (a origem não é um clone git com tags)"
 fi
 
-# O chmod acima vale para a arvore, nao para o que sera commitado: com
-# core.filemode=false o git grava 100644 apesar dele. Corrigir exigiria mexer no
-# indice do destino, que pode ter trabalho ja staged — entao so se avisa.
+# O chmod acima não alcança o que será commitado, e consertar exigiria mexer no
+# índice do destino, que pode ter trabalho staged — então só avisa.
 if [ "$(git -C "$DEST" config --get core.filemode 2>/dev/null || true)" = "false" ]; then
   echo ""
   echo "Aviso: este repositório está com core.filemode=false — o bit de execução"

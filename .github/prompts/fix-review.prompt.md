@@ -14,8 +14,7 @@ argument-hint: "Números e/ou severidades, combináveis, ou 'todos' (ex: /fix-re
 Sem argumento, perguntar ao usuário o que corrigir antes de seguir.
 
 ```bash
-REPORT=$(.github/scripts/latest-review.sh)
-.github/scripts/fix-review-select.sh "$REPORT" $ARGUMENTS
+.github/scripts/fix-review-select.sh $ARGUMENTS
 ```
 
 Com mais de um `SELECIONADOS`, montar `manage_todo_list` com um item por problema.
@@ -36,19 +35,17 @@ Apresentar os contestados de uma vez, cada um com o que o relatório propôs, po
 .github/scripts/validate.sh lint build test
 ```
 
-Se falhar por causa de uma correção aplicada, corrigir antes de prosseguir (máx 3 iterações); se persistir, parar e reportar ao usuário em vez de deixar a falha para o `/test`.
+Corrigir o que falhar por causa de uma correção aplicada, em vez de deixar a falha para o `/test`.
 
 ### 5 — Confirmar
 
 ```bash
-.github/scripts/fix-review-finalize.sh "$REPORT" \
+.github/scripts/fix-review-finalize.sh \
   --applied "#1, #3" \
   --dismissed "#4: o usuário concordou que não é problema"
 ```
 
-`--applied`: corrigidos, inclusive por alternativa aceita no passo 3. `--dismissed`: nada a corrigir, com a decisão do usuário como motivo, uma flag por problema.
-
-Mostrar no chat, sem alterações, a saída do script.
+Um `--dismissed` por problema, com a decisão do usuário como motivo. Alternativa aceita no passo 3 conta como aplicada.
 
 ### 6 — Listar Lições para `/lesson`
 

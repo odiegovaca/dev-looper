@@ -1,20 +1,15 @@
 #!/usr/bin/env bash
 # validate.sh <ação> [ação...]
 #
-# Executa o(s) comando(s) de validação do stack para as ações pedidas, na
-# ordem informada, parando na primeira que falhar (herda o set -e abaixo).
-# Corpo de cada função é preenchido por /setup com os comandos reais de
-# Development Commands (mesma fonte que hoje vai para copilot-instructions.md).
-# Usado por /code, /test, /rc e /fix-review — todos rodam test/lint/build em
-# algum ponto do fluxo, alguns combinando mais de uma ação numa chamada só
-# (ex: `validate.sh lint build`) para não precisar de uma linha por ação.
+# Roda os comandos de teste/lint/build do stack, na ordem pedida, parando na
+# primeira falha. Corpo de cada função preenchido por /setup.
+#
+# Falha três vezes seguidas no mesmo erro é sinal de parar e reportar, não de
+# tentar de novo — vale para todo comando que chama este script.
 set -euo pipefail
 
-# Contrato com o coverage.sh: este comando precisa GERAR o relatorio apontado em
-# COVERAGE_REPORT — o coverage.sh so le o que ja esta no disco. Sem isso nada
-# falha: o relatorio congela e o /test prioriza gaps ja cobertos e declara meta
-# atingida em cima de numero velho. Onde a cobertura sai de uma fase separada
-# (ex: JaCoCo no `verify`), e essa fase que vai aqui, nao o `test` puro.
+# Contrato com o coverage.sh: precisa GERAR o relatório de COVERAGE_REPORT — sem isso
+# nada falha, a cobertura só congela (se ela sai de outra fase, é essa fase que vai aqui).
 run_test() {
   # [DEFINIR: comando de teste do projeto, gerando o relatorio de COVERAGE_REPORT]
   echo "run_test não configurado — rode /setup" >&2

@@ -14,11 +14,8 @@ argument-hint: "Branch de integração para comparar, sem prefixo origin/ (opcio
 ### 1 — Preparação
 
 ```bash
-eval "$(.github/scripts/release-branches.sh)"
-.github/scripts/review-prepare.sh "$INTEGRATION_BRANCH"
+.github/scripts/review-prepare.sh $ARGUMENTS
 ```
-
-Se `$ARGUMENTS` trouxer uma branch, use-a no lugar de `$INTEGRATION_BRANCH`.
 
 ### 2 — Analisar Cada Arquivo
 
@@ -61,7 +58,3 @@ Para cada arquivo em `$DIFF`, escrever em `$REPORT` um bloco por achado (templat
 ```bash
 .github/scripts/review-finalize.sh "$REPORT" "$DATA"
 ```
-
-### 4 — Confirmar
-
-Mostrar no chat, sem alterações, a saída de `review-finalize.sh` do passo anterior.

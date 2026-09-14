@@ -1,38 +1,32 @@
 #!/usr/bin/env bash
-# coverage.sh [--priority|--target] — imprime a cobertura de statements do
-# relatório já gerado (sem rodar os testes de novo). Falha nomeando o motivo
-# quando não há número para dar: ver cobertura_indisponivel() abaixo.
+# coverage.sh [--priority|--target] — imprime a cobertura de statements do relatório
+# já gerado (sem rodar os testes). --priority devolve onde testar, em FASE1 (arquivos
+# da branch) e FASE2 (o resto). Falha nomeando o motivo quando não há número para dar.
 set -euo pipefail
 
-# Caminho do relatorio lido pelas duas funcoes abaixo — preenchido por /setup.
-# So alimenta warn_if_stale(); vazio, o aviso nao sai e o resto funciona igual.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Relatório lido pelas duas funções abaixo; vazio, só desliga warn_if_stale().
 COVERAGE_REPORT=""  # [DEFINIR: caminho do relatorio que os testes geram]
 
-# Meta de statements do projeto, em %. Dono unico do numero: o /test compara
-# contra ele e o /status o exibe, em vez de cada um carregar seu 80 embutido.
-COVERAGE_TARGET="80"  # [DEFINIR pelo /setup: meta do projeto, so o numero]
+# Meta de statements do projeto, em % — dono único do número.
+COVERAGE_TARGET=""  # [DEFINIR: meta de statements do projeto, so o numero, sem o %]
 
-# Consumido pelo /status e pela checagem de meta do /test.
 read_coverage() {
   # [DEFINIR: comando que le COVERAGE_REPORT e imprime uma unica linha — a
   # cobertura total de statements em %, so o numero, sem o sinal de porcento]
   return 1
 }
 
-# Insumo do --priority via rank_priority() abaixo, que o /test usa para escolher
-# onde escrever teste sem depender de cálculo manual.
+# Insumo do --priority, via rank_priority() abaixo.
 read_coverage_by_file() {
-  # [DEFINIR: comando que le COVERAGE_REPORT e imprime uma linha por arquivo,
-  # sem cabecalho e sem a linha de total: caminho,pct,total_statements — pct so
-  # o numero, e 3a coluna vazia se o stack nao expuser total por arquivo]
+  # [DEFINIR: comando que le COVERAGE_REPORT e imprime "caminho,pct,total_statements"
+  # por arquivo, sem cabecalho nem total; pct so o numero, 3a coluna vazia se nao houver]
   return 1
 }
 
-# Avisa quando o relatorio e mais velho que o ultimo commit — mede codigo que ja
-# mudou. E o unico detector do comando de teste sem cobertura (ver run_test no
-# validate.sh) depois da instalacao. Compara com o commit, e nao com o arquivo
-# mais novo da arvore, para nao gritar a cada edicao. Aviso em stderr, nunca
-# falha e nunca segura o numero.
+# Avisa em stderr quando o relatório é mais velho que o último commit — mede código
+# que já mudou. Compara com o commit, não com a árvore, para não gritar a cada edição.
 warn_if_stale() {
   [ -n "$COVERAGE_REPORT" ] && [ -f "$COVERAGE_REPORT" ] || return 0
 
@@ -47,14 +41,8 @@ warn_if_stale() {
   fi
 }
 
-# Lê "arquivo,pct,total_statements" do stdin, imprime "arquivo,rank_sum"
-# ordenado por prioridade (menor rank_sum primeiro).
-# A soma dos dois ranks abaixo combina pct baixo E alto volume de statements
-# não cobertos, em vez do pior pct isolado — que favoreceria arquivo pequeno e
-# trivial sobre arquivo grande com gap real. É por isso que o /test segue esta
-# ordem em vez de estimar onde testar: o ganho no % global sai daqui calculado.
-# Genérica por construção — o /setup não preenche nada aqui; sem a 3ª coluna
-# cai para ordenar só por pct.
+# Lê "arquivo,pct,total_statements", imprime "arquivo,rank_sum" por prioridade — a soma
+# dos dois ranks combina pct baixo E volume não coberto, que o pior pct isolado não faz.
 rank_priority() {
   local tmp
   tmp="$(mktemp -d)"
@@ -86,10 +74,37 @@ rank_priority() {
     | sort -t, -k2,2n
 }
 
-# Sem numero para dar, o motivo sai nomeado: um exit 1 calado aqui vira "/test"
-# eterno no /status (a regra de cobertura indisponivel vem antes de review e rc
-# na cascata de NEXT_STEP), e "relatorio velho" nao se conserta como "/setup
-# nunca configurou isto".
+# Separa o ranking em Fase 1 (arquivos da branch) e Fase 2 (o resto do projeto,
+# até 10). Sem conseguir a lista da branch, tudo sai como Fase 1, na ordem do rank.
+fases() {
+  local alterados fase1 fase2
+  alterados="$(
+    BRANCHES="$("$SCRIPT_DIR/release-branches.sh" 2>/dev/null)" \
+      && eval "$BRANCHES" \
+      && "$SCRIPT_DIR/changed-files.sh" "$INTEGRATION_BRANCH" 2>/dev/null
+  )" || alterados=""
+
+  if [ -z "$alterados" ]; then
+    echo "Aviso: não consegui listar os arquivos da branch — o ranking abaixo é do projeto inteiro." >&2
+    echo "FASE1:"
+    cat
+    echo "FASE2:"
+    return 0
+  fi
+
+  local ranked
+  ranked="$(cat)"
+  fase1="$(grep -F -f <(printf '%s\n' "$alterados") <<< "$ranked" || true)"
+  fase2="$(grep -F -v -f <(printf '%s\n' "$alterados") <<< "$ranked" | head -10 || true)"
+
+  echo "FASE1:"
+  [ -z "$fase1" ] || printf '%s\n' "$fase1"
+  echo "FASE2:"
+  [ -z "$fase2" ] || printf '%s\n' "$fase2"
+}
+
+# Sem número para dar, o motivo sai nomeado: "relatório velho" não se conserta
+# do mesmo jeito que "/setup nunca configurou isto".
 cobertura_indisponivel() {
   if [ -z "$COVERAGE_REPORT" ]; then
     echo "coverage.sh não configurado (COVERAGE_REPORT vazio e read_coverage sem corpo) — rode /setup" >&2
@@ -102,8 +117,11 @@ cobertura_indisponivel() {
 }
 
 case "${1:-}" in
-  --priority) warn_if_stale; read_coverage_by_file | rank_priority || cobertura_indisponivel ;;
-  --target) echo "$COVERAGE_TARGET" ;;
+  --priority) warn_if_stale; read_coverage_by_file | rank_priority | fases || cobertura_indisponivel ;;
+  --target)
+    [ -n "$COVERAGE_TARGET" ] || { echo "COVERAGE_TARGET não configurado em coverage.sh — rode /setup" >&2; exit 1; }
+    echo "$COVERAGE_TARGET"
+    ;;
   "") warn_if_stale; read_coverage || cobertura_indisponivel ;;
   *) echo "Uso: coverage.sh [--priority|--target]" >&2; exit 1 ;;
 esac

@@ -23,7 +23,7 @@ Instrução escrita é o último recurso. Nesta ordem:
 - **Dá para o erro se denunciar sozinho?**
 - **É regra permanente, ou fato de agora?** O que descreve o estado presente é tarefa.
 
-Nada interrompe: a lição que sai aqui é anotada com o que a substitui — qual mudança e onde — e reaparece no passo 5.
+A lição que sai aqui é anotada com o que a substitui — qual mudança e onde.
 
 ### 3 — Classificar o Destino
 
