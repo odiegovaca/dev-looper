@@ -7,7 +7,8 @@ set -euo pipefail
 
 # Arquivos que carregam a versão do projeto — preenchido por /setup.
 VERSION_FILES=(
-  # [DEFINIR: um caminho por linha, entre aspas — todo arquivo do projeto que carrega a versao]
+  # [DEFINIR: um caminho por linha, entre aspas — todo arquivo que carrega a versao do
+  # projeto, incluido o lockfile quando ele a repete]
 )
 
 ACTION="${1:-}"
@@ -49,13 +50,28 @@ read_version() {
   esac
 }
 
-# O `0,/re/s//` troca só a primeira ocorrência: a versão do próprio projeto vem
-# antes das dependências.
+# Como o projeto grava a versão, antes do write_version() porque acertar todos os
+# lugares em que ela aparece é conhecimento do projeto, não do dev-looper.
+SET_VERSION_CMD="[DEFINIR: comando que grava a versao do projeto, {} no lugar do numero, ou - se nao houver ferramenta propria]"
+
+# Fallback de quem não tem ferramenta própria. O `0,/re/s//` troca só a primeira
+# ocorrência: a versão do projeto vem antes das dependências.
 write_version() {
   local file="$1" new="$2"
   case "$file" in
     *.json)
-      sed -i -E "0,/\"version\"[[:space:]]*:[[:space:]]*\"[^\"]+\"/s//\"version\": \"$new\"/" "$file"
+      # Um lockfile repete a versão do projeto no pacote raiz de `packages`, a chave `""`:
+      # trocar só a primeira deixaria o `npm ci` recusando o lock.
+      awk -v novo="$new" '
+        function troca() { sub(/"version"[[:space:]]*:[[:space:]]*"[^"]*"/, "\"version\": \"" novo "\"") }
+        !raiz && /"version"[[:space:]]*:/          { troca(); raiz = 1; print; next }
+        /^[[:space:]]*"":[[:space:]]*\{/           { pacote_raiz = 1; print; next }
+        pacote_raiz && /"version"[[:space:]]*:/    { troca(); pacote_raiz = 0; print; next }
+        # Qualquer outra chave de objeto encerra o pacote raiz: daqui para baixo toda
+        # versão é de dependência.
+        /^[[:space:]]*"[^"]+"[[:space:]]*:[[:space:]]*\{/ { pacote_raiz = 0 }
+        { print }
+      ' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
       ;;
     *.xml)
       sed -i -E "0,/<version>[^<]+<\/version>/s//<version>$new<\/version>/" "$file"
@@ -132,8 +148,34 @@ case "$ACTION" in
     ;;
 esac
 
+# HEAD e tags: a ferramenta do projeto não pode mexer em nenhum dos dois.
+git_estado() { git rev-parse HEAD 2>/dev/null || true; git tag 2>/dev/null || true; }
+
+if [ "$SET_VERSION_CMD" = "-" ] || [[ "$SET_VERSION_CMD" == "[DEFINIR"* ]]; then
+  for f in "${VERSION_FILES[@]}"; do
+    write_version "$f" "$NEW"
+  done
+else
+  # Sem `if` em volta: o `set -e` mata o script se a ferramenta falhar, em vez de a
+  # falha dela virar edição na mão pelo write_version().
+  ANTES="$(git_estado)"
+  # `>&2` porque o stdout daqui é só a versão, e toda ferramenta anuncia o que fez.
+  eval "${SET_VERSION_CMD//\{\}/$NEW}" >&2
+  if [ "$(git_estado)" != "$ANTES" ]; then
+    echo "O comando de SET_VERSION_CMD commitou ou criou tag, e não pode: quem commita é o /rc, depois." >&2
+    echo "   Ajuste o comando em bump-version.sh, preenchido pelo /setup." >&2
+    exit 1
+  fi
+fi
+
+# Lê de volta porque uma ferramenta chamada com a flag errada não falha, só não grava.
 for f in "${VERSION_FILES[@]}"; do
-  write_version "$f" "$NEW"
+  GRAVADA="$(read_version "$f" || true)"
+  [ "$GRAVADA" = "$NEW" ] && continue
+  echo "Versão não gravada em $f: continua em '${GRAVADA:-vazio}', esperado '$NEW'." >&2
+  echo "   Confira SET_VERSION_CMD e VERSION_FILES em bump-version.sh, preenchidos pelo /setup." >&2
+  echo "   A lista pode ter ficado meio gravada — confira os outros arquivos antes de rodar de novo." >&2
+  exit 1
 done
 
 echo "$NEW"

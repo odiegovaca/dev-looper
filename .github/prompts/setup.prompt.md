@@ -19,7 +19,7 @@ Se falhar, repassar a mensagem e parar.
 
 ### 2 — Detectar Stack
 
-Explorar o repositório e identificar: linguagem/runtime, framework, banco de dados (driver/ORM), CI/CD, comandos de instalação/teste/lint/build, estrutura real do código-fonte, variáveis de ambiente esperadas, contexto de negócio (via `README.md`, se existir), histórico de mudanças e versão atual (via `CHANGELOG.md`, se existir) e padrões reais de código (a partir de um arquivo representativo, ex: controller ou service principal). Usar julgamento sobre quais arquivos abrir e como buscar em cada caso.
+Explorar o repositório e identificar: linguagem/runtime, framework, banco de dados (driver/ORM), CI/CD, comandos de instalação/teste/lint/build, comando que grava a versão (quando o ecossistema tiver um), estrutura real do código-fonte, variáveis de ambiente esperadas, contexto de negócio (via `README.md`, se existir), histórico de mudanças e versão atual (via `CHANGELOG.md`, se existir) e padrões reais de código (a partir de um arquivo representativo, ex: controller ou service principal). Usar julgamento sobre quais arquivos abrir e como buscar em cada caso.
 
 ### 3 — Perguntas Pontuais
 
