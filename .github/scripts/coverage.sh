@@ -26,18 +26,26 @@ read_coverage_by_file() {
   return 1
 }
 
-# Avisa em stderr quando o relatório é mais velho que o último commit — mede código
-# que já mudou. Compara com o commit, não com a árvore, para não gritar a cada edição.
+# Avisa em stderr quando o relatório é mais velho que o código que ele mede.
 warn_if_stale() {
   [ -n "$COVERAGE_REPORT" ] && [ -f "$COVERAGE_REPORT" ] || return 0
 
-  local head_ts report_ts
-  head_ts="$(git log -1 --format=%ct 2>/dev/null)" || return 0
-  report_ts="$(stat -c %Y "$COVERAGE_REPORT" 2>/dev/null || stat -f %m "$COVERAGE_REPORT" 2>/dev/null)" || return 0
-  [ -n "$head_ts" ] && [ -n "$report_ts" ] || return 0
+  # Os arquivos medidos são a definição de "código" que o próprio projeto deu ao /setup;
+  # sem ela, cai para tudo que o git rastreia, que erra para mais, nunca para menos.
+  local medidos
+  medidos="$(read_coverage_by_file 2>/dev/null | cut -d, -f1)" || medidos=""
+  [ -n "$medidos" ] || medidos="$(git ls-files 2>/dev/null || true)"
+  [ -n "$medidos" ] || return 0
 
-  if [ "$report_ts" -lt "$head_ts" ]; then
-    echo "Aviso: $COVERAGE_REPORT é mais antigo que o último commit — a cobertura abaixo pode não refletir o código atual." >&2
+  local f desatualizado=""
+  while IFS= read -r f; do
+    [ -n "$f" ] && [ -f "$f" ] && [ "$f" -nt "$COVERAGE_REPORT" ] || continue
+    desatualizado="$f"
+    break
+  done <<< "$medidos"
+
+  if [ -n "$desatualizado" ]; then
+    echo "Aviso: $COVERAGE_REPORT é mais antigo que $desatualizado — a cobertura abaixo pode não refletir o código atual." >&2
     echo "       Se continuar assim depois de um \`validate.sh test\`, o comando de teste não está gerando cobertura." >&2
   fi
 }
@@ -99,14 +107,22 @@ fases() {
   fase2="$(grep -F -v -f <(printf '%s\n' "$alterados") <<< "$ranked" | head -10 || true)"
 
   # FASE1 vazia por formato de caminho incompatível passa despercebida — o --priority
-  # segue plausível, só que todo em FASE2. O teste do arquivo separa isso de uma branch só de doc.
+  # segue plausível, só que todo em FASE2. Os testes abaixo separam isso de uma branch só de doc.
   if [ -z "$fase1" ] && [ -n "$ranked" ]; then
     local amostra
     amostra="$(head -1 <<< "$ranked" | cut -d, -f1)"
-    if [ ! -e "$amostra" ]; then
-      echo "Aviso: nenhum arquivo da branch casou com o relatório de cobertura, e o primeiro caminho dele ('$amostra') não existe a partir da raiz do repositório." >&2
-      echo "       Confira read_coverage_by_file em coverage.sh: o caminho tem de ser relativo à raiz do repositório e com \"/\"." >&2
-    fi
+    case "$amostra" in
+      *\\*)
+        echo "Aviso: o relatório de cobertura traz caminho com barra invertida ('$amostra'), e nenhum arquivo da branch casou com ele." >&2
+        echo "       Confira read_coverage_by_file em coverage.sh: o caminho tem de ser relativo à raiz do repositório e com \"/\"." >&2
+        ;;
+      *)
+        if [ ! -e "$amostra" ]; then
+          echo "Aviso: nenhum arquivo da branch casou com o relatório de cobertura, e o primeiro caminho dele ('$amostra') não existe a partir da raiz do repositório." >&2
+          echo "       Confira read_coverage_by_file em coverage.sh: o caminho tem de ser relativo à raiz do repositório e com \"/\"." >&2
+        fi
+        ;;
+    esac
   fi
 
   echo "FASE1:"

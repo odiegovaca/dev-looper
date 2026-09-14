@@ -40,6 +40,10 @@ fi
 
 # Numa reexecução isto lê a versão da própria branch de release, não a RC da
 # integração; nesse caso RELEASE_VERSION vem de VERSION_ARG.
+REEXECUCAO=false
+if [ -n "$RELEASE_BRANCH_HINT" ] && [ "$CURRENT_BRANCH" = "$RELEASE_BRANCH_HINT" ]; then
+  REEXECUCAO=true
+fi
 CURRENT_VERSION="$("$SCRIPT_DIR/bump-version.sh" current)"
 RELEASE_VERSION="${VERSION_ARG:-$(echo "$CURRENT_VERSION" | sed 's/-rc\..*//')}"
 
@@ -72,5 +76,9 @@ if [ -f CHANGELOG.md ] && ! grep -q "^## \[$RELEASE_VERSION\]" CHANGELOG.md; the
 fi
 
 echo "✅ Branch $RELEASE_BRANCH pronta para a release $RELEASE_VERSION."
-echo "   Origem: $INTEGRATION_BRANCH, em $CURRENT_VERSION. Destino do PR: $PROD_BRANCH."
+if [ "$REEXECUCAO" = true ]; then
+  echo "   Reexecução sobre $RELEASE_BRANCH — a versão da integração não foi relida. Destino do PR: $PROD_BRANCH."
+else
+  echo "   Origem: $INTEGRATION_BRANCH, em $CURRENT_VERSION. Destino do PR: $PROD_BRANCH."
+fi
 echo "   Versão gravada nos arquivos e header do CHANGELOG carimbado."

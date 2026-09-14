@@ -151,20 +151,28 @@ esac
 # HEAD e tags: a ferramenta do projeto não pode mexer em nenhum dos dois.
 git_estado() { git rev-parse HEAD 2>/dev/null || true; git tag 2>/dev/null || true; }
 
-if [ "$SET_VERSION_CMD" = "-" ] || [[ "$SET_VERSION_CMD" == "[DEFINIR"* ]]; then
-  for f in "${VERSION_FILES[@]}"; do
-    write_version "$f" "$NEW"
-  done
-else
-  # Sem `if` em volta: o `set -e` mata o script se a ferramenta falhar, em vez de a
-  # falha dela virar edição na mão pelo write_version().
-  ANTES="$(git_estado)"
-  # `>&2` porque o stdout daqui é só a versão, e toda ferramenta anuncia o que fez.
-  eval "${SET_VERSION_CMD//\{\}/$NEW}" >&2
-  if [ "$(git_estado)" != "$ANTES" ]; then
-    echo "O comando de SET_VERSION_CMD commitou ou criou tag, e não pode: quem commita é o /rc, depois." >&2
-    echo "   Ajuste o comando em bump-version.sh, preenchido pelo /setup." >&2
-    exit 1
+# Nada a gravar: a ferramenta do projeto não é chamada
+JA_GRAVADA=true
+for f in "${VERSION_FILES[@]}"; do
+  [ "$(read_version "$f" || true)" = "$NEW" ] || { JA_GRAVADA=false; break; }
+done
+
+if [ "$JA_GRAVADA" = false ]; then
+  if [ "$SET_VERSION_CMD" = "-" ] || [[ "$SET_VERSION_CMD" == "[DEFINIR"* ]]; then
+    for f in "${VERSION_FILES[@]}"; do
+      write_version "$f" "$NEW"
+    done
+  else
+    # Sem `if` em volta: o `set -e` mata o script se a ferramenta falhar, em vez de a
+    # falha dela virar edição na mão pelo write_version().
+    ANTES="$(git_estado)"
+    # `>&2` porque o stdout daqui é só a versão, e toda ferramenta anuncia o que fez.
+    eval "${SET_VERSION_CMD//\{\}/$NEW}" >&2
+    if [ "$(git_estado)" != "$ANTES" ]; then
+      echo "O comando de SET_VERSION_CMD commitou ou criou tag, e não pode: quem commita é o /rc, depois." >&2
+      echo "   Ajuste o comando em bump-version.sh, preenchido pelo /setup." >&2
+      exit 1
+    fi
   fi
 fi
 

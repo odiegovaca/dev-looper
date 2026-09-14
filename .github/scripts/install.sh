@@ -7,6 +7,7 @@ set -euo pipefail
 
 DEST=""
 FORCE=false
+TEMPLATE_PULADO=false
 for arg in "$@"; do
   case "$arg" in
     --force) FORCE=true ;;
@@ -54,6 +55,7 @@ while IFS= read -r -d '' file; do
   # O /setup consome o template e o apaga: sem esta guarda, o install.sh devolveria
   # ao projeto uma semente que ele já usou.
   if [ "$rel" = "copilot-instructions.template.md" ] && [ -f "$DEST_GITHUB/copilot-instructions.md" ]; then
+    TEMPLATE_PULADO=true
     continue
   fi
 
@@ -103,6 +105,13 @@ if [ -n "$VERSION" ]; then
   echo "Versão de origem: $VERSION — registrada em .github/prompts/README.md"
 else
   echo "Versão de origem: desconhecida (a origem não é um clone git com tags)"
+fi
+
+if [ "$TEMPLATE_PULADO" = true ]; then
+  echo ""
+  echo "Nota: o copilot-instructions.template.md foi pulado porque este projeto já tem o"
+  echo "copilot-instructions.md preenchido. Se o template mudou nesta versão, ele não chega"
+  echo "sozinho: rode /setup de novo para reescrever as instruções a partir do template novo."
 fi
 
 # O chmod acima não alcança o que será commitado, e consertar exigiria mexer no

@@ -135,9 +135,14 @@ else
   fi
   # O {N} sai do nome da branch: o closingIssuesReferences do GitHub só vem preenchido
   # em PR baseado na branch default, e todo PR de RC aponta para a integração.
-  ISSUES="$(gh pr list --repo "$GH_REPO" --base "$INTEGRATION_BRANCH" --state merged --limit 100 \
-    --json headRefName,mergedAt --jq "$JQ_FILTER" 2>/dev/null \
-    | sed -nE 's#^[a-z]+/([0-9]+)-.*#\1#p' | sort -un || true)"
+  BRANCHES_PR="$(gh pr list --repo "$GH_REPO" --base "$INTEGRATION_BRANCH" --state merged --limit 100 \
+    --json headRefName,mergedAt --jq "$JQ_FILTER" 2>/dev/null || true)"
+  ISSUES="$(printf '%s\n' "$BRANCHES_PR" | sed -nE 's#^[a-z]+/([0-9]+)-.*#\1#p' | sort -un || true)"
+  # Nomeia como descartadas as branches fora do padrão
+  DESCARTADAS="$(printf '%s\n' "$BRANCHES_PR" | grep -vE '^[a-z]+/[0-9]+-' | grep -v '^$' || true)"
+  if [ -n "$DESCARTADAS" ]; then
+    ENCERRAMENTO+=("⚠️ PR(s) mergeado(s) no ciclo com branch fora do padrão {tipo}/{N}-nome, sem issue a fechar: $(printf '%s' "$DESCARTADAS" | tr '\n' ' '). Confira manualmente.")
+  fi
   [ -n "$ISSUES" ] || ENCERRAMENTO+=("⚠️ Não consegui descobrir as issues do ciclo: nenhum PR mergeado em $INTEGRATION_BRANCH desde ${PREV_TAG:-o início} tem branch no padrão {tipo}/{N}-nome. Feche e arquive manualmente.")
 fi
 

@@ -42,6 +42,8 @@ else
   ANALISE="$(cat "$REPORT")"
 fi
 
+POS_FIX="$(awk '/^## Pós-fix$/ { found = 1 } found { print }' "$REPORT")"
+
 # Recomendações são 100% derivadas dos blocos "Problema":
 # Must Have (bloqueantes) = CRITICAL + HIGH, Should Have = MEDIUM, Nice to Have = LOW.
 MUST_HAVE="$(grep -oE '^#### Problema [0-9]+ — (CRITICAL|HIGH)$' "$REPORT" | sed 's/^#### /- /' || true)"
@@ -74,6 +76,10 @@ NICE_TO_HAVE="$(grep -oE '^#### Problema [0-9]+ — LOW$' "$REPORT" | sed 's/^##
   echo "### Nice to Have"
   echo
   echo "${NICE_TO_HAVE:-- Nenhum.}"
+  if [ -n "$POS_FIX" ]; then
+    echo
+    echo "$POS_FIX"
+  fi
 } > "$REPORT"
 
 PROXIMOS_PASSOS="$("$SCRIPT_DIR/next-step.sh" "$VEREDITO")"
