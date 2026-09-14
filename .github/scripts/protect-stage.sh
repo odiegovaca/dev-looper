@@ -9,9 +9,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Globs vindos do protected-paths.sh, deliberadamente sem aspas: é a expansão
-# que transforma cada glob nos caminhos que o git restore recebe.
+# Glob entre aspas de propósito: quem casa é o git, contra o índice e o HEAD,
+# não o shell contra a árvore de trabalho. A diferença aparece na deleção de um
+# arquivo protegido — a expansão do shell não produz caminho que não existe
+# mais, e a deleção seguia staged para o commit automático do /rc e do /release.
 while IFS= read -r glob; do
   [ -n "$glob" ] || continue
-  git restore --staged $glob 2>/dev/null || true
+  git restore --staged -- "$glob" 2>/dev/null || true
 done < <("$SCRIPT_DIR/protected-paths.sh")

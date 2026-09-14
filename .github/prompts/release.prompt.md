@@ -30,7 +30,7 @@ Se falhar: identificar causa e corrigir antes de prosseguir (máx 3 iterações)
 Definir resumo de 2-4 linhas (baseado no CHANGELOG consolidado) e chamar:
 
 ```bash
-.github/scripts/release-finalize.sh "$PROD_BRANCH" "$RELEASE_VERSION" <<'EOF'
+.github/scripts/release-finalize.sh <<'EOF'
 <resumo consolidado do CHANGELOG>
 EOF
 ```

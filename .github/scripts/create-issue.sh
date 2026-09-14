@@ -34,15 +34,19 @@ if [[ -z "$SPEC_PATH" ]]; then
   SPEC_PATH="${CANDIDATES[0]}"
 fi
 
-[[ -f "$SPEC_PATH" ]] || { echo "Spec não encontrada: $SPEC_PATH" >&2; exit 1; }
+[[ -f "$SPEC_PATH" ]] || { echo "Spec não encontrada: $SPEC_PATH — confira o caminho, ou rode /spec para criar a spec" >&2; exit 1; }
 
 # Lê os campos que o resto do script precisa, direto do texto da spec:
 # TITLE vem do H1 (primeira linha "# ..."), STATUS e TIPO vêm das linhas
 # "**Campo**: `valor`" do cabeçalho — mesmo formato usado no template do
 # /spec, então o grep+sed funciona em qualquer spec gerada por ele.
-TITLE="$(grep -m1 '^# ' "$SPEC_PATH" | sed 's/^# //')"
-STATUS="$(grep -m1 '^\*\*Status\*\*:' "$SPEC_PATH" | sed -E 's/^\*\*Status\*\*:[[:space:]]*`([^`]+)`.*/\1/')"
-TIPO="$(grep -m1 '^\*\*Tipo\*\*:' "$SPEC_PATH" | sed -E 's/^\*\*Tipo\*\*:[[:space:]]*`([^`]+)`.*/\1/')"
+#
+# O `|| true` em cada uma não é decoração: sob `set -euo pipefail`, um grep sem
+# match derruba a atribuição e mata o script aqui, sem mensagem nenhuma — antes
+# das validações abaixo, que existem exatamente para o campo faltando.
+TITLE="$(grep -m1 '^# ' "$SPEC_PATH" | sed 's/^# //' || true)"
+STATUS="$(grep -m1 '^\*\*Status\*\*:' "$SPEC_PATH" | sed -E 's/^\*\*Status\*\*:[[:space:]]*`([^`]+)`.*/\1/' || true)"
+TIPO="$(grep -m1 '^\*\*Tipo\*\*:' "$SPEC_PATH" | sed -E 's/^\*\*Tipo\*\*:[[:space:]]*`([^`]+)`.*/\1/' || true)"
 
 # É o campo **Issue** que diz se esta spec já virou issue — nunca o título
 # nem o nome do arquivo. Mudar o título e renomear a spec são rotina num
@@ -52,7 +56,7 @@ ISSUE_EXISTENTE="$(grep -m1 -E '^\*\*Issue\*\*: \[?#[0-9]+' "$SPEC_PATH" | sed -
 
 # Validações: sem título não dá pra criar issue; Tipo vira o label da issue,
 # então só os dois valores conhecidos passam.
-[[ -n "$TITLE" ]] || { echo "Título (linha '# ...') não encontrado em $SPEC_PATH" >&2; exit 1; }
+[[ -n "$TITLE" ]] || { echo "Título (linha '# ...') não encontrado em $SPEC_PATH — acrescente o H1 do template, ou rode /spec para regravar a spec" >&2; exit 1; }
 
 # Criar exige spec aprovada (aceita a variação "Aprovado" pra não travar em
 # typo de gênero). Atualizar aceita também `Issue criada`, que é o status em
@@ -61,10 +65,10 @@ ISSUE_EXISTENTE="$(grep -m1 -E '^\*\*Issue\*\*: \[?#[0-9]+' "$SPEC_PATH" | sed -
 if [[ -n "$ISSUE_EXISTENTE" ]]; then
   case "$STATUS" in
     Aprovada|Aprovado|"Issue criada") ;;
-    *) echo "Spec com Status '$STATUS' (esperado 'Aprovada' ou 'Issue criada'): $SPEC_PATH — use /spec [identificador] para aprovar" >&2; exit 1 ;;
+    *) echo "Spec com Status '${STATUS:-ausente}' (esperado 'Aprovada' ou 'Issue criada'): $SPEC_PATH — use /spec [identificador] para aprovar" >&2; exit 1 ;;
   esac
 else
-  [[ "$STATUS" == "Aprovada" || "$STATUS" == "Aprovado" ]] || { echo "Spec com Status '$STATUS' (esperado 'Aprovada'): $SPEC_PATH — use /spec [identificador] para aprovar" >&2; exit 1; }
+  [[ "$STATUS" == "Aprovada" || "$STATUS" == "Aprovado" ]] || { echo "Spec com Status '${STATUS:-ausente}' (esperado 'Aprovada'): $SPEC_PATH — use /spec [identificador] para aprovar" >&2; exit 1; }
 fi
 
 case "$TIPO" in

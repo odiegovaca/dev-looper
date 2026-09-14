@@ -11,8 +11,7 @@ tools: [read, search, execute]
 ### 1 — Executar
 
 ```bash
-eval "$(.github/scripts/release-branches.sh)"
-.github/scripts/status-snapshot.sh "$PROD_BRANCH" "$INTEGRATION_BRANCH"
+.github/scripts/status-snapshot.sh
 ```
 
 ### 2 — Confirmar

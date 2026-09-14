@@ -2,7 +2,7 @@
 description: Executar code review crítico do código modificado na branch atual
 agent: agent
 tools: [read, edit, search, execute]
-argument-hint: "Nome da branch de integração, sem prefixo origin/ (padrão: develop)"
+argument-hint: "Branch de integração para comparar, sem prefixo origin/ (opcional, padrão: a do projeto)"
 ---
 
 # /review - Code Review
@@ -14,17 +14,11 @@ argument-hint: "Nome da branch de integração, sem prefixo origin/ (padrão: de
 ### 1 — Preparação
 
 ```bash
-INTEGRATION_BRANCH=$(# ler de copilot-instructions.md, padrão: develop)
+eval "$(.github/scripts/release-branches.sh)"
 .github/scripts/review-prepare.sh "$INTEGRATION_BRANCH"
 ```
 
-Retorna, usados nos passos seguintes:
-
-- `N` — número da feature (da branch atual)
-- `SEQ` — próximo sequencial do relatório dessa feature
-- `DATA` — timestamp de agora
-- `REPORT` — caminho do relatório (`docs/reviews/review-{N}-{SEQ}.md`)
-- `DIFF` — diff unificado dos arquivos alterados (já filtrado de lockfiles e reviews anteriores), um arquivo por seção `diff --git a/arquivo b/arquivo`
+Se `$ARGUMENTS` trouxer uma branch, use-a no lugar de `$INTEGRATION_BRANCH`.
 
 ### 2 — Analisar Cada Arquivo
 

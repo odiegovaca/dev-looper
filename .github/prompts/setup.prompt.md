@@ -38,7 +38,7 @@ Gerar `.github/copilot-instructions.md` com:
 5. **Integration Points**: APIs e sistemas externos detectados
 6. **Common Pitfalls**: armadilhas óbvias do stack detectado, identificadas a partir do código e da documentação lidos no Passo 2
 7. **Testing Conventions**: Padrão de teste do projeto com exemplo real
-8. **Coverage Report**: aponta para `.github/scripts/coverage.sh` (preenchido no Passo 5) em vez de embutir o comando bruto
+8. **Coverage Report**: aponta para `.github/scripts/coverage.sh` (preenchido no Passo 5) em vez de embutir o comando bruto ou repetir a meta
 9. **Release Workflow**: Estratégia de branches detectada ou informada
 
 > ⚠️ **Regra**: Se não souber, deixe `[DEFINIR: ...]` — não invente. Melhor incompleto e correto do que completo e errado.
@@ -54,7 +54,7 @@ rm -f .github/copilot-instructions.template.md
 Preencher `.github/scripts/*.sh` com os dados detectados no Passo 2: versão (`bump-version.sh`), cobertura (`coverage.sh`), comandos de teste/lint/build (`validate.sh`) e branches de release (`release-branches.sh`) — para que sejam calculados por script em vez de recalculados em prosa a cada execução.
 
 1. **`bump-version.sh`**: preencher o array `VERSION_FILES` com os arquivos de versão detectados no Passo 2.
-2. **`coverage.sh`**: preencher `COVERAGE_REPORT` e os corpos de `read_coverage()` e `read_coverage_by_file()` com os comandos de cobertura do stack — o formato de saída de cada um está no próprio `[DEFINIR]`.
+2. **`coverage.sh`**: preencher `COVERAGE_REPORT`, `COVERAGE_TARGET` (meta de statements do projeto, em %) e os corpos de `read_coverage()` e `read_coverage_by_file()` com os comandos de cobertura do stack — o formato de saída de cada um está no próprio `[DEFINIR]`.
 3. **`validate.sh`**: preencher os corpos de `run_test()`, `run_lint()` e `run_build()` com os comandos reais de teste, lint e build do stack detectado (a mesma tabela que hoje vai para a seção "Development Commands" do `copilot-instructions.md`). O `run_test()` precisa gerar o relatório apontado em `COVERAGE_REPORT`.
 4. **`release-branches.sh`**: preencher `PROD_BRANCH` e `INTEGRATION_BRANCH` com as branches detectadas no Passo 2 (a mesma info que hoje vai para a seção "Release Workflow" do `copilot-instructions.md`).
 5. `chmod +x .github/scripts/*.sh`.

@@ -23,8 +23,10 @@ usage() {
 }
 
 REPORT="${1:-}"
-if [ -z "$REPORT" ] || [ ! -f "$REPORT" ]; then
-  usage
+[ -n "$REPORT" ] || usage
+if [ ! -f "$REPORT" ]; then
+  echo "Relatório não encontrado: $REPORT — o caminho sai do .github/scripts/latest-review.sh (passo 1); rode /review se a feature ainda não tem relatório" >&2
+  exit 1
 fi
 shift
 
@@ -54,7 +56,7 @@ done
 # bloco é interpretado só lá, e a guarda de consistência do relatório vem junto.
 PROBLEMS="$("$SCRIPT_DIR/review-problems.sh" "$REPORT")"
 if [ -z "$PROBLEMS" ]; then
-  echo "Nenhum bloco '#### Problema' em $REPORT — nada a finalizar." >&2
+  echo "Nenhum bloco '#### Problema' em $REPORT — nada a finalizar. Se o review apontou problemas, rode /review de novo: é o passo 2 dele que escreve os blocos." >&2
   exit 1
 fi
 
@@ -265,8 +267,8 @@ echo
 echo "   Próximo passo:"
 case "$STATUS" in
   bloqueado)
-    # Números crus: é o comando que o usuário vai digitar, e o passo 2 do
-    # /fix-review seleciona por número, não por "#número".
+    # Números crus porque é o comando que o usuário vai digitar (o seletor
+    # aceita as duas formas — o fix-review-select.sh tira o "#").
     echo "   - /fix-review $(sorted "$PENDING_BLOCKERS" | tr '\n' ' ' | sed 's/ $//') — bloqueantes ainda pendentes."
     ;;
   revisar)

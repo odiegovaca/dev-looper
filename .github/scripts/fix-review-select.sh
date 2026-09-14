@@ -80,7 +80,7 @@ done
 # /fix-review para um problema que ninguém pode corrigir. Só número inventado,
 # não: aí não há o que fazer nem o que registrar.
 if [ -z "$SELECIONADOS" ] && [ -z "$PROTEGIDOS" ]; then
-  echo "Nenhum problema casou com os seletores em $REPORT — nada a corrigir." >&2
+  echo "Nenhum problema casou com os seletores em $REPORT — rode /fix-review com um número ou uma severidade presentes no relatório (ou 'todos')." >&2
   [ -n "$IGNORADOS" ] && printf '%s' "$IGNORADOS" >&2
   exit 1
 fi

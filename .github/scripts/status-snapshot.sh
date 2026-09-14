@@ -1,32 +1,28 @@
 #!/usr/bin/env bash
-# status-snapshot.sh <prod-branch> <integration-branch>
+# status-snapshot.sh
 #
 # Monta e imprime o snapshot completo do /status já no formato final
 # markdown — o prompt só precisa mostrar a saída no chat, sem reinterpretar
 # nada (mesmo padrão de review-finalize.sh para o /review).
 #
-# PROD_BRANCH/INTEGRATION_BRANCH entram como argumentos — mesmos valores que
-# code.prompt.md/rc.prompt.md/release.prompt.md já lêem de
-# release-branches.sh, centralizado lá a partir de copilot-instructions.md.
+# Sem argumentos: as branches vêm do release-branches.sh aqui mesmo. Recebê-las
+# do prompt obrigava o /status a um eval só para devolver os valores, e era um
+# par de estados atravessando o contexto do agente sem necessidade.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-PROD_BRANCH="${1:-}"
-INTEGRATION_BRANCH="${2:-}"
-if [ -z "$PROD_BRANCH" ] || [ -z "$INTEGRATION_BRANCH" ]; then
-  echo "Uso: status-snapshot.sh <prod-branch> <integration-branch>" >&2
-  exit 1
-fi
+BRANCHES="$("$SCRIPT_DIR/release-branches.sh")" || exit 1
+eval "$BRANCHES"
 
 BRANCH="$(git branch --show-current)"
 
 # Best-effort: atualiza a ref antes de comparar, mas não derruba o snapshot
 # por causa de rede indisponível — só falha se a branch nem existir no
-# remoto (typo em copilot-instructions.md, por exemplo).
+# remoto (typo no release-branches.sh, por exemplo).
 git fetch origin "$PROD_BRANCH" --quiet 2>/dev/null || true
 if ! git rev-parse --verify --quiet "origin/${PROD_BRANCH}" >/dev/null; then
-  echo "Branch 'origin/${PROD_BRANCH}' não encontrada — nome correto em copilot-instructions.md? fetch funcionou?" >&2
+  echo "Branch 'origin/${PROD_BRANCH}' não encontrada — confira PROD_BRANCH em .github/scripts/release-branches.sh (rode /setup se ainda não configurou) e se o fetch alcançou o remoto" >&2
   exit 1
 fi
 
@@ -39,11 +35,18 @@ else
   PENDING_COUNT="$(printf '%s\n' "$PENDING_CHANGES" | wc -l)"
 fi
 
-VERSION="$("$SCRIPT_DIR/bump-version.sh" current 2>/dev/null || echo "desconhecida")"
+# Os dois sem 2>/dev/null: o stderr deles nomeia o motivo (arquivo de versão
+# ilegível, relatório de cobertura ausente, /setup não configurado) e é o que
+# distingue "ainda não rodei os testes" de "isto nunca foi configurado" — o
+# segundo não se resolve com o /test que a cascata de NEXT_STEP vai sugerir.
+VERSION="$("$SCRIPT_DIR/bump-version.sh" current || echo "desconhecida")"
 
-COVERAGE="$("$SCRIPT_DIR/coverage.sh" 2>/dev/null || echo "não disponível")"
+COVERAGE="$("$SCRIPT_DIR/coverage.sh" || echo "não disponível")"
 COVERAGE_DISPLAY="$COVERAGE"
 [ "$COVERAGE" != "não disponível" ] && COVERAGE_DISPLAY="${COVERAGE}%"
+
+# A meta é do projeto e mora no coverage.sh, onde o /test também a lê.
+COVERAGE_TARGET="$("$SCRIPT_DIR/coverage.sh" --target 2>/dev/null || echo "?")"
 
 # Numa feature branch, N resolve e escopa para a spec vinculada à issue da
 # feature atual (mesmo campo **Issue** que create-issue.sh grava) — não
@@ -70,7 +73,7 @@ fi
 SPEC_LINES="- Nenhuma spec encontrada."
 if [ -n "$SPEC_FILES" ]; then
   SPEC_LINES="$(while IFS= read -r f; do
-    STATUS="$(grep -m1 '^\*\*Status\*\*:' "$f" | sed -E 's/^\*\*Status\*\*:[[:space:]]*`([^`]+)`.*/\1/')"
+    STATUS="$(grep -m1 '^\*\*Status\*\*:' "$f" | sed -E 's/^\*\*Status\*\*:[[:space:]]*`([^`]+)`.*/\1/' || true)"
     case "$STATUS" in
       Rascunho) EMOJI="📝" ;;
       "Em Revisão") EMOJI="👀" ;;
@@ -92,13 +95,16 @@ VEREDITO=""
 STATUS_POS_FIX=""
 REVIEW_SUMMARY="Nenhum review realizado ainda."
 if [ "$LATEST_REVIEW" != "nenhum" ] && [ -f "$LATEST_REVIEW" ]; then
-  VEREDITO="$(grep -m1 '^\*\*Veredito:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Veredito:\*\*[[:space:]]*//')"
+  # Os `|| true` daqui até REVIEW_STATS: sem eles um relatório sem uma dessas
+  # linhas (formato antigo, arquivo editado à mão) derruba o /status inteiro na
+  # atribuição, em vez de cair nos fallbacks logo abaixo.
+  VEREDITO="$(grep -m1 '^\*\*Veredito:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Veredito:\*\*[[:space:]]*//' || true)"
   # O veredito é o retrato do código no momento do /review; se um /fix-review
   # rodou depois, quem vale é o status que ele gravou na seção "## Pós-fix".
   STATUS_POS_FIX="$(grep -m1 '^\*\*Status pós-fix:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Status pós-fix:\*\*[[:space:]]*//' || true)"
-  REVIEW_DATA="$(grep -m1 '^\*\*Data:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Data:\*\*[[:space:]]*//')"
-  REVIEW_STATS="$(grep -m1 '^\*\*Estatísticas:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Estatísticas:\*\*[[:space:]]*//')"
-  REVIEW_SUMMARY="${REVIEW_DATA} — ${REVIEW_STATS}${STATUS_POS_FIX:+ (pós-fix: $STATUS_POS_FIX)}"
+  REVIEW_DATA="$(grep -m1 '^\*\*Data:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Data:\*\*[[:space:]]*//' || true)"
+  REVIEW_STATS="$(grep -m1 '^\*\*Estatísticas:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Estatísticas:\*\*[[:space:]]*//' || true)"
+  REVIEW_SUMMARY="${REVIEW_DATA:-sem data} — ${REVIEW_STATS:-sem estatísticas}${STATUS_POS_FIX:+ (pós-fix: $STATUS_POS_FIX)}"
 fi
 
 IS_PROTECTED=false
@@ -146,7 +152,7 @@ fi
   echo
   echo "$SPEC_LINES"
   echo
-  echo "**Cobertura:** $COVERAGE_DISPLAY (meta: 80%)"
+  echo "**Cobertura:** $COVERAGE_DISPLAY (meta: ${COVERAGE_TARGET}%)"
   echo "**Último review:** $REVIEW_SUMMARY"
   echo
   echo "**Sugestão de próximo passo:** $NEXT_STEP"

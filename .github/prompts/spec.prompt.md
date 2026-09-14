@@ -1,7 +1,7 @@
 ---
 description: Criar especificação de funcionalidade em linguagem natural
 agent: agent
-tools: [read, edit, search]
+tools: [read, edit, search, execute]
 argument-hint: "Descrição da funcionalidade ou caminho da spec para refinar"
 ---
 
@@ -18,7 +18,7 @@ A spec é legível por não-técnicos: linguagem natural, sem código.
 3. **Estruture**: seguindo o template e convenções da seção Template abaixo
 4. **Derive o identificador**: kebab-case a partir do título (minúsculas, sem acentos, espaços e símbolos viram `-`)
 5. **Verifique conflito**: se já houver spec com esse identificador (`docs/issues/spec-*-[identificador].md`), avise o usuário e pergunte se quer outro identificador ou tratar como refinamento (Modo 2)
-6. **Crie**: `docs/issues/spec-[AAAA-MM-DD]-[identificador-kebab-case].md`, com a data de hoje
+6. **Crie**: `docs/issues/spec-[AAAA-MM-DD]-[identificador-kebab-case].md`. A data vem de `date +%F` (e o campo `**Data**` de `date +%d/%m/%Y`) — nunca da suposição do agente: é ela que ordena a pasta, e o nome não pode ser corrigido depois
 7. **Apresente**: Resumo, questões em aberto, caminho do arquivo
 
 ### Modo 2 — Refinar Especificação
@@ -30,7 +30,7 @@ Quando usuário menciona arquivo, identificador ou descrição de funcionalidade
 3. **Se status for `Aprovada` ou `Issue criada`**: antes de alterar requisitos, regras de negócio ou critérios de aceite já existentes, confirme com o usuário — a mudança pode invalidar issue/código já criados a partir da spec
 4. **Aplique mudanças**: Adicionar requisitos, responder questões em aberto
 5. **Ao responder questões**: remova da seção "Questões em Aberto" e incorpore na seção correta
-6. **Atualize**: campo `**Data**`, status se mudou. **Não renomeie o arquivo**: a data do nome é a de criação e é ela que mantém a ordem cronológica da pasta
+6. **Atualize**: campo `**Data**` (de `date +%d/%m/%Y`), status se mudou. **Não renomeie o arquivo**: a data do nome é a de criação e é ela que mantém a ordem cronológica da pasta
 
 ## Regras
 

@@ -18,7 +18,7 @@ Não existe atualização no lugar. Uma versão nova do dev-looper é um ponto d
 - Git configurado no projeto
 - **`gh` CLI** — necessário para `/issue`, `/rc` e `/release` ([instalar](https://cli.github.com))
 
-> O `/setup` valida esses pré-requisitos na inicialização e interrompe com mensagem clara se algo estiver faltando. **Execute `/setup` antes de qualquer outro comando do workflow.**
+> O `/setup` confere o `gh` (instalado e autenticado) na inicialização e interrompe com mensagem clara se faltar. **Execute `/setup` antes de qualquer outro comando do workflow.**
 
 > **Recomendação de modelo:** mantenha o seletor de modelo do Copilot em **Auto** — ele roteia automaticamente entre modelos de acordo com a complexidade de cada tarefa, o que combina bem com fases de granularidade variada (ex: `/spec` é mais leve que `/code`).
 
@@ -78,7 +78,7 @@ Deve mostrar branch atual, versão e sugerir próximo passo.
 /spec        Escrever especificação funcional
 /issue       Criar issue GitHub da spec
 /code        Gerar código seguindo a spec e padrões do projeto
-/test        Testes até meta de cobertura (padrão 80%)
+/test        Testes até a meta de cobertura do projeto
 /review      Revisão crítica por criticidade
 /fix-review  Aplicar correções do code review
 /rc          PR → branch de integração (com versionamento RC)
@@ -121,8 +121,8 @@ Use `/lesson` após qualquer correção manual para manter esse arquivo crescend
 ### Adaptar os prompts
 
 - **`code.prompt.md`**: Fases de implementação específicas do stack. Gerado automaticamente pelo `/setup` mas pode ser ajustado manualmente.
-- **`rc.prompt.md`**: Ajustar se o projeto não usar versionamento RC ou tiver arquivos de versão diferentes de `package.json`.
-- **`release.prompt.md`**: Ajustar branch de produção se não for `main`.
+- **`rc.prompt.md`**: Ajustar se o projeto não usar versionamento RC.
+- Arquivos de versão e branches de produção/integração **não** ficam em prompt: são o `VERSION_FILES` do `bump-version.sh` e o `PROD_BRANCH`/`INTEGRATION_BRANCH` do `release-branches.sh`, preenchidos pelo `/setup`.
 
 Os demais prompts buscam padrões e comandos em `copilot-instructions.md` — nenhum precisa de alteração manual após o `/setup`.
 

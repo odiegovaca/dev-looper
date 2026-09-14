@@ -28,10 +28,10 @@ Fonte da verdade é o `argument-hint` de cada `.prompt.md` — atualize aqui jun
 | Comando       | Parâmetro                                                                  | Exemplo                                          |
 | ------------- | --------------------------------------------------------------------------- | ------------------------------------------------- |
 | `/spec`       | Descrição da funcionalidade ou caminho da spec para refinar (opcional)      | `/spec Checkout via Pix`                          |
-| `/issue`      | Caminho da spec (opcional, usa a spec aprovada mais recente se omitido)     | `/issue docs/issues/spec-checkout-pix.md`         |
+| `/issue`      | Caminho da spec (opcional, usa a única spec aprovada se omitido)            | `/issue docs/issues/spec-checkout-pix.md`         |
 | `/code`       | Caminho da spec ou descrição da funcionalidade                              | `/code docs/issues/spec-checkout-pix.md`          |
-| `/test`       | Meta de cobertura em % (opcional, padrão 80)                                | `/test 85`                                        |
-| `/review`     | Nome da branch de integração, sem prefixo `origin/` (opcional, padrão `develop`) | `/review develop`                             |
+| `/test`       | Meta de cobertura em % (opcional, padrão: a meta do projeto)                | `/test 85`                                        |
+| `/review`     | Branch de integração para comparar, sem prefixo `origin/` (opcional, padrão: a do projeto) | `/review develop`                   |
 | `/fix-review` | Números e/ou severidades (`critical`, `high`, `medium`, `low`), combináveis, ou `todos` | `/fix-review 1 2 5`, `/fix-review critical 7`  |
 | `/rc`         | Tipo de versão: `patch`, `minor` ou `major` (opcional, inferido se omitido) | `/rc patch`                                       |
 | `/release`    | Versão de release (opcional, deriva da RC atual se omitido)                 | `/release 2.5.0`                                  |

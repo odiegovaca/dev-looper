@@ -4,10 +4,10 @@
 # Resolve tudo que o passo 1 do /release precisa, e carimba o header da release
 # no CHANGELOG (nenhuma decisão aqui depende de julgamento do agente).
 #
-# Imprime as variáveis, uma por linha em KEY=value, e todo o bloco serve para
-# `eval`: PROD_BRANCH/INTEGRATION_BRANCH/INTEGRATION_VERSION/RELEASE_VERSION.
-# RELEASE_VERSION é a versão definitiva, usada em todos os passos seguintes
-# de /release.
+# Imprime PROD_BRANCH/INTEGRATION_BRANCH/INTEGRATION_VERSION/RELEASE_VERSION,
+# uma por linha em KEY=value. É relato do que foi feito, não insumo de passo
+# seguinte: o release-finalize.sh deriva branch e versão dos mesmos lugares em
+# que este script as leu e gravou, em vez de recebê-las de volta.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

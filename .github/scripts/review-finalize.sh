@@ -14,8 +14,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 REPORT="${1:-}"
 DATA="${2:-}"
-if [ -z "$REPORT" ] || [ ! -f "$REPORT" ] || [ -z "$DATA" ]; then
+if [ -z "$REPORT" ] || [ -z "$DATA" ]; then
   echo "Uso: review-finalize.sh <relatório.md> <data>" >&2
+  exit 1
+fi
+if [ ! -f "$REPORT" ]; then
+  echo "Relatório não encontrado: $REPORT — é o passo 2 do /review que o escreve, com um bloco '#### Problema {i} — {SEVERIDADE}' por achado" >&2
   exit 1
 fi
 
@@ -30,7 +34,18 @@ while IFS='=' read -r key value; do
   esac
 done <<< "$STATS"
 
-ANALISE="$(cat "$REPORT")"
+# Numa reexecucao (passo 3 rodado de novo) o arquivo ja esta na ordem final, e
+# ler tudo poria o relatorio inteiro — Summary e Recomendacoes incluidos —
+# dentro da secao de analise, uma camada por rodada. Recupera so a analise.
+if grep -q '^## Análise por Arquivo$' "$REPORT"; then
+  ANALISE="$(awk '
+    /^## Análise por Arquivo$/ { found = 1; next }
+    found && /^## Recomendações$/ { exit }
+    found { print }
+  ' "$REPORT" | sed -e '/./,$!d')"
+else
+  ANALISE="$(cat "$REPORT")"
+fi
 
 # Recomendações são 100% derivadas dos blocos "Problema":
 # Must Have (bloqueantes) = CRITICAL + HIGH, Should Have = MEDIUM, Nice to Have = LOW.

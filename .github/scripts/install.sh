@@ -22,6 +22,19 @@ if [ -z "$DEST" ]; then
   exit 1
 fi
 
+# Sem esta checagem, um caminho com typo virava uma árvore .github/ nova num
+# diretório vazio e o script terminava dizendo "Instalados: N".
+if [ ! -d "$DEST" ]; then
+  echo "Destino não encontrado: $DEST — confira o caminho (ou crie o diretório do projeto) antes de instalar" >&2
+  exit 1
+fi
+
+# Aviso, não erro: o /setup ainda roda num diretório que não é repo, mas todo o
+# fluxo depois dele (branches, diff, merge-base, PR) precisa de git.
+if ! git -C "$DEST" rev-parse --git-dir >/dev/null 2>&1; then
+  echo "Aviso: $DEST não é um repositório git — rode 'git init' lá antes do /setup." >&2
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC="$(cd "$SCRIPT_DIR/../.." && pwd)/.github"
 DEST_GITHUB="$DEST/.github"

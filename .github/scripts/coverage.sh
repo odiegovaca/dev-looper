@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
-# coverage.sh [--priority] — imprime a cobertura de statements do relatório já
-# gerado (sem rodar os testes de novo). Exit 1 silencioso se o relatório não existir.
+# coverage.sh [--priority|--target] — imprime a cobertura de statements do
+# relatório já gerado (sem rodar os testes de novo). Falha nomeando o motivo
+# quando não há número para dar: ver cobertura_indisponivel() abaixo.
 set -euo pipefail
 
 # Caminho do relatorio lido pelas duas funcoes abaixo — preenchido por /setup.
 # So alimenta warn_if_stale(); vazio, o aviso nao sai e o resto funciona igual.
 COVERAGE_REPORT=""  # [DEFINIR: caminho do relatorio que os testes geram]
+
+# Meta de statements do projeto, em %. Dono unico do numero: o /test compara
+# contra ele e o /status o exibe, em vez de cada um carregar seu 80 embutido.
+COVERAGE_TARGET="80"  # [DEFINIR pelo /setup: meta do projeto, so o numero]
 
 # Consumido pelo /status e pela checagem de meta do /test.
 read_coverage() {
@@ -81,8 +86,24 @@ rank_priority() {
     | sort -t, -k2,2n
 }
 
+# Sem numero para dar, o motivo sai nomeado: um exit 1 calado aqui vira "/test"
+# eterno no /status (a regra de cobertura indisponivel vem antes de review e rc
+# na cascata de NEXT_STEP), e "relatorio velho" nao se conserta como "/setup
+# nunca configurou isto".
+cobertura_indisponivel() {
+  if [ -z "$COVERAGE_REPORT" ]; then
+    echo "coverage.sh não configurado (COVERAGE_REPORT vazio e read_coverage sem corpo) — rode /setup" >&2
+  elif [ ! -f "$COVERAGE_REPORT" ]; then
+    echo "Relatório de cobertura não encontrado em $COVERAGE_REPORT — rode .github/scripts/validate.sh test para gerá-lo" >&2
+  else
+    echo "Não foi possível ler a cobertura de $COVERAGE_REPORT — confira read_coverage em coverage.sh (preenchido pelo /setup)" >&2
+  fi
+  exit 1
+}
+
 case "${1:-}" in
-  --priority) warn_if_stale; read_coverage_by_file 2>/dev/null | rank_priority || exit 1 ;;
-  "") warn_if_stale; read_coverage 2>/dev/null || exit 1 ;;
-  *) echo "Uso: coverage.sh [--priority]" >&2; exit 1 ;;
+  --priority) warn_if_stale; read_coverage_by_file | rank_priority || cobertura_indisponivel ;;
+  --target) echo "$COVERAGE_TARGET" ;;
+  "") warn_if_stale; read_coverage || cobertura_indisponivel ;;
+  *) echo "Uso: coverage.sh [--priority|--target]" >&2; exit 1 ;;
 esac

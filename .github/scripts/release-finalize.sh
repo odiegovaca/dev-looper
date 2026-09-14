@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# release-finalize.sh <prod-branch> <release-version>
+# release-finalize.sh
 # Resumo do PR via stdin.
 #
 # Faz a parte 100% mecânica do passo 3 do /release: checagem de que o
@@ -9,19 +9,26 @@
 # automaticamente — só reporta, mesmo padrão do create-pr.sh) e a chamada
 # ao `gh pr create` com o checklist padrão de release.
 #
+# Sem argumentos: a branch de produção vem do release-branches.sh e a versão é
+# lida dos próprios arquivos de versão, que o release-prepare.sh acabou de
+# gravar. Recebê-las do prompt era estado atravessando o contexto do agente
+# entre o passo 1 e o passo 3 — e, no caso da versão, uma chance de o PR sair
+# nomeado com uma versão diferente da que está gravada nos arquivos.
+#
 # Termina imprimindo a confirmação já pronta para colar no chat (mesmo
 # padrão do create-pr.sh) — usar a saída sem alterações.
 set -euo pipefail
 
-PROD_BRANCH="${1:-}"
-RELEASE_VERSION="${2:-}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-if [ -z "$PROD_BRANCH" ] || [ -z "$RELEASE_VERSION" ]; then
-  echo "Uso: release-finalize.sh <prod-branch> <release-version>  (resumo via stdin)" >&2
+BRANCHES="$("$SCRIPT_DIR/release-branches.sh")" || exit 1
+eval "$BRANCHES"
+RELEASE_VERSION="$("$SCRIPT_DIR/bump-version.sh" current)"
+
+if [[ "$RELEASE_VERSION" == *-rc.* ]]; then
+  echo "Versão nos arquivos ainda é $RELEASE_VERSION (RC) — rode o passo 1 (.github/scripts/release-prepare.sh) antes: é ele que corta a branch de release e grava a versão estável" >&2
   exit 1
 fi
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 BODY_SUMMARY="$(cat)"
 
@@ -82,7 +89,10 @@ git diff --cached --quiet || git commit -m "chore: release v$RELEASE_VERSION"
 CURRENT_BRANCH="$(git branch --show-current)"
 git push origin "$CURRENT_BRANCH"
 
-EXISTING_PR="$(gh pr view "$CURRENT_BRANCH" --json url --jq .url 2>/dev/null || true)"
+# Só PR aberto conta — ver a mesma checagem no create-pr.sh: sem o filtro de
+# estado, uma branch de release reaberta devolveria o PR já mergeado e o script
+# sairia com 0 dizendo "já existe um PR aberto", sem criar nada.
+EXISTING_PR="$(gh pr view "$CURRENT_BRANCH" --json url,state --jq 'select(.state == "OPEN") | .url' 2>/dev/null || true)"
 if [ -n "$EXISTING_PR" ]; then
   echo "⚠️ Já existe um PR aberto para esta branch: $EXISTING_PR"
   echo "   Push aplicado com as mudanças mais recentes; nenhum PR novo foi criado."

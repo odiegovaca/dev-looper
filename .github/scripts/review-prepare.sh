@@ -19,20 +19,23 @@ INTEGRATION_BRANCH="${1:-}"
 [ -n "$INTEGRATION_BRANCH" ] || { echo "Uso: review-prepare.sh <integration-branch>" >&2; exit 1; }
 
 if ! RAW_CHANGED_FILES="$("$SCRIPT_DIR/changed-files.sh" "$INTEGRATION_BRANCH")"; then
-  echo "Falha ao obter arquivos alterados em relação a $INTEGRATION_BRANCH — branch existe no remoto? fetch funcionou?" >&2
+  echo "Falha ao obter arquivos alterados em relação a $INTEGRATION_BRANCH — rode 'git fetch origin $INTEGRATION_BRANCH' e, se a branch não existir no remoto, confira INTEGRATION_BRANCH em .github/scripts/release-branches.sh" >&2
   exit 1
 fi
 
 CHANGED_FILES="$(echo "$RAW_CHANGED_FILES" | grep -vE '^docs/reviews/|package-lock\.json|yarn\.lock|pnpm-lock\.yaml|go\.sum|Gemfile\.lock|poetry\.lock' || true)"
 
 if [ -z "$CHANGED_FILES" ]; then
-  echo "Nenhuma mudança em relação a $INTEGRATION_BRANCH — nada para revisar." >&2
+  echo "Nenhuma mudança em relação a $INTEGRATION_BRANCH — nada para revisar. Commite a implementação (/code) antes de rodar o /review." >&2
   exit 1
 fi
 
 N="$("$SCRIPT_DIR/feature-number.sh")"
 mkdir -p docs/reviews
-LAST_SEQ=$(ls "docs/reviews/review-${N}-"*.md 2>/dev/null | sed -E "s#.*review-${N}-([0-9]+)\.md#\1#" | sort -n | tail -1 || true)
+# Qual e o relatorio mais recente e pergunta do latest-review.sh — daqui sai so
+# o proximo {seq}. Repetir o ls aqui era a mesma ordenacao escrita duas vezes.
+LAST_REPORT="$("$SCRIPT_DIR/latest-review.sh" 2>/dev/null || true)"
+LAST_SEQ="$(sed -E "s#.*review-${N}-([0-9]+)\.md#\1#" <<< "$LAST_REPORT")"
 SEQ=$(( ${LAST_SEQ:-0} + 1 ))
 DATA=$(date +%Y-%m-%d-%H%M%S)
 REPORT="docs/reviews/review-${N}-${SEQ}.md"

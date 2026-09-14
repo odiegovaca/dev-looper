@@ -12,7 +12,8 @@
 set -euo pipefail
 
 REPORT="${1:-}"
-[ -n "$REPORT" ] && [ -f "$REPORT" ] || { echo "Uso: review-stats.sh <relatório.md>" >&2; exit 1; }
+[ -n "$REPORT" ] || { echo "Uso: review-stats.sh <relatório.md>" >&2; exit 1; }
+[ -f "$REPORT" ] || { echo "Relatório não encontrado: $REPORT — rode /review para gerá-lo" >&2; exit 1; }
 
 CRITICAL_COUNT=$(grep -c '^#### Problema .* — CRITICAL$' "$REPORT" || true)
 HIGH_COUNT=$(grep -c '^#### Problema .* — HIGH$' "$REPORT" || true)

@@ -9,9 +9,11 @@
 # manualmente.
 set -euo pipefail
 
+# O `|| true` evita que um prompt sem `description:` no frontmatter derrube a
+# lista inteira: sob `set -euo pipefail` o grep sem match mata a atribuição.
 for f in .github/prompts/*.prompt.md; do
-  DESC="$(grep -m1 '^description:' "$f" | sed -E 's/^description:\s*//')"
-  echo "$f: $DESC"
+  DESC="$(grep -m1 '^description:' "$f" | sed -E 's/^description:\s*//' || true)"
+  echo "$f: ${DESC:-[sem description no frontmatter]}"
 done
 
 echo ".github/copilot-instructions.md: Convenções e padrões específicos deste projeto"

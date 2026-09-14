@@ -146,7 +146,7 @@ Checklist derivado das seções acima — vale para toda implementação ou corr
 [DEFINIR: ex. npm run build | mvn package | go build ./... | docker build .]
 ```
 
-**Caminho do relatório de cobertura:** `[DEFINIR: ex. coverage/lcov-report/index.html | target/site/jacoco/index.html | coverage.html]`
+**Caminho do relatório de cobertura:** ver `COVERAGE_REPORT` em `.github/scripts/coverage.sh`
 
 ---
 
@@ -207,7 +207,7 @@ describe("OrderService", () => {
 });
 ```
 
-**Meta de cobertura:** [DEFINIR: ex. 80%] de statements
+**Meta de cobertura:** ver `COVERAGE_TARGET` em `.github/scripts/coverage.sh` — é de lá que `/test` e `/status` a leem
 
 ---
 
@@ -217,7 +217,7 @@ describe("OrderService", () => {
 
 - **Branch principal**: `main` (produção)
 - **Branch de integração**: `develop` (staging)
-- **Features**: `feature/nome-descritivo` a partir de `develop`
+- **Features**: `feature/{N}-nome-descritivo` a partir da branch de integração — `{N}` é o número da issue, e é por ele que `/review` e `/fix-review` acham o relatório da feature
 - **Versionamento**: Semver (`MAJOR.MINOR.PATCH`) — develop usa sufixo `-rc.N`
 - **Arquivos de versão**: [DEFINIR: ex. package.json + package-lock.json | pyproject.toml | pom.xml | Cargo.toml]
 - **CHANGELOG no desenvolvimento**: uma única seção por ciclo, sempre consolidada — cada RC reescreve a do topo com o delta acumulado, header na versão RC atual e `Unreleased` no lugar da data (ex.: `## [2.3.0-rc.2] - Unreleased`); o `/release` troca esse header pela versão final

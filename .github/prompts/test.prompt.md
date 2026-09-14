@@ -2,12 +2,12 @@
 description: Executar, corrigir e melhorar testes até meta de cobertura
 agent: agent
 tools: [read, edit, search, execute, todo]
-argument-hint: "Meta de cobertura em % (padrão: 80)"
+argument-hint: "Meta de cobertura em % (opcional, padrão: a meta do projeto)"
 ---
 
 # /test - Completar Cobertura de Testes
 
-Meta de **statements**: 80%, ou o valor passado em `$ARGUMENTS`.
+Meta de **statements**: `.github/scripts/coverage.sh --target`, ou o valor passado em `$ARGUMENTS`.
 
 **Arquivos Protegidos** (ver `copilot-instructions.md`): não editar `.github/prompts/*.md` nem `copilot-instructions.md`.
 
@@ -25,7 +25,13 @@ Falhas identificadas (máx 3 iterações). Se persistir após o limite, parar e 
 
 ### 3 — Priorizar
 
-Cruzar arquivos da branch (`.github/scripts/changed-files.sh $INTEGRATION_BRANCH` — mesmo script usado pelo `/review`; `$INTEGRATION_BRANCH` lido de `copilot-instructions.md`) com a saída de `.github/scripts/coverage.sh --priority` (linhas `arquivo,rank_sum`, já ordenadas por prioridade — menor `rank_sum` primeiro).
+Cruzar os arquivos da branch com a saída de `.github/scripts/coverage.sh --priority`, atacando na ordem em que ela vem:
+
+```bash
+eval "$(.github/scripts/release-branches.sh)"
+.github/scripts/changed-files.sh "$INTEGRATION_BRANCH"
+.github/scripts/coverage.sh --priority
+```
 
 Montar `manage_todo_list` com o resultado antes de completar (Passo 4).
 

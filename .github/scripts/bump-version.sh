@@ -15,7 +15,7 @@ VERSION_ARG="${2:-}"
 [ -n "$ACTION" ] || { echo "Uso: bump-version.sh <patch|minor|major|release|current> [versão]" >&2; exit 1; }
 [ "${#VERSION_FILES[@]}" -gt 0 ] || { echo "VERSION_FILES não configurado — rode /setup" >&2; exit 1; }
 if [ -n "$VERSION_ARG" ] && [ "$ACTION" != "release" ]; then
-  echo "[versão] só é aceito com a ação 'release'" >&2
+  echo "[versão] só é aceito com a ação 'release' — para incrementar, rode bump-version.sh $ACTION sem a versão" >&2
   exit 1
 fi
 if [ -n "$VERSION_ARG" ] && ! [[ "$VERSION_ARG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -59,7 +59,14 @@ write_version() {
   esac
 }
 
-CURRENT="$(read_version "${VERSION_FILES[0]}")"
+# Sem o `|| true` e a guarda, um arquivo de versão sem o campo esperado (ou um
+# caminho errado em VERSION_FILES) mataria o script aqui em silêncio, no meio do
+# /rc ou do /release: read_version é um grep|sed sob `set -euo pipefail`.
+CURRENT="$(read_version "${VERSION_FILES[0]}" || true)"
+if ! [[ "$CURRENT" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+  echo "Versão não lida de ${VERSION_FILES[0]} (valor: '${CURRENT:-vazio}') — confira o arquivo e a lista VERSION_FILES em bump-version.sh (preenchida pelo /setup)" >&2
+  exit 1
+fi
 
 # `current` só lê e imprime, sem gravar nada.
 if [ "$ACTION" = "current" ]; then
@@ -92,6 +99,21 @@ case "$ACTION" in
   patch|minor|major)
     if [[ "$CURRENT" == *-rc.* ]]; then
       # Já em RC (o bump de base já foi aplicado ao sair da versão estável): só incrementa o rc.
+      #
+      # O tipo pedido não entra nessa conta, e é a base que diz qual ciclo está
+      # aberto (X.0.0 = major, X.Y.0 = minor). Pedir um tipo maior do que o ciclo
+      # aberto é publicar breaking change como minor/patch — avisa, em vez de
+      # perder o pedido em silêncio. Avisa e não falha: travar aqui pararia o /rc
+      # no meio, e a saída é decisão de versionamento, não argumento a corrigir.
+      PERDIDO=""
+      case "$ACTION" in
+        major) [ "$MINOR.$PATCH" = "0.0" ] || PERDIDO="major" ;;
+        minor) [ "$PATCH" = "0" ] || PERDIDO="minor" ;;
+      esac
+      if [ -n "$PERDIDO" ]; then
+        echo "⚠️ Ciclo já aberto em $CURRENT: o bump $PERDIDO pedido não sobe a base ($BASE) — só o -rc.N avança." >&2
+        echo "   Para a base subir, feche este ciclo primeiro (/release da base atual) e abra o próximo com /rc $PERDIDO." >&2
+      fi
       RC_N="${CURRENT##*-rc.}"
       NEW="$BASE-rc.$((RC_N+1))"
     else

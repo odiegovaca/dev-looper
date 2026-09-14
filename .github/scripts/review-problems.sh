@@ -14,7 +14,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TAB="$(printf '\t')"
 
 REPORT="${1:-}"
-[ -n "$REPORT" ] && [ -f "$REPORT" ] || { echo "Uso: review-problems.sh <relatório.md>" >&2; exit 1; }
+[ -n "$REPORT" ] || { echo "Uso: review-problems.sh <relatório.md>" >&2; exit 1; }
+[ -f "$REPORT" ] || { echo "Relatório não encontrado: $REPORT — rode /review para gerá-lo" >&2; exit 1; }
 
 # Guarda de formato emprestada do review-stats.sh: ele aborta se algum bloco
 # ficou sem severidade reconhecida, e é melhor parar aqui do que devolver uma
