@@ -8,11 +8,13 @@
 # criação, e é ela que mantém a ordem cronológica da pasta.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 ARG="${1:-}"
 [ -n "$ARG" ] || { echo "Uso: spec-path.sh <título da funcionalidade ou caminho de uma spec>" >&2; exit 1; }
 
-DATA_ARQUIVO="$(date +%F)"
-DATA_CAMPO="$(date +%d/%m/%Y)"
+DATA_ARQUIVO="$("$SCRIPT_DIR/hoje.sh")"
+DATA_CAMPO="$("$SCRIPT_DIR/hoje.sh" %d/%m/%Y)"
 
 emit() {
   echo "MODO=$1"

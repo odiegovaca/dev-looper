@@ -7,6 +7,9 @@
 # Imprime a confirmação pronta para o chat — usar a saída sem alterações.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GH_REPO="$("$SCRIPT_DIR/gh-repo.sh")"
+
 SPEC_PATH="${1:-}"
 
 # Sem argumento, precisa sobrar exatamente uma spec aprovada — zero ou várias é erro.
@@ -67,19 +70,24 @@ $(cat "$SPEC_PATH")
 EOF
 )"
 
+# Nenhum passo do /setup cria a label, e o --label abaixo a exige: sem isto o
+# /issue falha na primeira execução de todo repositório novo. --force é idempotente.
+gh label create "$TIPO" --repo "$GH_REPO" --force >/dev/null 2>&1 \
+  || echo "⚠️ Não consegui garantir a label '$TIPO' em $GH_REPO — se o passo abaixo falhar por label ausente, rode: gh label create $TIPO --repo $GH_REPO" >&2
+
 # gh imprime a URL nos dois casos; na criação o número é o último segmento dela.
 if [[ -n "$ISSUE_EXISTENTE" ]]; then
   ISSUE_ACTION="updated"
   ISSUE_NUMBER="$ISSUE_EXISTENTE"
-  ISSUE_URL="$(gh issue edit "$ISSUE_NUMBER" --title "$TITLE" --body "$BODY" --add-label "$TIPO")"
+  ISSUE_URL="$(gh issue edit --repo "$GH_REPO" "$ISSUE_NUMBER" --title "$TITLE" --body "$BODY" --add-label "$TIPO")"
   # O Tipo pode ter mudado no refinamento: --add-label não tira o antigo, e como
   # só há dois valores o outro sai aqui (remover label ausente não é erro).
   OUTRO_TIPO="improvement"
   [[ "$TIPO" == "improvement" ]] && OUTRO_TIPO="feature"
-  gh issue edit "$ISSUE_NUMBER" --remove-label "$OUTRO_TIPO" >/dev/null 2>&1 || true
+  gh issue edit --repo "$GH_REPO" "$ISSUE_NUMBER" --remove-label "$OUTRO_TIPO" >/dev/null 2>&1 || true
 else
   ISSUE_ACTION="created"
-  ISSUE_URL="$(gh issue create --title "$TITLE" --label "$TIPO" --body "$BODY")"
+  ISSUE_URL="$(gh issue create --repo "$GH_REPO" --title "$TITLE" --label "$TIPO" --body "$BODY")"
   ISSUE_NUMBER="$(basename "$ISSUE_URL")"
 fi
 

@@ -36,7 +36,7 @@ mkdir -p docs/reviews
 LAST_REPORT="$("$SCRIPT_DIR/latest-review.sh" 2>/dev/null || true)"
 LAST_SEQ="$(sed -E "s#.*review-${N}-([0-9]+)\.md#\1#" <<< "$LAST_REPORT")"
 SEQ=$(( ${LAST_SEQ:-0} + 1 ))
-DATA=$(date +%Y-%m-%d-%H%M%S)
+DATA=$("$SCRIPT_DIR/hoje.sh" %Y-%m-%d-%H%M%S)
 REPORT="docs/reviews/review-${N}-${SEQ}.md"
 
 mapfile -t FILES <<< "$CHANGED_FILES"

@@ -32,12 +32,12 @@ echo "   Status: ${STATUS:-ausente} — $PENDENTES questão(ões) em aberto"
 
 if [ "$PENDENTES" -gt 0 ]; then
   echo "   Próximo passo: responda as Questões em Aberto; com a spec aprovada, /issue."
+elif [ -n "$ISSUE" ] && [ "$MODO" != "nova" ]; then
+  # Spec com issue vinculada e alterada: a issue ficou para trás. Vem antes do
+  # teste de Aprovada porque o Status aqui já é `Issue criada`.
+  echo "   Próximo passo: /issue — a issue #$ISSUE está com o texto antigo e /issue propaga a spec revisada para ela."
 elif [ "$STATUS" = "Aprovada" ] || [ "$STATUS" = "Aprovado" ]; then
   echo "   Próximo passo: /issue para criar a issue GitHub."
 else
   echo "   Próximo passo: aprove a spec (Status: \`Aprovada\`) e rode /issue."
 fi
-
-# Spec com issue vinculada e alterada: a issue ficou para trás.
-[ -z "$ISSUE" ] || [ "$MODO" = "nova" ] || \
-  echo "   A issue #$ISSUE ainda está com o texto antigo: /issue propaga a spec revisada para ela."

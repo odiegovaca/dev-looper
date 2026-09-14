@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bump-version.sh <patch|minor|major|release|current> [versão]
+# bump-version.sh <patch|minor|major|release|current|files> [versão]
 #
 # Lê e grava a versão do projeto nos arquivos de versão configurados abaixo.
 # Imprime só a versão resultante no stdout — capture com NEW_VERSION=$(bump-version.sh patch).
@@ -12,7 +12,7 @@ VERSION_FILES=(
 
 ACTION="${1:-}"
 VERSION_ARG="${2:-}"
-[ -n "$ACTION" ] || { echo "Uso: bump-version.sh <patch|minor|major|release|current> [versão]" >&2; exit 1; }
+[ -n "$ACTION" ] || { echo "Uso: bump-version.sh <patch|minor|major|release|current|files> [versão]" >&2; exit 1; }
 [ "${#VERSION_FILES[@]}" -gt 0 ] || { echo "VERSION_FILES não configurado — rode /setup" >&2; exit 1; }
 if [ -n "$VERSION_ARG" ] && [ "$ACTION" != "release" ]; then
   echo "[versão] só é aceito com a ação 'release' — para incrementar, rode bump-version.sh $ACTION sem a versão" >&2
@@ -21,6 +21,14 @@ fi
 if [ -n "$VERSION_ARG" ] && ! [[ "$VERSION_ARG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo "Versão inválida: $VERSION_ARG (use X.Y.Z, ex: 2.5.0)" >&2
   exit 1
+fi
+
+# Dono único da lista: quem precisa saber quais arquivos carregam versão pergunta
+# aqui, em vez de manter uma segunda cópia que sai de sincronia com o /setup.
+if [ "$ACTION" = "files" ]; then
+  printf '%s
+' "${VERSION_FILES[@]}"
+  exit 0
 fi
 
 read_version() {
@@ -95,19 +103,20 @@ case "$ACTION" in
     ;;
   patch|minor|major)
     if [[ "$CURRENT" == *-rc.* ]]; then
-      # Já em RC: só o -rc.N avança, porque a base subiu na entrada do ciclo. Pedir mais
-      # do que o ciclo aberto (X.0.0 = major, X.Y.0 = minor) avisa sem falhar.
-      PERDIDO=""
+      # Normalmente só o -rc.N avança, porque a base subiu na entrada do ciclo; pedir mais
+      # do que ele comporta sobe a base e reinicia o contador (nenhum -rc.N virou tag pública).
+      SOBE=""
       case "$ACTION" in
-        major) [ "$MINOR.$PATCH" = "0.0" ] || PERDIDO="major" ;;
-        minor) [ "$PATCH" = "0" ] || PERDIDO="minor" ;;
+        major) [ "$MINOR.$PATCH" = "0.0" ] || SOBE="$((MAJOR+1)).0.0" ;;
+        minor) [ "$PATCH" = "0" ]          || SOBE="$MAJOR.$((MINOR+1)).0" ;;
       esac
-      if [ -n "$PERDIDO" ]; then
-        echo "⚠️ Ciclo já aberto em $CURRENT: o bump $PERDIDO pedido não sobe a base ($BASE) — só o -rc.N avança." >&2
-        echo "   Para a base subir, feche este ciclo primeiro (/release da base atual) e abra o próximo com /rc $PERDIDO." >&2
+      if [ -n "$SOBE" ]; then
+        echo "ℹ️ Bump $ACTION num ciclo aberto em $CURRENT: a base subiu de $BASE para $SOBE e o contador de RC recomeçou em 1 — o corpo do CHANGELOG do ciclo continua valendo." >&2
+        NEW="$SOBE-rc.1"
+      else
+        RC_N="${CURRENT##*-rc.}"
+        NEW="$BASE-rc.$((RC_N+1))"
       fi
-      RC_N="${CURRENT##*-rc.}"
-      NEW="$BASE-rc.$((RC_N+1))"
     else
       # Versão estável: calcula a próxima X.Y.Z e entra em RC a partir de .1.
       case "$ACTION" in
@@ -118,7 +127,7 @@ case "$ACTION" in
     fi
     ;;
   *)
-    echo "Ação inválida: $ACTION (use patch|minor|major|release|current)" >&2
+    echo "Ação inválida: $ACTION (use patch|minor|major|release|current|files)" >&2
     exit 1
     ;;
 esac

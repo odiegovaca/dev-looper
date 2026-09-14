@@ -25,21 +25,18 @@ BODY_SUMMARY="$(cat)"
 # Orientação pós-merge: texto puro, impresso nas duas saídas do script.
 print_postmerge_hint() {
   echo
-  echo "📋 Depois do merge (não executar agora)"
-  echo "   O PR ainda precisa ser revisado e mergeado."
-  echo "   Assim que estiver mergeado, o passo final da entrega é:"
+  echo "📋 Depois do merge do PR (não executar agora), o passo final é:"
   echo
   echo "       .github/scripts/release-postmerge.sh $RELEASE_VERSION"
   echo
-  echo "   Ele publica a tag v$RELEASE_VERSION, sincroniza a integração com $PROD_BRANCH"
-  echo "   e fecha o ciclo de cada issue da release (issue, spec e reviews)."
-  echo "   Se preferir, é só me pedir depois do merge que eu executo por você."
+  echo "   Publica a tag v$RELEASE_VERSION, sincroniza a integração com $PROD_BRANCH"
+  echo "   e encerra as issues do ciclo (issue, spec e reviews)."
 }
 
 # Contrato com o release-postmerge.sh, checado enquanto ainda sai barato: sem a seção
 # da versão ele fecha as issues sem a lista, e uma -rc.N que sobrou vai para produção.
 if [ -f CHANGELOG.md ]; then
-  HOJE="$(date +%d/%m/%Y)"
+  HOJE="$("$SCRIPT_DIR/hoje.sh" %d/%m/%Y)"
   RC_RESTANTE="$(grep -n "^## \[[^]]*-rc\." CHANGELOG.md 2>/dev/null || true)"
   # Casa por prefixo: o header da seção traz a data depois da versão.
   SECAO="$(awk -v hdr="## [$RELEASE_VERSION]" '
@@ -71,11 +68,13 @@ git add .
 git diff --cached --quiet || git commit -m "chore: release v$RELEASE_VERSION"
 
 CURRENT_BRANCH="$(git branch --show-current)"
-git push origin "$CURRENT_BRANCH"
+# -u deixa a branch com tracking, para os pushes seguintes à mão não precisarem de argumento.
+git push -u origin "$CURRENT_BRANCH"
 
 # Filtra por estado: sem isso, uma branch reaproveitada devolve o PR já mergeado
 # e o script sai com 0.
-EXISTING_PR="$(gh pr view "$CURRENT_BRANCH" --json url,state --jq 'select(.state == "OPEN") | .url' 2>/dev/null || true)"
+GH_REPO="$("$SCRIPT_DIR/gh-repo.sh")"
+EXISTING_PR="$(gh pr view --repo "$GH_REPO" "$CURRENT_BRANCH" --json url,state --jq 'select(.state == "OPEN") | .url' 2>/dev/null || true)"
 if [ -n "$EXISTING_PR" ]; then
   echo "⚠️ Já existe um PR aberto para esta branch: $EXISTING_PR"
   echo "   Push aplicado com as mudanças mais recentes; nenhum PR novo foi criado."
@@ -94,7 +93,8 @@ $BODY_SUMMARY
 - [x] Versões atualizadas
 - [ ] Revisado por pelo menos 1 desenvolvedor"
 
-PR_URL="$(gh pr create --base "$PROD_BRANCH" --title "release: v$RELEASE_VERSION" --body "$BODY")"
+# --head explícito: com --repo o gh deixa de inferir a head do diretório atual.
+PR_URL="$(gh pr create --repo "$GH_REPO" --base "$PROD_BRANCH" --head "$CURRENT_BRANCH" --title "release: v$RELEASE_VERSION" --body "$BODY")"
 
 echo "✅ PR criado: $PR_URL"
 echo "   Versão: $RELEASE_VERSION"

@@ -189,6 +189,9 @@ else
   STATUS="liberado"
 fi
 
+# Uma só derivação do seletor: a mesma string vai para o relatório e para o next-step.sh.
+BLOQUEANTES_SEL="$(sorted "$PENDING_BLOCKERS" | tr '\n' ' ' | sed 's/ $//')"
+
 TMP="$(mktemp)"
 trap 'rm -f "$TMP"' EXIT
 
@@ -202,6 +205,7 @@ trap 'rm -f "$TMP"' EXIT
   echo
   echo "**Correções aplicadas:** $(fmt_numbers "$APPLIED")"
   echo "**Status pós-fix:** $STATUS"
+  echo "**Bloqueantes pendentes:** ${BLOQUEANTES_SEL:-nenhum}"
   if [ -n "$DISMISSED" ]; then
     echo
     echo "**Dispensadas:**"
@@ -249,4 +253,4 @@ echo
 echo "   Checkpoint sugerido: git commit -m \"fix: aplica correções do review${N:+ #$N}\""
 echo
 echo "   Próximo passo:"
-echo "   - $("$SCRIPT_DIR/next-step.sh" "" "$STATUS" "$(sorted "$PENDING_BLOCKERS" | tr '\n' ' ' | sed 's/ $//')")"
+echo "   - $("$SCRIPT_DIR/next-step.sh" "" "$STATUS" "$BLOQUEANTES_SEL")"

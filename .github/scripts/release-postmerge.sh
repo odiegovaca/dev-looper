@@ -67,40 +67,87 @@ fi
 git checkout "$INTEGRATION_BRANCH"
 git pull origin "$INTEGRATION_BRANCH"
 
-# Conflito aqui mataria o script com a tag já publicada e nenhuma issue encerrada:
-# aborta e segue, e quem cobra a sincronização pendente é o release-branches.sh.
+# O merge de volta só atualiza a integração com produção: o número do próximo ciclo
+# é assunto do próximo /rc, que o deriva da versão de produção. Por isso os arquivos
+# de versão ficam com o lado de produção, e o CHANGELOG com os dois blocos — o da
+# release e o do ciclo que a integração abriu em paralelo.
+resolve_sincronizacao() {
+  local arq tmp
+  while IFS= read -r arq; do
+    [ -n "$arq" ] || continue
+    if [ "$arq" = "CHANGELOG.md" ]; then
+      # `=======` é sublinhado de título válido em Markdown: apagar as marcas de
+      # conflito com sed corromperia o arquivo, então quem as separa é o git.
+      tmp="$(mktemp -d)"
+      git show ":1:$arq" > "$tmp/base" 2>/dev/null || : > "$tmp/base"
+      git show ":2:$arq" > "$tmp/nosso"
+      git show ":3:$arq" > "$tmp/deles"
+      git merge-file --union -p "$tmp/nosso" "$tmp/base" "$tmp/deles" \
+        | awk 'NR > 1 && /^## / && anterior != "" { print "" } { print; anterior = $0 }' > "$arq"
+      rm -rf "$tmp"
+    else
+      git checkout --theirs -- "$arq"
+    fi
+    git add "$arq"
+  done
+}
+
 SINCRONIZADA=1
 if ! git merge "$PROD_BRANCH"; then
-  git merge --abort || true
-  SINCRONIZADA=""
-  ENCERRAMENTO+=("⚠️ Merge de $PROD_BRANCH em $INTEGRATION_BRANCH conflitou e foi abortado — resolva à mão (git merge $PROD_BRANCH) e commite. A tag e o encerramento das issues abaixo não dependem disso.")
+  CONFLITADOS="$(git diff --name-only --diff-filter=U)"
+  ESPERADOS="$(printf 'CHANGELOG.md\n%s\n' "$("$SCRIPT_DIR/bump-version.sh" files 2>/dev/null || true)")"
+  INESPERADOS="$(grep -vxF -f <(printf '%s\n' "$ESPERADOS") <<< "$CONFLITADOS" || true)"
+
+  if [ -n "$INESPERADOS" ]; then
+    # Conflito fora do par CHANGELOG/versão é divergência de verdade entre as duas
+    # branches, e resolver sozinho descartaria trabalho de alguém.
+    git merge --abort || true
+    SINCRONIZADA=""
+    ENCERRAMENTO+=("⚠️ Merge de $PROD_BRANCH em $INTEGRATION_BRANCH conflitou fora do CHANGELOG e dos arquivos de versão, e foi abortado — resolva à mão (git merge $PROD_BRANCH) e commite: $(tr '\n' ' ' <<< "$INESPERADOS")")
+    ENCERRAMENTO+=("   A tag e o encerramento das issues abaixo não dependem disso.")
+  else
+    resolve_sincronizacao <<< "$CONFLITADOS"
+    git commit -q -m "chore: sincroniza $INTEGRATION_BRANCH com $PROD_BRANCH após a $TAG"
+    ENCERRAMENTO+=("ℹ️ Merge de volta conflitou no esperado e foi resolvido: versão de $PROD_BRANCH, CHANGELOG com os dois blocos. O número do próximo ciclo sai do próximo /rc.")
+  fi
 fi
 
 ISSUES=""
+# Daqui para baixo a tag já está publicada: nada pode matar o script, só virar aviso.
+GH_REPO=""
 if ! command -v gh >/dev/null 2>&1; then
   ENCERRAMENTO+=("⚠️ Issues não encerradas: gh não encontrado. Feche e arquive manualmente.")
+elif ! GH_REPO="$("$SCRIPT_DIR/gh-repo.sh" 2>/dev/null)"; then
+  ENCERRAMENTO+=("⚠️ Issues não encerradas: não resolvi o OWNER/REPO do remoto origin. Feche e arquive manualmente.")
 else
-  # PRs mergeados na integração depois da release anterior; sem ela, todos.
+  # PRs mergeados na integração depois da release anterior; sem ela, todos. A fronteira
+  # sai do epoch (%ct) e vira Z, porque só dá para comparar ISO-8601 dentro do mesmo fuso.
   SINCE=""
-  [ -z "$PREV_TAG" ] || SINCE="$(git log -1 --format=%cI "$PREV_TAG" 2>/dev/null || true)"
-  # Comparação de string: ISO-8601 ordena lexicograficamente, então `>` é "mergeado depois".
-  if [ -n "$SINCE" ]; then
-    JQ_FILTER="map(select(.mergedAt > \"$SINCE\")) | .[].closingIssuesReferences[].number"
-  else
-    JQ_FILTER=".[].closingIssuesReferences[].number"
+  if [ -n "$PREV_TAG" ]; then
+    SINCE_EPOCH="$(git log -1 --format=%ct "$PREV_TAG" 2>/dev/null || true)"
+    [ -z "$SINCE_EPOCH" ] || SINCE="$(date -u -d "@$SINCE_EPOCH" +%Y-%m-%dT%H:%M:%SZ)"
   fi
-  ISSUES="$(gh pr list --base "$INTEGRATION_BRANCH" --state merged --limit 100 \
-    --json closingIssuesReferences,mergedAt --jq "$JQ_FILTER" 2>/dev/null | sort -un || true)"
-  [ -n "$ISSUES" ] || ENCERRAMENTO+=("⚠️ Nenhuma issue encontrada nos PRs mergeados em $INTEGRATION_BRANCH desde ${PREV_TAG:-o início}. Feche e arquive manualmente.")
+  # Comparação de string: ISO-8601 em UTC ordena lexicograficamente, então `>` é "mergeado depois".
+  if [ -n "$SINCE" ]; then
+    JQ_FILTER="map(select(.mergedAt > \"$SINCE\")) | .[].headRefName"
+  else
+    JQ_FILTER=".[].headRefName"
+  fi
+  # O {N} sai do nome da branch: o closingIssuesReferences do GitHub só vem preenchido
+  # em PR baseado na branch default, e todo PR de RC aponta para a integração.
+  ISSUES="$(gh pr list --repo "$GH_REPO" --base "$INTEGRATION_BRANCH" --state merged --limit 100 \
+    --json headRefName,mergedAt --jq "$JQ_FILTER" 2>/dev/null \
+    | sed -nE 's#^[a-z]+/([0-9]+)-.*#\1#p' | sort -un || true)"
+  [ -n "$ISSUES" ] || ENCERRAMENTO+=("⚠️ Não consegui descobrir as issues do ciclo: nenhum PR mergeado em $INTEGRATION_BRANCH desde ${PREV_TAG:-o início} tem branch no padrão {tipo}/{N}-nome. Feche e arquive manualmente.")
 fi
 
 for N in $ISSUES; do
-  ESTADO="$(gh issue view "$N" --json state -q .state 2>/dev/null || true)"
+  ESTADO="$(gh issue view --repo "$GH_REPO" "$N" --json state -q .state 2>/dev/null || true)"
   if [ "$ESTADO" = "CLOSED" ]; then
     ENCERRAMENTO+=("Issue #$N já estava fechada.")
   elif [ -z "$ESTADO" ]; then
     ENCERRAMENTO+=("⚠️ Issue #$N não consultada (gh falhou). Feche manualmente.")
-  elif gh issue close "$N" --comment "$COMENTARIO" >/dev/null 2>&1; then
+  elif gh issue close --repo "$GH_REPO" "$N" --comment "$COMENTARIO" >/dev/null 2>&1; then
     ENCERRAMENTO+=("Issue #$N fechada.")
   else
     ENCERRAMENTO+=("⚠️ Issue #$N não fechada (gh falhou). Feche manualmente.")

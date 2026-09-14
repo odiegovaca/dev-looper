@@ -10,6 +10,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+GH_REPO="$("$SCRIPT_DIR/gh-repo.sh")"
+
 TIPO="${1:-}"
 TITLE_DESC="${2:-}"
 
@@ -34,11 +36,12 @@ NEW_VERSION="$("$SCRIPT_DIR/bump-version.sh" current)"
 FEATURE_N="$("$SCRIPT_DIR/feature-number.sh" 2>/dev/null || true)"
 
 CURRENT_BRANCH="$(git branch --show-current)"
-git push origin "$CURRENT_BRANCH"
+# -u deixa a branch com tracking, para os pushes seguintes à mão não precisarem de argumento.
+git push -u origin "$CURRENT_BRANCH"
 
 # Filtra por estado: sem isso, uma branch reaproveitada devolve o PR já mergeado
 # e o script sai com 0.
-EXISTING_PR="$(gh pr view "$CURRENT_BRANCH" --json url,state --jq 'select(.state == "OPEN") | .url' 2>/dev/null || true)"
+EXISTING_PR="$(gh pr view --repo "$GH_REPO" "$CURRENT_BRANCH" --json url,state --jq 'select(.state == "OPEN") | .url' 2>/dev/null || true)"
 if [ -n "$EXISTING_PR" ]; then
   echo "⚠️ Já existe um PR aberto para esta branch: $EXISTING_PR"
   echo "   Push aplicado com as mudanças mais recentes; nenhum PR novo foi criado."
@@ -53,7 +56,8 @@ if [ -n "$FEATURE_N" ]; then
 Closes #$FEATURE_N"
 fi
 
-PR_URL="$(gh pr create --base "$INTEGRATION_BRANCH" --title "$PREFIX: $TITLE_DESC" --body "$BODY")"
+# --head explícito: com --repo o gh deixa de inferir a head do diretório atual.
+PR_URL="$(gh pr create --repo "$GH_REPO" --base "$INTEGRATION_BRANCH" --head "$CURRENT_BRANCH" --title "$PREFIX: $TITLE_DESC" --body "$BODY")"
 
 echo "✅ PR criado: $PR_URL"
 echo "   Versão: $NEW_VERSION ($TIPO)"

@@ -21,7 +21,8 @@ read_coverage() {
 # Insumo do --priority, via rank_priority() abaixo.
 read_coverage_by_file() {
   # [DEFINIR: comando que le COVERAGE_REPORT e imprime "caminho,pct,total_statements"
-  # por arquivo, sem cabecalho nem total; pct so o numero, 3a coluna vazia se nao houver]
+  # por arquivo, sem cabecalho nem total; pct so o numero, 3a coluna vazia se nao houver.
+  # Caminho relativo a raiz do repositorio e com "/", como o changed-files.sh devolve]
   return 1
 }
 
@@ -96,6 +97,17 @@ fases() {
   ranked="$(cat)"
   fase1="$(grep -F -f <(printf '%s\n' "$alterados") <<< "$ranked" || true)"
   fase2="$(grep -F -v -f <(printf '%s\n' "$alterados") <<< "$ranked" | head -10 || true)"
+
+  # FASE1 vazia por formato de caminho incompatível passa despercebida — o --priority
+  # segue plausível, só que todo em FASE2. O teste do arquivo separa isso de uma branch só de doc.
+  if [ -z "$fase1" ] && [ -n "$ranked" ]; then
+    local amostra
+    amostra="$(head -1 <<< "$ranked" | cut -d, -f1)"
+    if [ ! -e "$amostra" ]; then
+      echo "Aviso: nenhum arquivo da branch casou com o relatório de cobertura, e o primeiro caminho dele ('$amostra') não existe a partir da raiz do repositório." >&2
+      echo "       Confira read_coverage_by_file em coverage.sh: o caminho tem de ser relativo à raiz do repositório e com \"/\"." >&2
+    fi
+  fi
 
   echo "FASE1:"
   [ -z "$fase1" ] || printf '%s\n' "$fase1"

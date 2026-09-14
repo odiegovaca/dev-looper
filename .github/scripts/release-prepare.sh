@@ -39,9 +39,9 @@ if [ "$CURRENT_BRANCH" != "$INTEGRATION_BRANCH" ] && [ "$CURRENT_BRANCH" != "$RE
 fi
 
 # Numa reexecução isto lê a versão da própria branch de release, não a RC da
-# integração — é informativo, e RELEASE_VERSION vem de VERSION_ARG nesse caso.
-INTEGRATION_VERSION="$("$SCRIPT_DIR/bump-version.sh" current)"
-RELEASE_VERSION="${VERSION_ARG:-$(echo "$INTEGRATION_VERSION" | sed 's/-rc\..*//')}"
+# integração; nesse caso RELEASE_VERSION vem de VERSION_ARG.
+CURRENT_VERSION="$("$SCRIPT_DIR/bump-version.sh" current)"
+RELEASE_VERSION="${VERSION_ARG:-$(echo "$CURRENT_VERSION" | sed 's/-rc\..*//')}"
 
 RELEASE_BRANCH="release/v$RELEASE_VERSION"
 if git rev-parse --verify "$RELEASE_BRANCH" >/dev/null 2>&1; then
@@ -65,12 +65,12 @@ fi
 # Só troca o header -rc.N do topo pelo da release, sem apagar seção nenhuma — apagar
 # aqui conflitaria com a integração em todo merge. Header já carimbado fica como está.
 if [ -f CHANGELOG.md ] && ! grep -q "^## \[$RELEASE_VERSION\]" CHANGELOG.md; then
-  awk -v hdr="## [$RELEASE_VERSION] - $(date +%d/%m/%Y)" '
+  awk -v hdr="## [$RELEASE_VERSION] - $("$SCRIPT_DIR/hoje.sh" %d/%m/%Y)" '
     !carimbado && /^## \[[^]]*-rc\./ { print hdr; carimbado = 1; next }
     { print }
   ' CHANGELOG.md > CHANGELOG.md.tmp && mv CHANGELOG.md.tmp CHANGELOG.md
 fi
 
 echo "✅ Branch $RELEASE_BRANCH pronta para a release $RELEASE_VERSION."
-echo "   Origem: $INTEGRATION_BRANCH, em $INTEGRATION_VERSION. Destino do PR: $PROD_BRANCH."
+echo "   Origem: $INTEGRATION_BRANCH, em $CURRENT_VERSION. Destino do PR: $PROD_BRANCH."
 echo "   Versão gravada nos arquivos e header do CHANGELOG carimbado."
