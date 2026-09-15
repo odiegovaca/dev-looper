@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
 # latest-review.sh
 #
-# Localiza o relatório de /review mais recente da feature atual (ordenação
-# numérica por {seq}, não por mtime — não confiável após clone/checkout).
-# Centraliza a mesma lógica hoje duplicada entre review-prepare.sh e
-# status-snapshot.sh. Falha com exit 1 e mensagem no stderr se a branch não
-# seguir o padrão esperado ou não houver nenhum review para a feature.
+# Imprime o caminho do relatório de /review mais recente da feature atual, ou
+# falha com exit 1 se não houver — ordena por {seq}, não por mtime (não sobrevive a clone).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

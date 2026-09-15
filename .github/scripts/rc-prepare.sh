@@ -1,17 +1,11 @@
 #!/usr/bin/env bash
 # rc-prepare.sh [tipo]
 #
-# Resolve tudo que o passo 1 do /rc precisa antes da decisão de TIPO.
-# Orquestra release-branches.sh/feature-number.sh/changed-files.sh — os três
-# continuam chamáveis direto por /code, /review, /fix-review e /release;
-# este script só existe para a sequência específica do /rc.
+# Resolve tudo que o passo 1 do /rc precisa antes da decisão de TIPO: valida a
+# branch, commita o trabalho pendente e lista os arquivos alterados.
 #
-# Imprime INTEGRATION_BRANCH/FEATURE_N/TIPO (uma var por linha, formato
-# KEY=value — TIPO fica vazio se ainda não decidido), seguido de
-# "CHANGED_FILES:" e a lista de arquivos alterados, um por linha (mesmo
-# formato do "DIFF:" em review-prepare.sh). PROD_BRANCH e CURRENT_BRANCH só
-# servem pra checagem de branch protegida abaixo — não são consumidos por
-# nenhum passo depois, por isso não saem no output.
+# Imprime INTEGRATION_BRANCH/FEATURE_N/TIPO em KEY=value (TIPO vazio se ainda
+# não decidido), seguido de "CHANGED_FILES:" e a lista, um arquivo por linha.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,19 +18,24 @@ esac
 
 eval "$("$SCRIPT_DIR/release-branches.sh")"
 CURRENT_BRANCH="$(git branch --show-current)"
-# /rc empacota trabalho de feature — não faz sentido (e não deve ser possível)
-# rodar de dentro da própria branch de produção ou integração.
+# /rc empacota trabalho de feature: não roda de dentro de produção nem da integração.
 if [ "$CURRENT_BRANCH" = "$PROD_BRANCH" ] || [ "$CURRENT_BRANCH" = "$INTEGRATION_BRANCH" ]; then
   echo "Branch protegida ($CURRENT_BRANCH) — troque para uma branch de feature/fix antes de rodar /rc." >&2
   exit 1
 fi
+# Branch de release não é feature: aqui o PR sairia com a base errada e um -rc.N
+# novo cairia sobre uma versão já fechada.
+case "$CURRENT_BRANCH" in
+  release/v*)
+    echo "Branch de release ($CURRENT_BRANCH) — /rc abriria PR para $INTEGRATION_BRANCH, base errada." >&2
+    echo "   Commite o ajuste aqui mesmo e rode /release ${CURRENT_BRANCH#release/v} de novo: o PR já aberto recebe o push." >&2
+    exit 1
+    ;;
+esac
 
 FEATURE_N="$("$SCRIPT_DIR/feature-number.sh" 2>/dev/null || true)"
 
-# git add . + commit rodam atômicos aqui, sem pausa pro agente conferir o
-# stage — por isso os Arquivos Protegidos (regra em copilot-instructions.md)
-# são desestageados de forma determinística antes do commit, em vez de
-# depender de o agente lembrar de checar.
+# add + commit rodam atômicos aqui, então os Arquivos Protegidos saem do stage antes.
 git add .
 "$SCRIPT_DIR/protect-stage.sh"
 git diff --cached --quiet || git commit -m "chore: finalize feature implementation"

@@ -7,53 +7,63 @@ argument-hint: "Descrição do aprendizado (ex: /lesson Controllers void não de
 
 # /lesson - Formalizar Aprendizado em Instrução
 
-Transforme uma correção ou observação em regra permanente no projeto.
-
 ## Processo
 
 ### 1 — Capturar o Aprendizado
 
-Se o argumento foi fornecido, usá-lo diretamente.  
-Se não foi fornecido, perguntar: _"Qual correção ou padrão você quer registrar?"_
+Sem argumento, perguntar: _"Qual correção ou padrão você quer registrar?"_
 
-### 2 — Classificar o Destino
+Pode vir mais de uma; tratar cada lição separadamente daqui em diante.
+
+### 2 — Decidir se Vira Instrução
+
+Instrução escrita é o último recurso. Nesta ordem:
+
+- **Dá para tornar o erro impossível?**
+- **Dá para o erro se denunciar sozinho?**
+- **É regra permanente, ou fato de agora?** O que descreve o estado presente é tarefa.
+
+A lição que sai aqui é anotada com o que a substitui — qual mudança e onde.
+
+### 3 — Classificar o Destino
 
 ```bash
 .github/scripts/list-lesson-targets.sh
 ```
 
-Escolher o(s) destino(s) mais adequado(s) com base na `description` de cada um; se nenhuma deixar claro, abrir o arquivo candidato e conferir o conteúdo antes de decidir.
+Escolher pela `description` de cada um; se nenhuma decidir, abrir o candidato e conferir. Uma regra pode ir para mais de um arquivo.
 
-Uma regra pode ir para mais de um arquivo se relevante em contextos distintos.
+### 4 — Buscar Termos-Chave e Analisar Impacto
 
-### 3 — Buscar Termos-Chave e Analisar Impacto
+Buscar termos-chave da lição em todo o `.github/` e no `README.md`.
 
-Buscar em todo o `.github/` e no `README.md` do projeto por termos-chave do aprendizado.
+- **No destino**: já existe regra similar — anotar onde, e se é para complementar ou substituir
+- **Fora do destino**: referência que ficará inconsistente — incluir os arquivos na proposta
 
-- **Match no(s) arquivo(s) destino**: já existe regra similar — informar onde está e perguntar se deseja **complementar** ou **substituir**
-- **Match em outros arquivos**: referência que ficará inconsistente com a nova regra — listar os arquivos afetados e incluí-los na proposta de alteração (próximo passo)
+### 5 — Apresentar Proposta
 
-### 4 — Apresentar Proposta
+Formatar cada regra no estilo do arquivo destino, integrando na seção existente mais relacionada. **Boas regras:** acionáveis, específicas, máximo 2-3 linhas.
 
-Formatar a regra seguindo o estilo do arquivo destino, integrando na seção ou passo existente mais relacionado — evitar criar algo novo solto quando um já cobre o tema. **Boas regras:** acionáveis, específicas, máximo 2-3 linhas.
+Uma proposta só para todas as lições: um bloco por destino, o resto uma vez no fim.
 
 ```markdown
 ## 📚 Proposta de Instrução
 
-**Arquivo:** `.github/copilot-instructions.md`
-**Seção:** Common Pitfalls
+**Arquivo:** [caminho]
+**Seção:** [seção]
 **Adicionar:**
-
 - [texto da regra]
+**Regra similar existente:** [onde está, complementar ou substituir — ou "nenhuma"]
 
 **Impacto em outros arquivos:** [lista ou "nenhum"]
+**Fora do arquivo de instrução:** [uma linha por lição que saiu no passo 2 — ou "nenhuma"]
 
 **Confirmar? (responda "sim" para aplicar)**
 ```
 
-### 5 — Aplicar Após Confirmação
+### 6 — Aplicar Após Confirmação
 
-Somente após confirmação explícita: inserir a regra no arquivo na posição correta e propagar ajustes nos arquivos impactados.
+Somente após confirmação explícita: inserir cada regra na posição correta e propagar os ajustes.
 
 ```markdown
 ✅ Regra adicionada em [arquivo] > [seção].

@@ -4,6 +4,12 @@ Workflow de desenvolvimento com GitHub Copilot Agent Mode.
 
 Fornece um conjunto de comandos `/` que guiam o desenvolvedor por um ciclo completo de desenvolvimento — da especificação ao PR de produção — com guardrails, padrões do projeto e auto-melhoria incorporados.
 
+## Como o dev-looper é usado
+
+É um **ponto de partida**, não uma dependência. Você instala uma vez, roda o `/setup`, e a partir daí a cópia é do seu projeto: adapte os prompts e os scripts ao que o seu time precisa, sem se preocupar em manter compatibilidade com este repositório.
+
+Não existe atualização no lugar. Uma versão nova do dev-looper é um ponto de partida **novo** — para um projeto novo, ou para quem quiser reinstalar do zero e reaplicar as próprias adaptações. As [Releases](https://github.com/odiegovaca/dev-looper/releases) descrevem o que mudou entre uma versão e outra, e cada instalação registra no cabeçalho de `.github/prompts/README.md` de qual delas partiu.
+
 ---
 
 ## Pré-requisitos
@@ -12,7 +18,7 @@ Fornece um conjunto de comandos `/` que guiam o desenvolvedor por um ciclo compl
 - Git configurado no projeto
 - **`gh` CLI** — necessário para `/issue`, `/rc` e `/release` ([instalar](https://cli.github.com))
 
-> O `/setup` valida esses pré-requisitos na inicialização e interrompe com mensagem clara se algo estiver faltando. **Execute `/setup` antes de qualquer outro comando do workflow.**
+> O `/setup` confere o `gh` (instalado e autenticado) na inicialização e interrompe com mensagem clara se faltar. **Execute `/setup` antes de qualquer outro comando do workflow.**
 
 > **Recomendação de modelo:** mantenha o seletor de modelo do Copilot em **Auto** — ele roteia automaticamente entre modelos de acordo com a complexidade de cada tarefa, o que combina bem com fases de granularidade variada (ex: `/spec` é mais leve que `/code`).
 
@@ -26,7 +32,9 @@ Fornece um conjunto de comandos `/` que guiam o desenvolvedor por um ciclo compl
 .github/scripts/install.sh /caminho/do/seu/projeto
 ```
 
-O script é idempotente: por arquivo, se o destino já existe e é diferente do que está sendo instalado, ele pula e reporta em vez de sobrescrever — use `--force` para sobrescrever mesmo assim. Isso protege customizações locais (ex: `copilot-instructions.md` já preenchido) ao rodar de novo num projeto que já tem o dev-looper instalado.
+O script é idempotente: por arquivo, se o destino já existe e é diferente do que está sendo instalado, ele pula e reporta em vez de sobrescrever — use `--force` para sobrescrever mesmo assim. Isso protege o que o `/setup` preencheu (`bump-version.sh`, `coverage.sh`, `release-branches.sh` e `validate.sh`) caso o script rode uma segunda vez no mesmo projeto.
+
+`--force` sobrescreve **inclusive** esses quatro arquivos, devolvendo-os aos placeholders `[DEFINIR]` — depois dele o projeto precisa rodar `/setup` de novo. Não o use para trazer mudanças de uma versão nova para um projeto já configurado.
 
 > Alternativa sem o script: `cp -r .github/ /caminho/do/seu/projeto/.github/` — mas isso sobrescreve tudo cegamente, inclusive PRs/issues templates existentes.
 
@@ -70,8 +78,8 @@ Deve mostrar branch atual, versão e sugerir próximo passo.
 /spec        Escrever especificação funcional
 /issue       Criar issue GitHub da spec
 /code        Gerar código seguindo a spec e padrões do projeto
-/test        Testes até meta de cobertura (padrão 80%)
-/review      Revisão crítica por criticidade
+/test        Testes até a meta de cobertura do projeto
+/review      Revisão crítica priorizada por severidade
 /fix-review  Aplicar correções do code review
 /rc          PR → branch de integração (com versionamento RC)
 /release     PR → produção (versão estável)
@@ -113,8 +121,8 @@ Use `/lesson` após qualquer correção manual para manter esse arquivo crescend
 ### Adaptar os prompts
 
 - **`code.prompt.md`**: Fases de implementação específicas do stack. Gerado automaticamente pelo `/setup` mas pode ser ajustado manualmente.
-- **`rc.prompt.md`**: Ajustar se o projeto não usar versionamento RC ou tiver arquivos de versão diferentes de `package.json`.
-- **`release.prompt.md`**: Ajustar branch de produção se não for `main`.
+- **`rc.prompt.md`**: Ajustar se o projeto não usar versionamento RC.
+- Arquivos de versão e branches de produção/integração **não** ficam em prompt: são o `VERSION_FILES` do `bump-version.sh` e o `PROD_BRANCH`/`INTEGRATION_BRANCH` do `release-branches.sh`, preenchidos pelo `/setup`.
 
 Os demais prompts buscam padrões e comandos em `copilot-instructions.md` — nenhum precisa de alteração manual após o `/setup`.
 
@@ -137,13 +145,13 @@ Todos os comandos são prompts com `agent: agent` — executam em agent mode com
 
 O **dev-looper** funciona para qualquer projeto com git. O que muda entre projetos é apenas o conteúdo de:
 
-| Arquivo                          | O que adaptar                             |
-| -------------------------------- | ----------------------------------------- |
-| `copilot-instructions.md`        | Stack, padrões, comandos, armadilhas      |
-| `prompts/code.prompt.md`          | Fases de implementação do stack           |
-| `scripts/bump-version.sh`         | Lista `VERSION_FILES` do projeto          |
-| `scripts/coverage.sh`             | Comando de cobertura do stack             |
-| `scripts/validate.sh`             | Comandos de test/lint/build do stack      |
-| `scripts/release-branches.sh`     | `PROD_BRANCH`/`INTEGRATION_BRANCH` do projeto |
+| Arquivo                          | O que adaptar                                 |
+| -------------------------------- | --------------------------------------------- |
+| `copilot-instructions.md`        | Stack, padrões, comandos, armadilhas          |
+| `prompts/code.prompt.md`         | Fases de implementação do stack               |
+| `scripts/bump-version.sh`        | Lista `VERSION_FILES` do projeto              |
+| `scripts/coverage.sh`            | Comando de cobertura do stack                 |
+| `scripts/validate.sh`            | Comandos de test/lint/build do stack          |
+| `scripts/release-branches.sh`    | `PROD_BRANCH`/`INTEGRATION_BRANCH` do projeto |
 
 O restante (10+ arquivos) é copiado sem alteração.

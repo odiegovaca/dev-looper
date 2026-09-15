@@ -1,25 +1,22 @@
 #!/usr/bin/env bash
-# create-pr.sh <integration-branch> <patch|minor|major> <new-version> <título> [feature-n]
+# create-pr.sh <patch|minor|major> <título>
 # Resumo do PR via stdin.
 #
-# Faz a parte 100% mecânica do passo 4 do /rc: push da branch atual, checagem
-# de PR já aberto (sem criar duplicado nem editar automaticamente — só
-# reporta), mapeamento tipo→prefixo de commit convencional e a chamada ao
-# `gh pr create`. Título e resumo continuam vindo de fora porque exigem
-# leitura dos commits — o script não infere nada, só monta e executa.
-#
-# Termina imprimindo a confirmação já pronta para colar no chat (mesmo
-# padrão do review-finalize.sh) — usar a saída sem alterações.
+# Push da branch, checagem de PR já aberto, tipo→prefixo de commit convencional
+# e `gh pr create`. Título e resumo vêm de fora porque exigem leitura dos commits.
+# Branch base, versão e número da issue saem dos scripts que já os calcularam, não de argumento.
+# Imprime a confirmação pronta para o chat — usar a saída sem alterações.
 set -euo pipefail
 
-INTEGRATION_BRANCH="${1:-}"
-TIPO="${2:-}"
-NEW_VERSION="${3:-}"
-TITLE_DESC="${4:-}"
-FEATURE_N="${5:-}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-if [ -z "$INTEGRATION_BRANCH" ] || [ -z "$TIPO" ] || [ -z "$NEW_VERSION" ] || [ -z "$TITLE_DESC" ]; then
-  echo "Uso: create-pr.sh <integration-branch> <patch|minor|major> <new-version> <título> [feature-n]  (resumo via stdin)" >&2
+GH_REPO="$("$SCRIPT_DIR/gh-repo.sh")"
+
+TIPO="${1:-}"
+TITLE_DESC="${2:-}"
+
+if [ -z "$TIPO" ] || [ -z "$TITLE_DESC" ]; then
+  echo "Uso: create-pr.sh <patch|minor|major> <título>  (resumo via stdin)" >&2
   exit 1
 fi
 
@@ -32,10 +29,19 @@ esac
 
 BODY_SUMMARY="$(cat)"
 
-CURRENT_BRANCH="$(git branch --show-current)"
-git push origin "$CURRENT_BRANCH"
+BRANCHES="$("$SCRIPT_DIR/release-branches.sh")" || exit 1
+eval "$BRANCHES"
+NEW_VERSION="$("$SCRIPT_DIR/bump-version.sh" current)"
+# Sem issue vinculada não há "Closes #N" — não é erro, é branch fora do padrão.
+FEATURE_N="$("$SCRIPT_DIR/feature-number.sh" 2>/dev/null || true)"
 
-EXISTING_PR="$(gh pr view "$CURRENT_BRANCH" --json url --jq .url 2>/dev/null || true)"
+CURRENT_BRANCH="$(git branch --show-current)"
+# -u deixa a branch com tracking, para os pushes seguintes à mão não precisarem de argumento.
+git push -u origin "$CURRENT_BRANCH"
+
+# Filtra por estado: sem isso, uma branch reaproveitada devolve o PR já mergeado
+# e o script sai com 0.
+EXISTING_PR="$(gh pr view --repo "$GH_REPO" "$CURRENT_BRANCH" --json url,state --jq 'select(.state == "OPEN") | .url' 2>/dev/null || true)"
 if [ -n "$EXISTING_PR" ]; then
   echo "⚠️ Já existe um PR aberto para esta branch: $EXISTING_PR"
   echo "   Push aplicado com as mudanças mais recentes; nenhum PR novo foi criado."
@@ -50,7 +56,8 @@ if [ -n "$FEATURE_N" ]; then
 Closes #$FEATURE_N"
 fi
 
-PR_URL="$(gh pr create --base "$INTEGRATION_BRANCH" --title "$PREFIX: $TITLE_DESC" --body "$BODY")"
+# --head explícito: com --repo o gh deixa de inferir a head do diretório atual.
+PR_URL="$(gh pr create --repo "$GH_REPO" --base "$INTEGRATION_BRANCH" --head "$CURRENT_BRANCH" --title "$PREFIX: $TITLE_DESC" --body "$BODY")"
 
 echo "✅ PR criado: $PR_URL"
 echo "   Versão: $NEW_VERSION ($TIPO)"
