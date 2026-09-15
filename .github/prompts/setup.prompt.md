@@ -12,7 +12,8 @@ argument-hint: "Descrição do projeto (opcional, usada se não houver README)"
 ### 1 — Verificar Pré-requisitos
 
 ```bash
-.github/scripts/check-prereqs.sh
+chmod +x .github/scripts/*.sh
+bash .github/scripts/check-prereqs.sh
 ```
 
 Se falhar, repassar a mensagem e parar.
