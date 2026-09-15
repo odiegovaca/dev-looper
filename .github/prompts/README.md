@@ -8,7 +8,7 @@
 2. `/issue` → Issue GitHub
 3. `/code` → Código + testes básicos (happy path + erros esperados)
    - `/test` → _se cobertura abaixo da meta após `/code`_
-4. `/review` → Revisão de qualidade por criticidade
+4. `/review` → Revisão de qualidade crítica por nível de severidade
    - `/fix-review [alvo]` → _se houver problemas a tratar; critical e high bloqueiam o `/rc`_
 5. `/rc` → PR → branch de integração (versão RC)
 6. `/release` → PR → produção (versão estável)

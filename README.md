@@ -79,7 +79,7 @@ Deve mostrar branch atual, versão e sugerir próximo passo.
 /issue       Criar issue GitHub da spec
 /code        Gerar código seguindo a spec e padrões do projeto
 /test        Testes até a meta de cobertura do projeto
-/review      Revisão crítica por criticidade
+/review      Revisão crítica priorizada por severidade
 /fix-review  Aplicar correções do code review
 /rc          PR → branch de integração (com versionamento RC)
 /release     PR → produção (versão estável)
@@ -145,13 +145,13 @@ Todos os comandos são prompts com `agent: agent` — executam em agent mode com
 
 O **dev-looper** funciona para qualquer projeto com git. O que muda entre projetos é apenas o conteúdo de:
 
-| Arquivo                          | O que adaptar                             |
-| -------------------------------- | ----------------------------------------- |
-| `copilot-instructions.md`        | Stack, padrões, comandos, armadilhas      |
-| `prompts/code.prompt.md`          | Fases de implementação do stack           |
-| `scripts/bump-version.sh`         | Lista `VERSION_FILES` do projeto          |
-| `scripts/coverage.sh`             | Comando de cobertura do stack             |
-| `scripts/validate.sh`             | Comandos de test/lint/build do stack      |
-| `scripts/release-branches.sh`     | `PROD_BRANCH`/`INTEGRATION_BRANCH` do projeto |
+| Arquivo                          | O que adaptar                                 |
+| -------------------------------- | --------------------------------------------- |
+| `copilot-instructions.md`        | Stack, padrões, comandos, armadilhas          |
+| `prompts/code.prompt.md`         | Fases de implementação do stack               |
+| `scripts/bump-version.sh`        | Lista `VERSION_FILES` do projeto              |
+| `scripts/coverage.sh`            | Comando de cobertura do stack                 |
+| `scripts/validate.sh`            | Comandos de test/lint/build do stack          |
+| `scripts/release-branches.sh`    | `PROD_BRANCH`/`INTEGRATION_BRANCH` do projeto |
 
 O restante (10+ arquivos) é copiado sem alteração.
