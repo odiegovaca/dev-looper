@@ -66,8 +66,6 @@ Meta não atingida: listar em seguida as lacunas e os arquivos prioritários par
 .github/scripts/test-finalize.sh $ARGUMENTS
 ```
 
-Usar a saída sem alterações.
-
 ## Regras
 
 - Não reescrever testes existentes que já passam — apenas complementar

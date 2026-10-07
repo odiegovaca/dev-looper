@@ -70,5 +70,3 @@ Precisa terminar sem erro antes de prosseguir. `test` roda a suíte completa do 
 ```bash
 .github/scripts/code-finalize.sh "<descrição curta da funcionalidade>"
 ```
-
-Usar a saída sem alterações.
