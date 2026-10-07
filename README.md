@@ -1,26 +1,26 @@
 # dev-looper
 
-Workflow de desenvolvimento com GitHub Copilot Agent Mode.
+Workflow de desenvolvimento com GitHub Copilot Agent Mode ou Claude Code.
 
 Fornece um conjunto de comandos `/` que guiam o desenvolvedor por um ciclo completo de desenvolvimento — da especificação ao PR de produção — com guardrails, padrões do projeto e auto-melhoria incorporados.
 
 ## Como o dev-looper é usado
 
-É um **ponto de partida**, não uma dependência. Você instala uma vez, roda o `/setup`, e a partir daí a cópia é do seu projeto: adapte os prompts e os scripts ao que o seu time precisa, sem se preocupar em manter compatibilidade com este repositório.
+É um **ponto de partida**, não uma dependência. Você instala uma vez, roda o `/dl-setup`, e a partir daí a cópia é do seu projeto: adapte os prompts e os scripts ao que o seu time precisa, sem se preocupar em manter compatibilidade com este repositório.
 
-Não existe atualização no lugar. Uma versão nova do dev-looper é um ponto de partida **novo** — para um projeto novo, ou para quem quiser reinstalar do zero e reaplicar as próprias adaptações. As [Releases](https://github.com/odiegovaca/dev-looper/releases) descrevem o que mudou entre uma versão e outra, e cada instalação registra no cabeçalho de `.github/prompts/README.md` de qual delas partiu.
+Não existe atualização no lugar. Uma versão nova do dev-looper é um ponto de partida **novo** — para um projeto novo, ou para quem quiser reinstalar do zero e reaplicar as próprias adaptações. As [Releases](https://github.com/odiegovaca/dev-looper/releases) descrevem o que mudou entre uma versão e outra, e cada instalação registra no cabeçalho do guia instalado (`.github/prompts/README.md` no Copilot, `.claude/dev-looper.md` no Claude Code) de qual delas partiu.
 
 ---
 
 ## Pré-requisitos
 
-- VS Code com extensão **GitHub Copilot** (com Agent Mode habilitado)
+- Um dos agentes: VS Code com extensão **GitHub Copilot** (com Agent Mode habilitado) ou **Claude Code**
 - Git configurado no projeto
-- **`gh` CLI** — necessário para `/issue`, `/rc` e `/release` ([instalar](https://cli.github.com))
+- **`gh` CLI** — necessário para `/dl-issue`, `/dl-rc` e `/dl-release` ([instalar](https://cli.github.com))
 
-> O `/setup` confere o `gh` (instalado e autenticado) na inicialização e interrompe com mensagem clara se faltar. **Execute `/setup` antes de qualquer outro comando do workflow.**
+> O `/dl-setup` confere o `gh` (instalado e autenticado) na inicialização e interrompe com mensagem clara se faltar. **Execute `/dl-setup` antes de qualquer outro comando do workflow.**
 
-> **Recomendação de modelo:** mantenha o seletor de modelo do Copilot em **Auto** — ele roteia automaticamente entre modelos de acordo com a complexidade de cada tarefa, o que combina bem com fases de granularidade variada (ex: `/spec` é mais leve que `/code`).
+> **Recomendação de modelo (Copilot):** mantenha o seletor de modelo do Copilot em **Auto** — ele roteia automaticamente entre modelos de acordo com a complexidade de cada tarefa, o que combina bem com fases de granularidade variada (ex: `/dl-spec` é mais leve que `/dl-code`).
 
 ---
 
@@ -28,44 +28,60 @@ Não existe atualização no lugar. Uma versão nova do dev-looper é um ponto d
 
 ### 1. Copiar os arquivos
 
+Na raiz do dev-looper:
+
 ```bash
-.github/scripts/install.sh /caminho/do/seu/projeto
+./install.sh /caminho/do/seu/projeto                  # GitHub Copilot (padrão)
+./install.sh /caminho/do/seu/projeto --agent claude   # Claude Code
 ```
 
-O script é idempotente: por arquivo, se o destino já existe e é diferente do que está sendo instalado, ele pula e reporta em vez de sobrescrever — use `--force` para sobrescrever mesmo assim. Isso protege o que o `/setup` preencheu (`bump-version.sh`, `coverage.sh`, `release-branches.sh` e `validate.sh`) caso o script rode uma segunda vez no mesmo projeto.
+O conteúdo dos comandos é o mesmo para os dois agentes; o que muda é onde cada arquivo vai e o cabeçalho que o agente espera:
 
-`--force` sobrescreve **inclusive** esses quatro arquivos, devolvendo-os aos placeholders `[DEFINIR]` — depois dele o projeto precisa rodar `/setup` de novo. Não o use para trazer mudanças de uma versão nova para um projeto já configurado.
+| | Copilot | Claude Code |
+| --- | --- | --- |
+| Comandos `/` | `.github/prompts/*.prompt.md` | `.claude/commands/*.md` |
+| Guia do fluxo | `.github/prompts/README.md` | `.claude/dev-looper.md` |
+| Instruções do projeto (geradas pelo `/dl-setup`) | `AGENTS.md`, lido pelo VS Code por padrão | `AGENTS.md`, carregado pelo `@AGENTS.md` do `CLAUDE.md` |
+| Scripts | `.github/scripts/` | `.github/scripts/` |
 
-> Alternativa sem o script: `cp -r .github/ /caminho/do/seu/projeto/.github/` — mas isso sobrescreve tudo cegamente, inclusive PRs/issues templates existentes.
+O arquivo de instruções é o mesmo `AGENTS.md` nos dois agentes, então um time com gente nos dois usa as mesmas regras. No Copilot, o VS Code o lê por padrão (configuração `chat.useAgentsMdFile`, ligada de fábrica). No Claude Code, o `CLAUDE.md` só é criado se o projeto ainda não tiver um — se já tiver, acrescente a linha `@AGENTS.md` a ele (o script avisa); o Claude Code não lê o `AGENTS.md` sozinho.
 
-### 2. Recarregar o VS Code
+O script é idempotente: por arquivo, se o destino já existe e é diferente do que está sendo instalado, ele pula e reporta em vez de sobrescrever — use `--force` para sobrescrever mesmo assim. Isso protege o que o `/dl-setup` preencheu (`bump-version.sh`, `coverage.sh`, `release-branches.sh` e `validate.sh`) caso o script rode uma segunda vez no mesmo projeto.
 
-Após copiar os arquivos, recarregue a janela para que o Copilot reconheça os novos comandos `/`:
+`--force` sobrescreve **inclusive** esses quatro arquivos, devolvendo-os aos placeholders `[DEFINIR]` — depois dele o projeto precisa rodar `/dl-setup` de novo. Não o use para trazer mudanças de uma versão nova para um projeto já configurado.
+
+Não há alternativa de cópia manual: os arquivos de `core/` têm marcadores que só o `install.sh` preenche.
+
+### 2. Recarregar o agente
+
+**Copilot:** após copiar os arquivos, recarregue a janela para que o Copilot reconheça os novos comandos `/`:
 
 > `Ctrl+Shift+P` → **Developer: Reload Window**
 
 > Os arquivos `.prompt.md` são indexados na abertura do workspace — sem reload, os comandos `/` não aparecem no chat.
 
+**Claude Code:** abra uma sessão nova no diretório do projeto.
+
 ### 3. Bootstrap automático
 
-Abra o projeto no VS Code e execute no chat do Copilot:
+Abra o projeto e execute no chat do agente:
 
 ```
-/setup
+/dl-setup
 ```
 
 O agente vai:
 
 1. Detectar stack (linguagem, framework, banco, CI/CD)
 2. Fazer perguntas pontuais sobre o que não conseguir inferir
-3. Gerar `.github/copilot-instructions.md` personalizado para o projeto
+3. Gerar o arquivo de instruções do projeto (`AGENTS.md`)
 4. Configurar `.github/scripts/bump-version.sh`, `coverage.sh`, `validate.sh` e `release-branches.sh` com os arquivos de versão, o comando de cobertura, os comandos de test/lint/build e as branches de release do stack detectado
-5. Adaptar `.github/prompts/code.prompt.md` com os padrões do stack detectado
+5. Adaptar o prompt do `/dl-code` com os padrões do stack detectado
 
 ### 4. Validar
 
 ```
-/status
+/dl-status
 ```
 
 Deve mostrar branch atual, versão e sugerir próximo passo.
@@ -75,38 +91,40 @@ Deve mostrar branch atual, versão e sugerir próximo passo.
 ## O Workflow
 
 ```
-/spec        Escrever especificação funcional
-/issue       Criar issue GitHub da spec
-/code        Gerar código seguindo a spec e padrões do projeto
-/test        Testes até a meta de cobertura do projeto
-/review      Revisão crítica priorizada por severidade
-/fix-review  Aplicar correções do code review
-/rc          PR → branch de integração (com versionamento RC)
-/release     PR → produção (versão estável)
+/dl-spec      Escrever especificação funcional
+/dl-issue     Criar issue GitHub da spec
+/dl-code      Gerar código seguindo a spec e padrões do projeto
+/dl-test      Testes até a meta de cobertura do projeto
+/dl-review    Revisão crítica priorizada por severidade
+/dl-fix       Aplicar correções do code review
+/dl-rc        PR → branch de integração (com versionamento RC)
+/dl-release   PR → produção (versão estável)
 ```
 
 **Comandos auxiliares:**
 
 ```
-/status      Snapshot: branch, versão, cobertura, último review
-/lesson      Formalizar correção em instrução permanente
+/dl-status    Snapshot: branch, versão, cobertura, último review
+/dl-lesson    Formalizar correção em instrução permanente
 ```
+
+O prefixo `dl-` evita colisão com os comandos que os próprios agentes já trazem — o Claude Code, por exemplo, tem `/review` e `/status`.
 
 ---
 
 ## Princípios
 
-O dev-looper é desenhado como **fases disciplinadas em vez de um agente fazendo tudo num turno só**: cada comando (`/spec`, `/code`, `/test`, `/review`...) tem um escopo estreito e produz uma saída que o próximo comando consome. Isso mantém cada turno revisável — um diff de `/code` não se mistura com o de `/fix-review` — e permite interromper ou corrigir o rumo entre fases em vez de só no final.
+O dev-looper é desenhado como **fases disciplinadas em vez de um agente fazendo tudo num turno só**: cada comando (`/dl-spec`, `/dl-code`, `/dl-test`, `/dl-review`...) tem um escopo estreito e produz uma saída que o próximo comando consome. Isso mantém cada turno revisável — um diff de `/dl-code` não se mistura com o de `/dl-fix` — e permite interromper ou corrigir o rumo entre fases em vez de só no final.
 
-`copilot-instructions.md` é a **memória central** do agente: qualquer padrão, comando ou armadilha que não estiver lá é reaprendido (ou inventado) do zero a cada sessão. Mantê-lo atualizado é o que faz o workflow escalar para projetos grandes e times com mais de uma pessoa usando os mesmos comandos.
+O `AGENTS.md` é a **memória central** do agente: qualquer padrão, comando ou armadilha que não estiver lá é reaprendido (ou inventado) do zero a cada sessão. Mantê-lo atualizado é o que faz o workflow escalar para projetos grandes e times com mais de uma pessoa usando os mesmos comandos.
 
-`/lesson` é o **mecanismo de melhoria contínua**: em vez de corrigir o agente manualmente toda vez que ele repete um erro, `/lesson` formaliza a correção como instrução permanente em `copilot-instructions.md` ou num prompt específico — o sistema aprende com o uso real do time.
+`/dl-lesson` é o **mecanismo de melhoria contínua**: em vez de corrigir o agente manualmente toda vez que ele repete um erro, `/dl-lesson` formaliza a correção como instrução permanente no `AGENTS.md` ou num prompt específico — o sistema aprende com o uso real do time.
 
 ---
 
 ## Customização
 
-### O arquivo central: `copilot-instructions.md`
+### O arquivo central: `AGENTS.md`
 
 Esse arquivo é o "onboarding do agente" — ele aprende o projeto lendo esse arquivo no início de cada sessão. Mantenha-o atualizado com:
 
@@ -116,28 +134,36 @@ Esse arquivo é o "onboarding do agente" — ele aprende o projeto lendo esse ar
 - Armadilhas comuns (Common Pitfalls)
 - Padrões de banco de dados
 
-Use `/lesson` após qualquer correção manual para manter esse arquivo crescendo automaticamente.
+Use `/dl-lesson` após qualquer correção manual para manter esse arquivo crescendo automaticamente.
 
 ### Adaptar os prompts
 
-- **`code.prompt.md`**: Fases de implementação específicas do stack. Gerado automaticamente pelo `/setup` mas pode ser ajustado manualmente.
-- **`rc.prompt.md`**: Ajustar se o projeto não usar versionamento RC.
-- Arquivos de versão e branches de produção/integração **não** ficam em prompt: são o `VERSION_FILES` do `bump-version.sh` e o `PROD_BRANCH`/`INTEGRATION_BRANCH` do `release-branches.sh`, preenchidos pelo `/setup`.
+- **Prompt do `/dl-code`**: Fases de implementação específicas do stack. Gerado automaticamente pelo `/dl-setup` mas pode ser ajustado manualmente.
+- **Prompt do `/dl-rc`**: Ajustar se o projeto não usar versionamento RC.
+- Arquivos de versão e branches de produção/integração **não** ficam em prompt: são o `VERSION_FILES` do `bump-version.sh` e o `PROD_BRANCH`/`INTEGRATION_BRANCH` do `release-branches.sh`, preenchidos pelo `/dl-setup`.
 
-Os demais prompts buscam padrões e comandos em `copilot-instructions.md` — nenhum precisa de alteração manual após o `/setup`.
+Os demais prompts buscam padrões e comandos no `AGENTS.md` — nenhum precisa de alteração manual após o `/dl-setup`.
 
 ---
 
 ## Arquitetura
 
+Neste repositório:
+
 ```
-.github/
-  copilot-instructions.md      ← Conhecimento do projeto (gerado por /setup)
-  prompts/                     ← Todos os comandos / acessíveis no chat
+core/
+  prompts/                     ← Corpo de cada comando /, com frontmatter neutro
+  guide.md                     ← Guia do fluxo instalado no projeto
+  instructions.template.md     ← Semente do arquivo de instruções, consumida pelo /dl-setup
   scripts/                     ← Versão, cobertura, testes, PRs e branches, calculados por script em vez de recalculados em prosa
+adapters/
+  copilot.sh, claude.sh        ← Destino de cada arquivo, frontmatter e valor de cada {{MARCADOR}} por agente
+install.sh                     ← Instala core/ no projeto pelo adaptador do --agent
 ```
 
-Todos os comandos são prompts com `agent: agent` — executam em agent mode com acesso a ferramentas, invocados via `/comando` no chat.
+O texto que só faz sentido para um agente (onde ficam os prompts e o guia, nome da ferramenta de TODO) fica em `core/` como `{{MARCADOR}}`, e cada adaptador dá o valor. Mudança de comportamento vai em `core/`; um adaptador só muda quando o agente muda o que espera.
+
+No projeto, os comandos executam com acesso a ferramentas (agent mode no Copilot) e são invocados via `/comando` no chat.
 
 ---
 
@@ -147,8 +173,8 @@ O **dev-looper** funciona para qualquer projeto com git. O que muda entre projet
 
 | Arquivo                          | O que adaptar                                 |
 | -------------------------------- | --------------------------------------------- |
-| `copilot-instructions.md`        | Stack, padrões, comandos, armadilhas          |
-| `prompts/code.prompt.md`         | Fases de implementação do stack               |
+| `AGENTS.md`                      | Stack, padrões, comandos, armadilhas          |
+| Prompt do `/dl-code`                | Fases de implementação do stack               |
 | `scripts/bump-version.sh`        | Lista `VERSION_FILES` do projeto              |
 | `scripts/coverage.sh`            | Comando de cobertura do stack                 |
 | `scripts/validate.sh`            | Comandos de test/lint/build do stack          |
