@@ -33,6 +33,13 @@ fi
 # de "isto nunca foi configurado", que o /dl-test sugerido abaixo não resolve.
 VERSION="$("$SCRIPT_DIR/bump-version.sh" current || echo "desconhecida")"
 
+# Sem 2>/dev/null pelo mesmo motivo: o stderr diz qual valor está inválido.
+MODE="inválido"
+if MODE_VARS="$("$SCRIPT_DIR/autonomous-mode.sh")"; then
+  eval "$MODE_VARS"
+  if [ "$AUTONOMOUS" = true ]; then MODE="autônomo"; else MODE="interativo"; fi
+fi
+
 COVERAGE="$("$SCRIPT_DIR/coverage.sh" || echo "não disponível")"
 COVERAGE_DISPLAY="$COVERAGE"
 [ "$COVERAGE" != "não disponível" ] && COVERAGE_DISPLAY="${COVERAGE}%"
@@ -113,6 +120,7 @@ echo "## Status do Workflow"
 echo
 echo "**Branch:** ${BRANCH:-DETACHED}"
 echo "**Versão:** $VERSION"
+echo "**Modo:** $MODE"
 echo "**Commits à frente:** $COMMITS_AHEAD_COUNT commit(s)"
 echo "**Mudanças pendentes:** $PENDING_COUNT arquivo(s)"
 echo

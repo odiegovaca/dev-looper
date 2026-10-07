@@ -146,6 +146,19 @@ Os demais prompts buscam padrões e comandos no `AGENTS.md` — nenhum precisa d
 
 ---
 
+## Modo autônomo (opcional)
+
+Desligado por padrão: o fluxo é o interativo descrito acima, com os checkpoints de sempre. O modo autônomo existe para rodar as fases sem ninguém no chat (um orquestrador chamando uma fase depois da outra), e cada fase que se comporta diferente com ele ligado diz isso no próprio prompt.
+
+O modo vem do `.github/scripts/autonomous-mode.sh`, que os prompts consultam na hora:
+
+- **Para uma execução:** `DEV_LOOPER_AUTONOMOUS=1` no ambiente liga o modo só para aquela execução, por cima do padrão do projeto (`0` desliga). É o caminho de um orquestrador.
+- **Para o projeto:** `AUTONOMOUS=true` no script muda o padrão de todo mundo que usa o projeto.
+
+O `/dl-status` mostra o modo em uso.
+
+---
+
 ## Arquitetura
 
 Neste repositório:
@@ -179,5 +192,6 @@ O **dev-looper** funciona para qualquer projeto com git. O que muda entre projet
 | `scripts/coverage.sh`            | Comando de cobertura do stack                 |
 | `scripts/validate.sh`            | Comandos de test/lint/build do stack          |
 | `scripts/release-branches.sh`    | `PROD_BRANCH`/`INTEGRATION_BRANCH` do projeto |
+| `scripts/autonomous-mode.sh`     | Opcional: `AUTONOMOUS=true` liga o modo autônomo como padrão |
 
 O restante (10+ arquivos) é copiado sem alteração.
