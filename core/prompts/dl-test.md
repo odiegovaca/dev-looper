@@ -16,8 +16,6 @@ Meta de **statements**: `.github/scripts/coverage.sh --target`, ou o valor passa
 .github/scripts/autonomous-mode.sh
 ```
 
-Seguir o que a saída disser em todos os passos abaixo.
-
 ### 1 — Executar e Corrigir
 
 ```bash

@@ -72,6 +72,12 @@ Falha três vezes seguidas no mesmo erro, em qualquer comando, é sinal de parar
 
 ---
 
+## Modo autônomo
+
+Quando um prompt rodar `.github/scripts/autonomous-mode.sh`, as regras que a saída dele trouxer valem como instrução para a fase inteira.
+
+---
+
 ## Development Commands
 
 ```bash

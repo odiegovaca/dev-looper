@@ -14,8 +14,6 @@ argument-hint: "Caminho da spec ou descrição da funcionalidade"
 .github/scripts/autonomous-mode.sh
 ```
 
-Seguir o que a saída disser em todos os passos abaixo.
-
 ### 1 — Preparação
 
 1. **Leia `AGENTS.md` completamente**
