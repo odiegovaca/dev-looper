@@ -24,15 +24,20 @@ Sem argumento, perguntar ao usuário o que corrigir antes de seguir.
 
 Com mais de um `SELECIONADOS`, montar {{TODO_LIST}} com um item por problema.
 
-### 2 — Aplicar
+### 2 — Corrigir
 
-Para cada problema em `SELECIONADOS`: ler o arquivo inteiro, aplicar a correção seguindo os "Padrões Obrigatórios" de `AGENTS.md`, sem tocar em código não relacionado, e marcar no TODO.
+Ler a `SPEC`. Para cada problema em `SELECIONADOS`: ler o arquivo inteiro, desenhar a correção que satisfaz o **Critério** do relatório, aplicá-la seguindo os "Padrões Obrigatórios" de `AGENTS.md`, sem tocar em código não relacionado, e marcar no TODO.
 
-**Se a solução do relatório parecer errada, não aplicar e não interromper** — anotar como contestado e seguir para o próximo.
+**Só aplicar o que cabe na spec.** Nos casos abaixo, não aplicar e não interromper — anotar como contestado e seguir para o próximo:
+
+- **exige decisão** — a correção precisa de algo que a spec não diz (comportamento novo, escolha entre alternativas, contrato alterado). Anotar a proposta. Sem spec (`SPEC: nenhuma`), toda correção que muda comportamento observável cai aqui
+- **não é problema** — lido o arquivo inteiro e a spec, o achado não se sustenta. Anotar o porquê
 
 ### 3 — Resolver os Contestados
 
-Apresentar os contestados de uma vez, cada um com o que o relatório propôs, por que parece errado e a alternativa. **A decisão é do usuário**; aplicar o que ele aceitar ainda aqui, para o passo 4 validar a alternativa.
+Apresentar os contestados de uma vez, cada um com o critério do relatório, o caso (exige decisão ou não é problema) e a proposta ou o porquê. **A decisão é do usuário**; aplicar o que ele aceitar ainda aqui, para o passo 4 validar a correção.
+
+No modo autônomo, não perguntar: cada contestado vira dispensa no passo 5, com o motivo marcado como do agente, e chega ao usuário no PR.
 
 ### 4 — Validar
 
@@ -50,7 +55,7 @@ Corrigir o que falhar por causa de uma correção aplicada, em vez de deixar a f
   --dismissed "#4: o usuário concordou que não é problema"
 ```
 
-Um `--dismissed` por problema, com a decisão do usuário como motivo. Alternativa aceita no passo 3 conta como aplicada.
+Um `--dismissed` por problema, com a decisão do usuário como motivo. Correção aceita no passo 3 conta como aplicada. No modo autônomo, o motivo é o do agente: `agente — exige decisão: <proposta>` ou `agente — não é problema: <por quê>`.
 
 ### 6 — Listar Lições para `/dl-lesson`
 

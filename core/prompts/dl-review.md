@@ -42,10 +42,11 @@ Para cada arquivo em `$DIFF`, escrever em `$REPORT` um bloco por achado (templat
 
 **Explicação:** [por que é um problema]
 
-**Solução:** [como corrigir]
+**Critério:** [o que tem de ser verdade depois da correção]
 ````
 
 - `{i}` — número sequencial do problema (não confundir com `N` da feature)
+- **Critério** — comportamento ou propriedade verificável sem saber como a correção foi feita (ex.: "a migração roda uma vez por instalação, não a cada abertura"). Nunca o patch: a correção é desenhada no `/dl-fix`, com o arquivo inteiro e a spec à mão
 - `{SEVERIDADE}`:
   - **CRITICAL** — segurança (vulnerabilidade exploitável, dado sensível exposto), perda/corrupção de dados, crash em produção
   - **HIGH** — bug funcional que afeta comportamento esperado do usuário/sistema
