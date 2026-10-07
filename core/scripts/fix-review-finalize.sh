@@ -288,4 +288,4 @@ fi
 echo "   Checkpoint sugerido: git commit -m \"$MESSAGE\""
 echo
 echo "   Próximo passo:"
-echo "   - $("$SCRIPT_DIR/next-step.sh" "" "$STATUS" "$BLOQUEANTES_SEL")"
+echo "   - $("$SCRIPT_DIR/next-step.sh" "" "$STATUS" "$BLOQUEANTES_SEL" "$REPORT")"

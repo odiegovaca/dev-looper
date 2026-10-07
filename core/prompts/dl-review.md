@@ -1,7 +1,7 @@
 ---
 description: Executar code review crítico do código modificado na branch atual
 tools: [read, edit, search, execute]
-argument-hint: "Branch de integração para comparar, sem prefixo origin/ (opcional, padrão: a do projeto)"
+argument-hint: "--completo para revisar a branch inteira depois de um fix; branch de integração, sem prefixo origin/ (opcionais)"
 ---
 
 # /dl-review - Code Review
@@ -29,7 +29,15 @@ Para cada arquivo em `$DIFF`, escrever em `$REPORT` um bloco por achado (templat
 - **Segurança** (OWASP Top 10, dados sensíveis expostos)
 - **Tratamento de erros e edge cases** (exceções engolidas, entradas nulas/vazias/limite não tratadas)
 
-#### 2.1 — Template do Bloco
+#### 2.1 — Escopo Incremental
+
+Com `ESCOPO=incremental`, o diff é só o que mudou desde o review anterior (no ciclo normal, o fix). Os arquivos continuam lidos inteiros, mas o review muda em três pontos:
+
+1. **Conferir as correções:** para cada número em **Correções aplicadas** na seção Pós-fix de `$REVIEW_ANTERIOR`, verificar se o **Critério** daquele problema é verdade agora. Não sendo, escrever um bloco com a mesma severidade e o mesmo critério, com a Explicação começando por `Critério do #{i} do review anterior não satisfeito:`
+2. **Bloco só para o que está no diff:** linhas mudadas ou o que elas quebram
+3. **Grave fora do diff** (CRITICAL ou HIGH que já estava lá): escrever no fim do relatório, numa seção `## Fora do escopo`, com o template abaixo e o cabeçalho `#### Fora do escopo {i} — {SEVERIDADE}`. Não conta para o veredito nem reabre o ciclo; vai para o PR. MEDIUM e LOW fora do diff não entram
+
+#### 2.2 — Template do Bloco
 
 ````markdown
 #### Problema {i} — {SEVERIDADE}
@@ -56,5 +64,5 @@ Para cada arquivo em `$DIFF`, escrever em `$REPORT` um bloco por achado (templat
 ### 3 — Gerar Relatório
 
 ```bash
-.github/scripts/review-finalize.sh "$REPORT" "$DATA"
+.github/scripts/review-finalize.sh "$REPORT" "$DATA" "$ESCOPO" "$BASE"
 ```

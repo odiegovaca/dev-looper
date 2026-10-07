@@ -113,7 +113,7 @@ elif [ "$COVERAGE" = "não disponível" ]; then
 elif [ "$LATEST_REVIEW" = "nenhum" ]; then
   NEXT_STEP="/dl-review — sem review para essa feature ainda"
 else
-  NEXT_STEP="$("$SCRIPT_DIR/next-step.sh" "$VEREDITO" "$STATUS_POS_FIX" "$BLOQUEANTES")"
+  NEXT_STEP="$("$SCRIPT_DIR/next-step.sh" "$VEREDITO" "$STATUS_POS_FIX" "$BLOQUEANTES" "$LATEST_REVIEW")"
 fi
 
 echo "## Status do Workflow"
