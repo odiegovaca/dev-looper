@@ -1,6 +1,5 @@
 ---
 description: Preparar release de produção consolidando versões RC em versão estável
-agent: agent
 tools: [read, edit, search, execute]
 argument-hint: "Versão de release (opcional, ex: /release 2.5.0)"
 ---

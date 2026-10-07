@@ -2,12 +2,12 @@
 # setup-check.sh
 #
 # Lista o que o /setup deixou por configurar: os [DEFINIR] restantes no
-# copilot-instructions.md e nos scripts que ele preenche.
+# {{INSTRUCTIONS}} e nos scripts que ele preenche.
 # Sempre sai com 0 — é relatório de pendências, não guarda de execução.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-INSTRUCTIONS=".github/copilot-instructions.md"
+INSTRUCTIONS="{{INSTRUCTIONS_PATH}}"
 
 PENDENTES=0
 
@@ -20,11 +20,11 @@ contar() {
 if [ -f "$INSTRUCTIONS" ]; then
   ACHADOS="$(grep -n '\[DEFINIR:' "$INSTRUCTIONS" || true)"
   QUANTOS="$(contar "$ACHADOS")"
-  echo "copilot-instructions.md: $QUANTOS [DEFINIR] pendente(s)"
+  echo "{{INSTRUCTIONS}}: $QUANTOS [DEFINIR] pendente(s)"
   [ "$QUANTOS" -eq 0 ] || echo "$ACHADOS" | sed -E 's/^([0-9]+):[[:space:]]*/  linha \1: /' | cut -c1-110
   PENDENTES=$((PENDENTES + QUANTOS))
 else
-  echo "copilot-instructions.md: não existe — é o passo 4 do /setup que o gera"
+  echo "{{INSTRUCTIONS}}: não existe — é o passo 4 do /setup que o gera"
   PENDENTES=$((PENDENTES + 1))
 fi
 

@@ -1,6 +1,5 @@
 ---
 description: Aplicar correções do último code review por número, severidade ou todas
-agent: agent
 tools: [read, edit, search, execute, todo]
 argument-hint: "Números e/ou severidades, combináveis, ou 'todos' (ex: /fix-review 3, /fix-review critical 7, /fix-review medium low)"
 ---
@@ -17,11 +16,11 @@ Sem argumento, perguntar ao usuário o que corrigir antes de seguir.
 .github/scripts/fix-review-select.sh $ARGUMENTS
 ```
 
-Com mais de um `SELECIONADOS`, montar `manage_todo_list` com um item por problema.
+Com mais de um `SELECIONADOS`, montar {{TODO_LIST}} com um item por problema.
 
 ### 2 — Aplicar
 
-Para cada problema em `SELECIONADOS`: ler o arquivo inteiro, aplicar a correção seguindo os "Padrões Obrigatórios" de `copilot-instructions.md`, sem tocar em código não relacionado, e marcar no TODO.
+Para cada problema em `SELECIONADOS`: ler o arquivo inteiro, aplicar a correção seguindo os "Padrões Obrigatórios" de `{{INSTRUCTIONS}}`, sem tocar em código não relacionado, e marcar no TODO.
 
 **Se a solução do relatório parecer errada, não aplicar e não interromper** — anotar como contestado e seguir para o próximo.
 

@@ -2,8 +2,8 @@
 # protected-paths.sh
 #
 # Imprime os globs dos Arquivos Protegidos, um por linha — só /setup e /lesson
-# podem alterá-los (regra em copilot-instructions.md).
+# podem alterá-los (regra em {{INSTRUCTIONS}}).
 set -euo pipefail
 
-echo '.github/prompts/*.md'
-echo '.github/copilot-instructions.md'
+{{PROMPTS_PROTECTED_ECHO}}
+echo '{{INSTRUCTIONS_PATH}}'

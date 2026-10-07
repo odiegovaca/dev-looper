@@ -1,6 +1,6 @@
 # Prompts — Guia Rápido
 
-> Fluxo do [dev-looper](https://github.com/odiegovaca/dev-looper), versão de origem `__DEV_LOOPER_VERSION__`.
+> Fluxo do [dev-looper](https://github.com/odiegovaca/dev-looper), versão de origem `{{VERSION}}`.
 
 ## Fluxo Completo (Nova Funcionalidade)
 
@@ -24,9 +24,9 @@
 Cada prompt declara os seus no `argument-hint` do frontmatter:
 
 ```bash
-grep -H '^argument-hint:' .github/prompts/*.prompt.md
+grep -H '^argument-hint:' {{PROMPTS_DIR}}/*{{PROMPT_EXT}}
 ```
 
 ## Personalização
 
-Tudo o que é projeto-específico fica em `.github/copilot-instructions.md`. Os prompts buscam padrões, comandos e convenções nesse arquivo. Mantenha-o atualizado com `/lesson`.
+Tudo o que é projeto-específico fica em `{{INSTRUCTIONS_PATH}}`. Os prompts buscam padrões, comandos e convenções nesse arquivo. Mantenha-o atualizado com `/lesson`.

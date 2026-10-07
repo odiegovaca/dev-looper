@@ -1,6 +1,5 @@
 ---
 description: Executar, corrigir e melhorar testes até meta de cobertura
-agent: agent
 tools: [read, edit, search, execute, todo]
 argument-hint: "Meta de cobertura em % (opcional, padrão: a meta do projeto)"
 ---
@@ -25,7 +24,7 @@ Corrigir as falhas identificadas antes de seguir.
 .github/scripts/coverage.sh --priority
 ```
 
-`FASE1` traz os arquivos da branch, `FASE2` o resto do projeto, os dois já na ordem de ataque. Montar `manage_todo_list` com a `FASE1` antes de escrever.
+`FASE1` traz os arquivos da branch, `FASE2` o resto do projeto, os dois já na ordem de ataque. Montar {{TODO_LIST}} com a `FASE1` antes de escrever.
 
 ### 3 — Completar
 
@@ -55,7 +54,7 @@ Ignorar código gerado, migrations e arquivos de configuração — não contam 
 
 - Não reescrever testes existentes que já passam — apenas complementar
 - Nunca alterar código de produção para facilitar testes — adaptar os testes
-- Estrutura, mocks e localização seguem a seção Testing Conventions de `copilot-instructions.md`
+- Estrutura, mocks e localização seguem a seção Testing Conventions de `{{INSTRUCTIONS}}`
 
 ## Próximos Passos
 

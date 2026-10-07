@@ -1,6 +1,5 @@
 ---
 description: Formalizar uma correção ou aprendizado em instrução permanente no projeto
-agent: agent
 tools: [read, edit, search, execute]
 argument-hint: "Descrição do aprendizado (ex: /lesson Controllers void não devem ter @ApiResponse tipado)"
 ---
@@ -35,7 +34,7 @@ Escolher pela `description` de cada um; se nenhuma decidir, abrir o candidato e 
 
 ### 4 — Buscar Termos-Chave e Analisar Impacto
 
-Buscar termos-chave da lição em todo o `.github/` e no `README.md`.
+Buscar termos-chave da lição em {{FLOW_FILES}} e no `README.md`.
 
 - **No destino**: já existe regra similar — anotar onde, e se é para complementar ou substituir
 - **Fora do destino**: referência que ficará inconsistente — incluir os arquivos na proposta

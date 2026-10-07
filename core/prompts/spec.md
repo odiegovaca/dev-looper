@@ -1,6 +1,5 @@
 ---
 description: Criar especificação de funcionalidade em linguagem natural
-agent: agent
 tools: [read, edit, search, execute]
 argument-hint: "Descrição da funcionalidade ou caminho da spec para refinar"
 ---

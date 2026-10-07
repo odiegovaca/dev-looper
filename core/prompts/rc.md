@@ -1,6 +1,5 @@
 ---
 description: Finalizar feature branch e criar Pull Request com versionamento RC
-agent: agent
 tools: [read, edit, search, execute]
 argument-hint: "Tipo de versão: patch, minor ou major (ex: /rc patch)"
 ---

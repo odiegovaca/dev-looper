@@ -1,6 +1,5 @@
 ---
-description: Configurar o workflow de IA para este projeto — detecta stack e gera copilot-instructions.md
-agent: agent
+description: Configurar o workflow de IA para este projeto — detecta stack e gera {{INSTRUCTIONS}}
 tools: [read, edit, search, execute]
 argument-hint: "Descrição do projeto (opcional, usada se não houver README)"
 ---
@@ -26,9 +25,9 @@ Explorar o repositório e identificar: linguagem/runtime, framework, banco de da
 
 Com base no que foi detectado, fazer **apenas as perguntas pontuais e fechadas que não puderam ser inferidas**. Máximo 5, feitas juntas numa única mensagem — não uma a uma — exceto quando uma pergunta depende da resposta de outra. O usuário pode responder só as que quiser.
 
-### 4 — Gerar copilot-instructions.md
+### 4 — Gerar {{INSTRUCTIONS}}
 
-Base: o `copilot-instructions.template.md`, se existir; senão, o `copilot-instructions.md` atual, alterando só as seções afetadas pela mudança de stack e preservando o resto.
+Base: o `{{INSTRUCTIONS_TEMPLATE}}`, se existir; senão, o `{{INSTRUCTIONS}}` atual, alterando só as seções afetadas pela mudança de stack e preservando o resto.
 
 Substituir cada `[DEFINIR: ...]` pelo valor real detectado ou informado. O texto dentro do marcador é o contrato do valor — formato, unidade e o que não incluir.
 
@@ -37,7 +36,7 @@ Substituir cada `[DEFINIR: ...]` pelo valor real detectado ou informado. O texto
 Após gerar o arquivo, remover o template:
 
 ```bash
-rm -f .github/copilot-instructions.template.md
+rm -f {{INSTRUCTIONS_TEMPLATE_PATH}}
 ```
 
 ### 5 — Configurar Scripts Determinísticos
@@ -51,9 +50,9 @@ bash -n .github/scripts/{bump-version,coverage,validate,release-branches}.sh
 
 Corrigir qualquer erro de sintaxe antes de seguir.
 
-### 6 — Adaptar code.prompt.md
+### 6 — Adaptar code{{PROMPT_EXT}}
 
-Ler `.github/prompts/code.prompt.md` e substituir as subseções `2.N` da seção "Implementação" pelos artefatos reais do stack detectado e pelos padrões observados no código, mantendo a progressão persistência → lógica de negócio → exposição → configuração. Num projeto frontend, a progressão vira tipos → data fetching → componente → testes.
+Ler `{{PROMPTS_DIR}}/code{{PROMPT_EXT}}` e substituir as subseções `2.N` da seção "Implementação" pelos artefatos reais do stack detectado e pelos padrões observados no código, mantendo a progressão persistência → lógica de negócio → exposição → configuração. Num projeto frontend, a progressão vira tipos → data fetching → componente → testes.
 
 ### 7 — Confirmar
 
@@ -70,8 +69,8 @@ Ler `.github/prompts/code.prompt.md` e substituir as subseções `2.N` da seçã
 - Banco: [...]
 
 **Arquivos gerados/atualizados:**
-- `.github/copilot-instructions.md`
-- `.github/prompts/code.prompt.md` → fases adaptadas para [STACK]
+- `{{INSTRUCTIONS_PATH}}`
+- `{{PROMPTS_DIR}}/code{{PROMPT_EXT}}` → fases adaptadas para [STACK]
 - `.github/scripts/*.sh` → [lista dos scripts preenchidos no Passo 5]
 
 **Pendências:** [a saída do setup-check.sh]

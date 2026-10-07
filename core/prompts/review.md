@@ -1,6 +1,5 @@
 ---
 description: Executar code review crítico do código modificado na branch atual
-agent: agent
 tools: [read, edit, search, execute]
 argument-hint: "Branch de integração para comparar, sem prefixo origin/ (opcional, padrão: a do projeto)"
 ---
@@ -21,7 +20,7 @@ argument-hint: "Branch de integração para comparar, sem prefixo origin/ (opcio
 
 Para cada arquivo em `$DIFF`, escrever em `$REPORT` um bloco por achado (template abaixo), a partir do conteúdo completo do arquivo — não só o diff —, seguindo estes critérios:
 
-- **Padrões do projeto** (seguindo `copilot-instructions.md`)
+- **Padrões do projeto** (seguindo `{{INSTRUCTIONS}}`)
 - **Qualidade e legibilidade**
 - **Simplicidade** (over-engineering?)
 - **Testes** (cobertura adequada?)

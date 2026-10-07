@@ -1,6 +1,5 @@
 ---
 description: Criar ou atualizar a issue GitHub de uma spec
-agent: agent
 tools: [read, edit, search, execute]
 argument-hint: "Caminho da spec (opcional, usa a unica spec aprovada se omitido)"
 ---
