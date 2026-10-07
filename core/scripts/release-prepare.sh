@@ -22,9 +22,9 @@ RELEASE_BRANCH_HINT="${VERSION_ARG:+release/v$VERSION_ARG}"
 # Árvore suja bloqueia o checkout — exceto já na branch de release desta versão,
 # onde ela é o resultado de uma rodada anterior, não trabalho do usuário.
 if [ "$CURRENT_BRANCH" != "$RELEASE_BRANCH_HINT" ] && [ -n "$(git status --porcelain)" ]; then
-  echo "Há mudanças não commitadas — commit ou stash antes de rodar /release." >&2
+  echo "Há mudanças não commitadas — commit ou stash antes de rodar /dl-release." >&2
   case "$CURRENT_BRANCH" in
-    release/v*) echo "   Se é reexecução desta release, rode com a versão: /release ${CURRENT_BRANCH#release/v}" >&2 ;;
+    release/v*) echo "   Se é reexecução desta release, rode com a versão: /dl-release ${CURRENT_BRANCH#release/v}" >&2 ;;
   esac
   exit 1
 fi
@@ -33,7 +33,7 @@ fi
 # a ida e volta é pulada, que só releria uma versão já conhecida.
 if [ "$CURRENT_BRANCH" != "$INTEGRATION_BRANCH" ] && [ "$CURRENT_BRANCH" != "$RELEASE_BRANCH_HINT" ]; then
   UNMERGED="$(git log "origin/$INTEGRATION_BRANCH..HEAD" --oneline 2>/dev/null || true)"
-  [ -z "$UNMERGED" ] || echo "⚠️ Commits em $CURRENT_BRANCH não mergeados em $INTEGRATION_BRANCH — rode /rc primeiro se ainda não fez isso." >&2
+  [ -z "$UNMERGED" ] || echo "⚠️ Commits em $CURRENT_BRANCH não mergeados em $INTEGRATION_BRANCH — rode /dl-rc primeiro se ainda não fez isso." >&2
   git checkout "$INTEGRATION_BRANCH"
   git pull origin "$INTEGRATION_BRANCH"
 fi
@@ -56,8 +56,8 @@ fi
 
 "$SCRIPT_DIR/bump-version.sh" release "$RELEASE_VERSION" >/dev/null
 
-# Commit feito nesta branch não passou pelo /rc, então pode faltar no CHANGELOG.
-# O commit do próprio /release é excluído pelo assunto, senão se auto-denunciaria.
+# Commit feito nesta branch não passou pelo /dl-rc, então pode faltar no CHANGELOG.
+# O commit do próprio /dl-release é excluído pelo assunto, senão se auto-denunciaria.
 INT_REF="origin/$INTEGRATION_BRANCH"
 git rev-parse --verify -q "$INT_REF" >/dev/null || INT_REF="$INTEGRATION_BRANCH"
 PROPRIOS="$(git log "$INT_REF..HEAD" --oneline --no-merges --invert-grep --grep="^chore: release v" 2>/dev/null || true)"

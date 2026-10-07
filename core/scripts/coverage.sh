@@ -30,7 +30,7 @@ read_coverage_by_file() {
 warn_if_stale() {
   [ -n "$COVERAGE_REPORT" ] && [ -f "$COVERAGE_REPORT" ] || return 0
 
-  # Os arquivos medidos são a definição de "código" que o próprio projeto deu ao /setup;
+  # Os arquivos medidos são a definição de "código" que o próprio projeto deu ao /dl-setup;
   # sem ela, cai para tudo que o git rastreia, que erra para mais, nunca para menos.
   local medidos
   medidos="$(read_coverage_by_file 2>/dev/null | cut -d, -f1)" || medidos=""
@@ -132,14 +132,14 @@ fases() {
 }
 
 # Sem número para dar, o motivo sai nomeado: "relatório velho" não se conserta
-# do mesmo jeito que "/setup nunca configurou isto".
+# do mesmo jeito que "/dl-setup nunca configurou isto".
 cobertura_indisponivel() {
   if [ -z "$COVERAGE_REPORT" ]; then
-    echo "coverage.sh não configurado (COVERAGE_REPORT vazio e read_coverage sem corpo) — rode /setup" >&2
+    echo "coverage.sh não configurado (COVERAGE_REPORT vazio e read_coverage sem corpo) — rode /dl-setup" >&2
   elif [ ! -f "$COVERAGE_REPORT" ]; then
     echo "Relatório de cobertura não encontrado em $COVERAGE_REPORT — rode .github/scripts/validate.sh test para gerá-lo" >&2
   else
-    echo "Não foi possível ler a cobertura de $COVERAGE_REPORT — confira read_coverage em coverage.sh (preenchido pelo /setup)" >&2
+    echo "Não foi possível ler a cobertura de $COVERAGE_REPORT — confira read_coverage em coverage.sh (preenchido pelo /dl-setup)" >&2
   fi
   exit 1
 }
@@ -147,7 +147,7 @@ cobertura_indisponivel() {
 case "${1:-}" in
   --priority) warn_if_stale; read_coverage_by_file | rank_priority | fases || cobertura_indisponivel ;;
   --target)
-    [ -n "$COVERAGE_TARGET" ] || { echo "COVERAGE_TARGET não configurado em coverage.sh — rode /setup" >&2; exit 1; }
+    [ -n "$COVERAGE_TARGET" ] || { echo "COVERAGE_TARGET não configurado em coverage.sh — rode /dl-setup" >&2; exit 1; }
     echo "$COVERAGE_TARGET"
     ;;
   "") warn_if_stale; read_coverage || cobertura_indisponivel ;;

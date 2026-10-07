@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # status-snapshot.sh
 #
-# Imprime o snapshot do /status já em markdown final — usar a saída sem alterações.
+# Imprime o snapshot do /dl-status já em markdown final — usar a saída sem alterações.
 # Sem argumentos: as branches saem do release-branches.sh aqui mesmo.
 set -euo pipefail
 
@@ -16,7 +16,7 @@ BRANCH="$(git branch --show-current)"
 # só falha se a branch nem existir no remoto.
 git fetch origin "$PROD_BRANCH" --quiet 2>/dev/null || true
 if ! git rev-parse --verify --quiet "origin/${PROD_BRANCH}" >/dev/null; then
-  echo "Branch 'origin/${PROD_BRANCH}' não encontrada — confira PROD_BRANCH em .github/scripts/release-branches.sh (rode /setup se ainda não configurou) e se o fetch alcançou o remoto" >&2
+  echo "Branch 'origin/${PROD_BRANCH}' não encontrada — confira PROD_BRANCH em .github/scripts/release-branches.sh (rode /dl-setup se ainda não configurou) e se o fetch alcançou o remoto" >&2
   exit 1
 fi
 
@@ -30,7 +30,7 @@ else
 fi
 
 # Os dois sem 2>/dev/null: o stderr deles distingue "ainda não rodei os testes"
-# de "isto nunca foi configurado", que o /test sugerido abaixo não resolve.
+# de "isto nunca foi configurado", que o /dl-test sugerido abaixo não resolve.
 VERSION="$("$SCRIPT_DIR/bump-version.sh" current || echo "desconhecida")"
 
 COVERAGE="$("$SCRIPT_DIR/coverage.sh" || echo "não disponível")"
@@ -78,7 +78,7 @@ if [ "$LATEST_REVIEW" != "nenhum" ] && [ -f "$LATEST_REVIEW" ]; then
   # `|| true` para relatório em formato antigo cair nos fallbacks abaixo.
   VEREDITO="$(grep -m1 '^\*\*Veredito:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Veredito:\*\*[[:space:]]*//' || true)"
   STATUS_POS_FIX="$(grep -m1 '^\*\*Status pós-fix:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Status pós-fix:\*\*[[:space:]]*//' || true)"
-  # Escrita pelo fix-review-finalize.sh; sem ela o next-step.sh sugeriria "/fix-review"
+  # Escrita pelo fix-review-finalize.sh; sem ela o next-step.sh sugeriria "/dl-fix"
   # sem seletor. "nenhum" é o vazio no relatório, e volta a ser vazio aqui.
   BLOQUEANTES="$(grep -m1 '^\*\*Bloqueantes pendentes:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Bloqueantes pendentes:\*\*[[:space:]]*//' || true)"
   [ "$BLOQUEANTES" != "nenhum" ] || BLOQUEANTES=""
@@ -96,15 +96,15 @@ fi
 if [ -z "$BRANCH" ]; then
   NEXT_STEP="git checkout — HEAD destacado, não dá pra determinar o workflow sem uma branch"
 elif [ "$IS_PROTECTED" = true ] && [ "$PENDING_COUNT" -gt 0 ]; then
-  NEXT_STEP="/code — mudanças pendentes fora de uma feature branch; cria a branch certa a partir da issue e preserva as mudanças"
+  NEXT_STEP="/dl-code — mudanças pendentes fora de uma feature branch; cria a branch certa a partir da issue e preserva as mudanças"
 elif [ "$IS_PROTECTED" = true ]; then
-  NEXT_STEP="/code — branch protegida (${BRANCH}) sem trabalho em andamento"
+  NEXT_STEP="/dl-code — branch protegida (${BRANCH}) sem trabalho em andamento"
 elif [ -n "$N" ] && [ "$COMMITS_AHEAD_COUNT" -eq 0 ]; then
-  NEXT_STEP="/code — branch de feature sem commits ainda; spec e issue já existem"
+  NEXT_STEP="/dl-code — branch de feature sem commits ainda; spec e issue já existem"
 elif [ "$COVERAGE" = "não disponível" ]; then
-  NEXT_STEP="/test — cobertura não disponível"
+  NEXT_STEP="/dl-test — cobertura não disponível"
 elif [ "$LATEST_REVIEW" = "nenhum" ]; then
-  NEXT_STEP="/review — sem review para essa feature ainda"
+  NEXT_STEP="/dl-review — sem review para essa feature ainda"
 else
   NEXT_STEP="$("$SCRIPT_DIR/next-step.sh" "$VEREDITO" "$STATUS_POS_FIX" "$BLOQUEANTES")"
 fi

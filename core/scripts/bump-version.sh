@@ -5,7 +5,7 @@
 # Imprime só a versão resultante no stdout — capture com NEW_VERSION=$(bump-version.sh patch).
 set -euo pipefail
 
-# Arquivos que carregam a versão do projeto — preenchido por /setup.
+# Arquivos que carregam a versão do projeto — preenchido por /dl-setup.
 VERSION_FILES=(
   # [DEFINIR: um caminho por linha, entre aspas — todo arquivo que carrega a versao do
   # projeto, incluido o lockfile quando ele a repete]
@@ -14,7 +14,7 @@ VERSION_FILES=(
 ACTION="${1:-}"
 VERSION_ARG="${2:-}"
 [ -n "$ACTION" ] || { echo "Uso: bump-version.sh <patch|minor|major|release|current|files> [versão]" >&2; exit 1; }
-[ "${#VERSION_FILES[@]}" -gt 0 ] || { echo "VERSION_FILES não configurado — rode /setup" >&2; exit 1; }
+[ "${#VERSION_FILES[@]}" -gt 0 ] || { echo "VERSION_FILES não configurado — rode /dl-setup" >&2; exit 1; }
 if [ -n "$VERSION_ARG" ] && [ "$ACTION" != "release" ]; then
   echo "[versão] só é aceito com a ação 'release' — para incrementar, rode bump-version.sh $ACTION sem a versão" >&2
   exit 1
@@ -25,7 +25,7 @@ if [ -n "$VERSION_ARG" ] && ! [[ "$VERSION_ARG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; 
 fi
 
 # Dono único da lista: quem precisa saber quais arquivos carregam versão pergunta
-# aqui, em vez de manter uma segunda cópia que sai de sincronia com o /setup.
+# aqui, em vez de manter uma segunda cópia que sai de sincronia com o /dl-setup.
 if [ "$ACTION" = "files" ]; then
   printf '%s
 ' "${VERSION_FILES[@]}"
@@ -88,7 +88,7 @@ write_version() {
 # `|| true` para arquivo de versão ilegível virar a mensagem abaixo, não morte silenciosa.
 CURRENT="$(read_version "${VERSION_FILES[0]}" || true)"
 if ! [[ "$CURRENT" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-  echo "Versão não lida de ${VERSION_FILES[0]} (valor: '${CURRENT:-vazio}') — confira o arquivo e a lista VERSION_FILES em bump-version.sh (preenchida pelo /setup)" >&2
+  echo "Versão não lida de ${VERSION_FILES[0]} (valor: '${CURRENT:-vazio}') — confira o arquivo e a lista VERSION_FILES em bump-version.sh (preenchida pelo /dl-setup)" >&2
   exit 1
 fi
 
@@ -169,8 +169,8 @@ if [ "$JA_GRAVADA" = false ]; then
     # `>&2` porque o stdout daqui é só a versão, e toda ferramenta anuncia o que fez.
     eval "${SET_VERSION_CMD//\{\}/$NEW}" >&2
     if [ "$(git_estado)" != "$ANTES" ]; then
-      echo "O comando de SET_VERSION_CMD commitou ou criou tag, e não pode: quem commita é o /rc, depois." >&2
-      echo "   Ajuste o comando em bump-version.sh, preenchido pelo /setup." >&2
+      echo "O comando de SET_VERSION_CMD commitou ou criou tag, e não pode: quem commita é o /dl-rc, depois." >&2
+      echo "   Ajuste o comando em bump-version.sh, preenchido pelo /dl-setup." >&2
       exit 1
     fi
   fi
@@ -181,7 +181,7 @@ for f in "${VERSION_FILES[@]}"; do
   GRAVADA="$(read_version "$f" || true)"
   [ "$GRAVADA" = "$NEW" ] && continue
   echo "Versão não gravada em $f: continua em '${GRAVADA:-vazio}', esperado '$NEW'." >&2
-  echo "   Confira SET_VERSION_CMD e VERSION_FILES em bump-version.sh, preenchidos pelo /setup." >&2
+  echo "   Confira SET_VERSION_CMD e VERSION_FILES em bump-version.sh, preenchidos pelo /dl-setup." >&2
   echo "   A lista pode ter ficado meio gravada — confira os outros arquivos antes de rodar de novo." >&2
   exit 1
 done

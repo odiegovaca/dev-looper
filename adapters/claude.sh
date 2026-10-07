@@ -43,6 +43,6 @@ notas() {
   if [ -f "$DEST/CLAUDE.md" ] && ! grep -qxF '@AGENTS.md' "$DEST/CLAUDE.md"; then
     echo ""
     echo "Nota: o CLAUDE.md deste projeto não importa o AGENTS.md. Acrescente a linha"
-    echo "@AGENTS.md a ele, senão o Claude Code não lê as instruções que o /setup gera."
+    echo "@AGENTS.md a ele, senão o Claude Code não lê as instruções que o /dl-setup gera."
   fi
 }

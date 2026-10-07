@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # review-prepare.sh [branch-de-integração]
 #
-# Resolve tudo que o /review precisa antes de analisar: arquivos alterados
+# Resolve tudo que o /dl-review precisa antes de analisar: arquivos alterados
 # (sem lockfiles e reviews anteriores), {N} da feature, próximo {seq}, data e
 # caminho do relatório. Falha com exit 1 se não houver o que revisar.
 #
@@ -26,7 +26,7 @@ fi
 CHANGED_FILES="$(echo "$RAW_CHANGED_FILES" | grep -vE '^docs/reviews/|package-lock\.json|yarn\.lock|pnpm-lock\.yaml|go\.sum|Gemfile\.lock|poetry\.lock' || true)"
 
 if [ -z "$CHANGED_FILES" ]; then
-  echo "Nenhuma mudança em relação a $INTEGRATION_BRANCH — nada para revisar. Commite a implementação (/code) antes de rodar o /review." >&2
+  echo "Nenhuma mudança em relação a $INTEGRATION_BRANCH — nada para revisar. Commite a implementação (/dl-code) antes de rodar o /dl-review." >&2
   exit 1
 fi
 

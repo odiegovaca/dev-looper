@@ -47,10 +47,10 @@ if [ ! -d "$DEST" ]; then
   exit 1
 fi
 
-# Aviso, não erro: o /setup ainda roda num diretório que não é repo, mas todo o
+# Aviso, não erro: o /dl-setup ainda roda num diretório que não é repo, mas todo o
 # fluxo depois dele (branches, diff, merge-base, PR) precisa de git.
 if ! git -C "$DEST" rev-parse --git-dir >/dev/null 2>&1; then
-  echo "Aviso: $DEST não é um repositório git — rode 'git init' lá antes do /setup." >&2
+  echo "Aviso: $DEST não é um repositório git — rode 'git init' lá antes do /dl-setup." >&2
 fi
 
 EXTRAS=()
@@ -141,7 +141,7 @@ while IFS= read -r -d '' file; do
   rel="$(destino "${file#"$CORE"/}")"
   [ -n "$rel" ] || continue
 
-  # O /setup consome o template e o apaga: sem esta guarda, o install.sh devolveria
+  # O /dl-setup consome o template e o apaga: sem esta guarda, o install.sh devolveria
   # ao projeto uma semente que ele já usou.
   if [ "$rel" = "$DL_INSTRUCTIONS_TEMPLATE_PATH" ] && [ -f "$DEST/$DL_INSTRUCTIONS_PATH" ]; then
     TEMPLATE_PULADO=true
@@ -184,7 +184,7 @@ if [ "$TEMPLATE_PULADO" = true ]; then
   echo ""
   echo "Nota: o $DL_INSTRUCTIONS_TEMPLATE foi pulado porque este projeto já tem o"
   echo "$DL_INSTRUCTIONS preenchido. Se o template mudou nesta versão, ele não chega"
-  echo "sozinho: rode /setup de novo para reescrever as instruções a partir do template novo."
+  echo "sozinho: rode /dl-setup de novo para reescrever as instruções a partir do template novo."
 fi
 
 if declare -F notas >/dev/null; then

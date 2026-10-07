@@ -68,7 +68,7 @@ git checkout "$INTEGRATION_BRANCH"
 git pull origin "$INTEGRATION_BRANCH"
 
 # O merge de volta só atualiza a integração com produção: o número do próximo ciclo
-# é assunto do próximo /rc, que o deriva da versão de produção. Por isso os arquivos
+# é assunto do próximo /dl-rc, que o deriva da versão de produção. Por isso os arquivos
 # de versão ficam com o lado de produção, e o CHANGELOG com os dois blocos — o da
 # release e o do ciclo que a integração abriu em paralelo.
 resolve_sincronizacao() {
@@ -108,7 +108,7 @@ if ! git merge "$PROD_BRANCH"; then
   else
     resolve_sincronizacao <<< "$CONFLITADOS"
     git commit -q -m "chore: sincroniza $INTEGRATION_BRANCH com $PROD_BRANCH após a $TAG"
-    ENCERRAMENTO+=("ℹ️ Merge de volta conflitou no esperado e foi resolvido: versão de $PROD_BRANCH, CHANGELOG com os dois blocos. O número do próximo ciclo sai do próximo /rc.")
+    ENCERRAMENTO+=("ℹ️ Merge de volta conflitou no esperado e foi resolvido: versão de $PROD_BRANCH, CHANGELOG com os dois blocos. O número do próximo ciclo sai do próximo /dl-rc.")
   fi
 fi
 

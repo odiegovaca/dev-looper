@@ -1,10 +1,10 @@
 ---
 description: Aplicar correções do último code review por número, severidade ou todas
 tools: [read, edit, search, execute, todo]
-argument-hint: "Números e/ou severidades, combináveis, ou 'todos' (ex: /fix-review 3, /fix-review critical 7, /fix-review medium low)"
+argument-hint: "Números e/ou severidades, combináveis, ou 'todos' (ex: /dl-fix 3, /dl-fix critical 7, /dl-fix medium low)"
 ---
 
-# /fix-review - Aplicar Correções do Code Review
+# /dl-fix - Aplicar Correções do Code Review
 
 ## Processo
 
@@ -34,7 +34,7 @@ Apresentar os contestados de uma vez, cada um com o que o relatório propôs, po
 .github/scripts/validate.sh lint build test
 ```
 
-Corrigir o que falhar por causa de uma correção aplicada, em vez de deixar a falha para o `/test`.
+Corrigir o que falhar por causa de uma correção aplicada, em vez de deixar a falha para o `/dl-test`.
 
 ### 5 — Confirmar
 
@@ -46,15 +46,15 @@ Corrigir o que falhar por causa de uma correção aplicada, em vez de deixar a f
 
 Um `--dismissed` por problema, com a decisão do usuário como motivo. Alternativa aceita no passo 3 conta como aplicada.
 
-### 6 — Listar Lições para `/lesson`
+### 6 — Listar Lições para `/dl-lesson`
 
 Só o que generaliza para além do arquivo corrigido. Nenhuma lição é resultado válido. Sem prosa livre fora do bloco:
 
 ```markdown
-## 📚 Lições para /lesson
+## 📚 Lições para /dl-lesson
 
 - problema: #N [título curto]
-  licao: [texto pronto para colar como argumento de /lesson]
+  licao: [texto pronto para colar como argumento de /dl-lesson]
 ```
 
 Nada que generalize: `Nenhuma lição nova identificada nesta execução.`

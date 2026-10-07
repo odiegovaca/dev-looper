@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # fix-review-finalize.sh [--applied <números>] [--dismissed "#N: motivo"]...
 #
-# Fecha uma rodada de /fix-review no relatório mais recente da feature: registra o
+# Fecha uma rodada de /dl-fix no relatório mais recente da feature: registra o
 # que foi aplicado e o que foi dispensado, deriva o status pós-fix e imprime a
 # confirmação pronta para o chat — usar a saída sem alterações.
 #
@@ -44,7 +44,7 @@ done
 # Número, severidade, Local e flag de protegido — um por problema.
 PROBLEMS="$("$SCRIPT_DIR/review-problems.sh" "$REPORT")"
 if [ -z "$PROBLEMS" ]; then
-  echo "Nenhum bloco '#### Problema' em $REPORT — nada a finalizar. Se o review apontou problemas, rode /review de novo: é o passo 2 dele que escreve os blocos." >&2
+  echo "Nenhum bloco '#### Problema' em $REPORT — nada a finalizar. Se o review apontou problemas, rode /dl-review de novo: é o passo 2 dele que escreve os blocos." >&2
   exit 1
 fi
 
@@ -103,7 +103,7 @@ done <<< "$DISMISSED_RAW"
 PROTEGIDOS="$(awk -F"$TAB" '$4 != "" { print $1 }' <<< "$PROBLEMS" || true)"
 while IFS="$TAB" read -r num sev local protegido; do
   [ -n "$num" ] && [ -n "$protegido" ] || continue
-  DISMISSED_MAP="$DISMISSED_MAP$num${TAB}arquivo protegido ($local) — só /setup e /lesson podem alterá-lo
+  DISMISSED_MAP="$DISMISSED_MAP$num${TAB}arquivo protegido ($local) — só /dl-setup e /dl-lesson podem alterá-lo
 "
 done <<< "$PROBLEMS"
 
@@ -180,7 +180,7 @@ for n in $(sorted "$APPLIED"); do
 done
 
 # "revisar" olha o acumulado, não só esta rodada: um bloqueante corrigido deixa o
-# relatório obsoleto até o próximo /review, e corrigir um medium depois não desfaz isso.
+# relatório obsoleto até o próximo /dl-review, e corrigir um medium depois não desfaz isso.
 if [ -n "$PENDING_BLOCKERS" ]; then
   STATUS="bloqueado"
 elif [ -n "$APPLIED_BLOCKERS" ]; then

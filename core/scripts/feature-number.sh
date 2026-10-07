@@ -10,7 +10,7 @@ BRANCH="$(git branch --show-current)"
 N="$(echo "$BRANCH" | sed -E 's#^[a-z]+/([0-9]+)-.*#\1#')"
 
 if [[ -z "$N" || "$N" == "$BRANCH" ]]; then
-  echo "Branch '$BRANCH' não segue o padrão {tipo}/{N}-nome-descritivo ({N} = número da issue) — rode /code para criar a branch da issue, ou renomeie a atual (git branch -m feature/{N}-nome-descritivo)" >&2
+  echo "Branch '$BRANCH' não segue o padrão {tipo}/{N}-nome-descritivo ({N} = número da issue) — rode /dl-code para criar a branch da issue, ou renomeie a atual (git branch -m feature/{N}-nome-descritivo)" >&2
   exit 1
 fi
 

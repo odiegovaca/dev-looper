@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # review-finalize.sh <relatório.md> <data>
 #
-# Recompõe o relatório de /review na ordem final Summary → Análise por Arquivo →
+# Recompõe o relatório de /dl-review na ordem final Summary → Análise por Arquivo →
 # Recomendações, a partir do arquivo bruto com os blocos "#### Problema {i} — {SEVERIDADE}".
 # Termina imprimindo o sumário pronto para o chat — usar a saída sem alterações.
 set -euo pipefail
@@ -15,7 +15,7 @@ if [ -z "$REPORT" ] || [ -z "$DATA" ]; then
   exit 1
 fi
 if [ ! -f "$REPORT" ]; then
-  echo "Relatório não encontrado: $REPORT — é o passo 2 do /review que o escreve, com um bloco '#### Problema {i} — {SEVERIDADE}' por achado" >&2
+  echo "Relatório não encontrado: $REPORT — é o passo 2 do /dl-review que o escreve, com um bloco '#### Problema {i} — {SEVERIDADE}' por achado" >&2
   exit 1
 fi
 

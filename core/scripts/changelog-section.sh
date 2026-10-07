@@ -3,7 +3,7 @@
 #
 # Garante no topo do CHANGELOG.md uma única seção de ciclo com o header na versão
 # dada e `Unreleased` no lugar da data. Cria o arquivo e a seção na primeira vez;
-# depois só troca o header, preservando o corpo. As subseções são do /rc — quem
+# depois só troca o header, preservando o corpo. As subseções são do /dl-rc — quem
 # sabe em qual categoria do Keep a Changelog cada mudança entra é quem a fez.
 set -euo pipefail
 

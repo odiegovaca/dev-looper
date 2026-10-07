@@ -1,10 +1,10 @@
 ---
 description: Preparar release de produção consolidando versões RC em versão estável
 tools: [read, edit, search, execute]
-argument-hint: "Versão de release (opcional, ex: /release 2.5.0)"
+argument-hint: "Versão de release (opcional, ex: /dl-release 2.5.0)"
 ---
 
-# /release - Release
+# /dl-release - Release
 
 ## Processo
 

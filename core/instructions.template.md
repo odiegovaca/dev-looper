@@ -1,6 +1,6 @@
 # {{INSTRUCTIONS_TITLE}}: [NOME DO PROJETO]
 
-<!-- Onboarding do agente, lido no início de cada sessão. Rode /setup para preencher. -->
+<!-- Onboarding do agente, lido no início de cada sessão. Rode /dl-setup para preencher. -->
 
 ## Project Overview
 
@@ -66,7 +66,7 @@ Checklist derivado das seções acima — vale para toda implementação ou corr
 
 ## Arquivos Protegidos
 
-{{PROMPTS_PROTECTED}} e este arquivo (`{{INSTRUCTIONS}}`) só podem ser alterados por `/setup` e `/lesson`. Nenhum outro comando deve editá-los, mesmo incidentalmente — mudanças aqui alteram o comportamento de todo o workflow, e precisam passar pela revisão deliberada que esses dois comandos representam.
+{{PROMPTS_PROTECTED}} e este arquivo (`{{INSTRUCTIONS}}`) só podem ser alterados por `/dl-setup` e `/dl-lesson`. Nenhum outro comando deve editá-los, mesmo incidentalmente — mudanças aqui alteram o comportamento de todo o workflow, e precisam passar pela revisão deliberada que esses dois comandos representam.
 
 Falha três vezes seguidas no mesmo erro, em qualquer comando, é sinal de parar e reportar ao usuário — não de tentar uma quarta vez.
 
@@ -106,7 +106,7 @@ Falha três vezes seguidas no mesmo erro, em qualquer comando, é sinal de parar
 
 ## Common Pitfalls
 
-<!-- Adicione aqui erros recorrentes via /lesson -->
+<!-- Adicione aqui erros recorrentes via /dl-lesson -->
 
 - [DEFINIR: armadilhas deste stack e deste código que já causaram erro, uma por linha. Só o que foi observado aqui — não a lista genérica da linguagem.]
 
@@ -116,14 +116,14 @@ Falha três vezes seguidas no mesmo erro, em qualquer comando, é sinal de parar
 
 [DEFINIR: a estrutura padrão de um teste unitário deste projeto, com um trecho real — onde os arquivos ficam, como se nomeiam, e como as dependências são mockadas.]
 
-**Meta de cobertura:** ver `COVERAGE_TARGET` em `.github/scripts/coverage.sh` — é de lá que `/test` e `/status` a leem
+**Meta de cobertura:** ver `COVERAGE_TARGET` em `.github/scripts/coverage.sh` — é de lá que `/dl-test` e `/dl-status` a leem
 
 ---
 
 ## Release Workflow
 
 - **Branches**: ver `.github/scripts/release-branches.sh`
-- **Features**: `feature/{N}-nome-descritivo` a partir da branch de integração — `{N}` é o número da issue, e é por ele que `/review` e `/fix-review` acham o relatório da feature
+- **Features**: `feature/{N}-nome-descritivo` a partir da branch de integração — `{N}` é o número da issue, e é por ele que `/dl-review` e `/dl-fix` acham o relatório da feature
 - **Versionamento**: [DEFINIR: esquema de versão e onde o sufixo de pré-lançamento é usado]
 - **Arquivos de versão**: ver `VERSION_FILES` em `.github/scripts/bump-version.sh`
-- **CHANGELOG no desenvolvimento**: uma única seção por ciclo, sempre consolidada — cada RC reescreve a do topo com o delta acumulado, header na versão RC atual e `Unreleased` no lugar da data; o `/release` troca esse header pela versão final
+- **CHANGELOG no desenvolvimento**: uma única seção por ciclo, sempre consolidada — cada RC reescreve a do topo com o delta acumulado, header na versão RC atual e `Unreleased` no lugar da data; o `/dl-release` troca esse header pela versão final

@@ -20,7 +20,7 @@ if [[ -z "$SPEC_PATH" ]]; then
   done < <(ls docs/issues/spec-*.md 2>/dev/null || true)
 
   if [[ "${#CANDIDATES[@]}" -eq 0 ]]; then
-    echo "Nenhuma spec com Status: Aprovada encontrada em docs/issues/ — use /spec para aprovar uma" >&2
+    echo "Nenhuma spec com Status: Aprovada encontrada em docs/issues/ — use /dl-spec para aprovar uma" >&2
     exit 1
   elif [[ "${#CANDIDATES[@]}" -gt 1 ]]; then
     echo "Múltiplas specs aprovadas — rode de novo passando o caminho de uma:" >&2
@@ -30,7 +30,7 @@ if [[ -z "$SPEC_PATH" ]]; then
   SPEC_PATH="${CANDIDATES[0]}"
 fi
 
-[[ -f "$SPEC_PATH" ]] || { echo "Spec não encontrada: $SPEC_PATH — confira o caminho, ou rode /spec para criar a spec" >&2; exit 1; }
+[[ -f "$SPEC_PATH" ]] || { echo "Spec não encontrada: $SPEC_PATH — confira o caminho, ou rode /dl-spec para criar a spec" >&2; exit 1; }
 
 # Campos do cabeçalho da spec: TITLE do H1, STATUS e TIPO das linhas "**Campo**: `valor`".
 # `|| true` para campo ausente cair nas validações abaixo, não matar o script.
@@ -42,22 +42,22 @@ TIPO="$(grep -m1 '^\*\*Tipo\*\*:' "$SPEC_PATH" | sed -E 's/^\*\*Tipo\*\*:[[:spac
 # num refinamento, e abririam uma issue duplicada deixando a original órfã.
 ISSUE_EXISTENTE="$(grep -m1 -E '^\*\*Issue\*\*: \[?#[0-9]+' "$SPEC_PATH" | sed -E 's/^\*\*Issue\*\*: \[?#([0-9]+).*/\1/' || true)"
 
-[[ -n "$TITLE" ]] || { echo "Título (linha '# ...') não encontrado em $SPEC_PATH — acrescente o H1 do template, ou rode /spec para regravar a spec" >&2; exit 1; }
+[[ -n "$TITLE" ]] || { echo "Título (linha '# ...') não encontrado em $SPEC_PATH — acrescente o H1 do template, ou rode /dl-spec para regravar a spec" >&2; exit 1; }
 
 # Atualizar aceita também `Issue criada` — é o status em que uma spec refinada
 # fica, e exigir `Aprovada` obrigaria a rebaixá-lo à mão só para propagar.
 if [[ -n "$ISSUE_EXISTENTE" ]]; then
   case "$STATUS" in
     Aprovada|Aprovado|"Issue criada") ;;
-    *) echo "Spec com Status '${STATUS:-ausente}' (esperado 'Aprovada' ou 'Issue criada'): $SPEC_PATH — use /spec [identificador] para aprovar" >&2; exit 1 ;;
+    *) echo "Spec com Status '${STATUS:-ausente}' (esperado 'Aprovada' ou 'Issue criada'): $SPEC_PATH — use /dl-spec [identificador] para aprovar" >&2; exit 1 ;;
   esac
 else
-  [[ "$STATUS" == "Aprovada" || "$STATUS" == "Aprovado" ]] || { echo "Spec com Status '${STATUS:-ausente}' (esperado 'Aprovada'): $SPEC_PATH — use /spec [identificador] para aprovar" >&2; exit 1; }
+  [[ "$STATUS" == "Aprovada" || "$STATUS" == "Aprovado" ]] || { echo "Spec com Status '${STATUS:-ausente}' (esperado 'Aprovada'): $SPEC_PATH — use /dl-spec [identificador] para aprovar" >&2; exit 1; }
 fi
 
 case "$TIPO" in
   feature|improvement) ;;
-  *) echo "Campo **Tipo** ausente ou inválido ('$TIPO') em $SPEC_PATH — use /spec para preencher feature|improvement" >&2; exit 1 ;;
+  *) echo "Campo **Tipo** ausente ou inválido ('$TIPO') em $SPEC_PATH — use /dl-spec para preencher feature|improvement" >&2; exit 1 ;;
 esac
 
 # Corpo da issue = spec inteira + rodapé apontando para o arquivo fonte.
@@ -70,8 +70,8 @@ $(cat "$SPEC_PATH")
 EOF
 )"
 
-# Nenhum passo do /setup cria a label, e o --label abaixo a exige: sem isto o
-# /issue falha na primeira execução de todo repositório novo. --force é idempotente.
+# Nenhum passo do /dl-setup cria a label, e o --label abaixo a exige: sem isto o
+# /dl-issue falha na primeira execução de todo repositório novo. --force é idempotente.
 gh label create "$TIPO" --repo "$GH_REPO" --force >/dev/null 2>&1 \
   || echo "⚠️ Não consegui garantir a label '$TIPO' em $GH_REPO — se o passo abaixo falhar por label ausente, rode: gh label create $TIPO --repo $GH_REPO" >&2
 
@@ -100,9 +100,9 @@ sed -i "/^\*\*Status\*\*:/a **Issue**: [#${ISSUE_NUMBER}](${ISSUE_URL})  " "$SPE
 if [[ "$ISSUE_ACTION" == "created" ]]; then
   echo "✅ Issue #${ISSUE_NUMBER} criada: ${ISSUE_URL}"
   echo "   Spec atualizada: ${SPEC_PATH} → Status: Issue criada"
-  echo "   Próximo passo: /code para começar o desenvolvimento."
+  echo "   Próximo passo: /dl-code para começar o desenvolvimento."
 else
   echo "✅ Issue #${ISSUE_NUMBER} atualizada com a spec revisada: ${ISSUE_URL}"
   echo "   Título, corpo e label agora refletem ${SPEC_PATH}."
-  echo "   Próximo passo: /code — se a implementação já começou, confira se os requisitos que mudaram invalidam algo já feito."
+  echo "   Próximo passo: /dl-code — se a implementação já começou, confira se os requisitos que mudaram invalidam algo já feito."
 fi

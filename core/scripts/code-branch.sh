@@ -3,7 +3,7 @@
 #
 # Diz se a branch atual serve para implementar. Imprime BRANCH_OK (sim|nao),
 # BRANCH_ATUAL e FEATURE_N em KEY=value. FEATURE_N sai do campo **Issue** da spec
-# e vem vazio quando não há issue vinculada — a única decisão que sobra para o /code.
+# e vem vazio quando não há issue vinculada — a única decisão que sobra para o /dl-code.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -37,6 +37,6 @@ if [ "$BRANCH_OK" = nao ]; then
   if [ -n "$FEATURE_N" ]; then
     echo "Branch '${BRANCH_ATUAL:-DETACHED}' não serve para implementar — crie feature/${FEATURE_N}-nome-descritivo antes de começar." >&2
   else
-    echo "Branch '${BRANCH_ATUAL:-DETACHED}' não serve para implementar, e a spec não tem issue vinculada — rode /issue, ou pergunte o número ao usuário antes de criar a branch." >&2
+    echo "Branch '${BRANCH_ATUAL:-DETACHED}' não serve para implementar, e a spec não tem issue vinculada — rode /dl-issue, ou pergunte o número ao usuário antes de criar a branch." >&2
   fi
 fi

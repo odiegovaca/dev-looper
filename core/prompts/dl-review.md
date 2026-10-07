@@ -4,7 +4,7 @@ tools: [read, edit, search, execute]
 argument-hint: "Branch de integração para comparar, sem prefixo origin/ (opcional, padrão: a do projeto)"
 ---
 
-# /review - Code Review
+# /dl-review - Code Review
 
 **Este comando é somente leitura sobre o código revisado** — a única escrita permitida é a criação do relatório em `docs/reviews/`. Nunca editar os arquivos analisados.
 

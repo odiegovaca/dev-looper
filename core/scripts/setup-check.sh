@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # setup-check.sh
 #
-# Lista o que o /setup deixou por configurar: os [DEFINIR] restantes no
+# Lista o que o /dl-setup deixou por configurar: os [DEFINIR] restantes no
 # {{INSTRUCTIONS}} e nos scripts que ele preenche.
 # Sempre sai com 0 — é relatório de pendências, não guarda de execução.
 set -euo pipefail
@@ -24,12 +24,12 @@ if [ -f "$INSTRUCTIONS" ]; then
   [ "$QUANTOS" -eq 0 ] || echo "$ACHADOS" | sed -E 's/^([0-9]+):[[:space:]]*/  linha \1: /' | cut -c1-110
   PENDENTES=$((PENDENTES + QUANTOS))
 else
-  echo "{{INSTRUCTIONS}}: não existe — é o passo 4 do /setup que o gera"
+  echo "{{INSTRUCTIONS}}: não existe — é o passo 4 do /dl-setup que o gera"
   PENDENTES=$((PENDENTES + 1))
 fi
 
 echo
-echo "Scripts preenchidos pelo /setup:"
+echo "Scripts preenchidos pelo /dl-setup:"
 for f in bump-version.sh coverage.sh validate.sh release-branches.sh; do
   ACHADOS="$(grep -n '\[DEFINIR:' "$SCRIPT_DIR/$f" || true)"
   QUANTOS="$(contar "$ACHADOS")"

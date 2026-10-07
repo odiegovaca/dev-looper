@@ -4,7 +4,7 @@ tools: [read, edit, search, execute]
 argument-hint: "Caminho da spec (opcional, usa a unica spec aprovada se omitido)"
 ---
 
-# /issue - Criar ou Atualizar Issue GitHub
+# /dl-issue - Criar ou Atualizar Issue GitHub
 
 ```bash
 .github/scripts/create-issue.sh [caminho-da-spec]

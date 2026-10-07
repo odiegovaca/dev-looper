@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # fix-review-select.sh <seletor>...
 #
-# Resolve os seletores do /fix-review nos problemas a corrigir, no relatório mais
+# Resolve os seletores do /dl-fix nos problemas a corrigir, no relatório mais
 # recente da feature. Seletor é número, severidade ou `todos`, combináveis em
 # qualquer ordem — o conjunto é a união. Imprime SELECIONADOS e IGNORADOS.
 set -euo pipefail
@@ -56,7 +56,7 @@ for n in $(tr ' ' '\n' <<< "$PEDIDOS" | grep -E '^[0-9]+$' | sort -n -u || true)
   IFS="$TAB" read -r num sev local protegido <<< "$(info_of "$n")"
   if [ -n "$protegido" ]; then
     PROTEGIDOS="$PROTEGIDOS $num"
-    IGNORADOS="$IGNORADOS  #$num ($sev) ${local:-sem Local} — arquivo protegido, só /setup e /lesson podem alterá-lo
+    IGNORADOS="$IGNORADOS  #$num ($sev) ${local:-sem Local} — arquivo protegido, só /dl-setup e /dl-lesson podem alterá-lo
 "
   else
     SELECIONADOS="$SELECIONADOS  #$num ($sev) ${local:-sem Local}
@@ -72,7 +72,7 @@ done
 # Problema protegido segue para a finalização mesmo sem nada a aplicar — é lá que
 # a dispensa fica registrada. Só número inventado não: não há o que registrar.
 if [ -z "$SELECIONADOS" ] && [ -z "$PROTEGIDOS" ]; then
-  echo "Nenhum problema casou com os seletores em $REPORT — rode /fix-review com um número ou uma severidade presentes no relatório (ou 'todos')." >&2
+  echo "Nenhum problema casou com os seletores em $REPORT — rode /dl-fix com um número ou uma severidade presentes no relatório (ou 'todos')." >&2
   [ -n "$IGNORADOS" ] && printf '%s' "$IGNORADOS" >&2
   exit 1
 fi

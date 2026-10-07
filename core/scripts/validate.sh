@@ -2,7 +2,7 @@
 # validate.sh <ação> [ação...]
 #
 # Roda os comandos de teste/lint/build do stack, na ordem pedida, parando na
-# primeira falha. Corpo de cada função preenchido por /setup.
+# primeira falha. Corpo de cada função preenchido por /dl-setup.
 #
 # Falha três vezes seguidas no mesmo erro é sinal de parar e reportar, não de
 # tentar de novo — vale para todo comando que chama este script.
@@ -12,19 +12,19 @@ set -euo pipefail
 # nada falha, a cobertura só congela (se ela sai de outra fase, é essa fase que vai aqui).
 run_test() {
   # [DEFINIR: comando de teste do projeto, gerando o relatorio de COVERAGE_REPORT]
-  echo "run_test não configurado — rode /setup" >&2
+  echo "run_test não configurado — rode /dl-setup" >&2
   exit 1
 }
 
 run_lint() {
   # [DEFINIR: comando de lint do projeto]
-  echo "run_lint não configurado — rode /setup" >&2
+  echo "run_lint não configurado — rode /dl-setup" >&2
   exit 1
 }
 
 run_build() {
   # [DEFINIR: comando de build do projeto]
-  echo "run_build não configurado — rode /setup" >&2
+  echo "run_build não configurado — rode /dl-setup" >&2
   exit 1
 }
 

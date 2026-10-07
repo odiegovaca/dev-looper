@@ -1,10 +1,10 @@
 ---
 description: Formalizar uma correção ou aprendizado em instrução permanente no projeto
 tools: [read, edit, search, execute]
-argument-hint: "Descrição do aprendizado (ex: /lesson Controllers void não devem ter @ApiResponse tipado)"
+argument-hint: "Descrição do aprendizado (ex: /dl-lesson Controllers void não devem ter @ApiResponse tipado)"
 ---
 
-# /lesson - Formalizar Aprendizado em Instrução
+# /dl-lesson - Formalizar Aprendizado em Instrução
 
 ## Processo
 

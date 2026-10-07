@@ -46,7 +46,7 @@ if [ -f CHANGELOG.md ]; then
   ' CHANGELOG.md 2>/dev/null | sed -e '/./,$!d' || true)"
 
   if [ -n "$RC_RESTANTE" ] || [ -z "$SECAO" ]; then
-    echo "CHANGELOG.md não está consolidado — a seção do ciclo vem do /rc." >&2
+    echo "CHANGELOG.md não está consolidado — a seção do ciclo vem do /dl-rc." >&2
     if [ -n "$RC_RESTANTE" ]; then
       echo "   Seções de RC ainda no arquivo:" >&2
       echo "$RC_RESTANTE" | head -5 | sed 's/^/     linha /' >&2

@@ -4,7 +4,7 @@ tools: [read, edit, search, execute, todo]
 argument-hint: "Caminho da spec ou descrição da funcionalidade"
 ---
 
-# /code - Implementar Funcionalidade
+# /dl-code - Implementar Funcionalidade
 
 ## Processo
 
@@ -47,7 +47,7 @@ Registro no container de dependências, variáveis de ambiente novas e documenta
 
 Testes unitários do código implementado, cobrindo o fluxo principal de cada método público e os erros tipados que a spec prevê, com as dependências externas mockadas. Estrutura, nomes e localização seguem a seção Testing Conventions de `{{INSTRUCTIONS}}`.
 
-> Testes de borda, cobertura de branches e casos extras ficam para o `/test`.
+> Testes de borda, cobertura de branches e casos extras ficam para o `/dl-test`.
 
 ### 3 — Validação Final
 
@@ -64,7 +64,7 @@ Precisa terminar sem erro antes de prosseguir. `test` roda a suíte completa do 
 
 1. Revise as Changes da branch (git diff ou painel Source Control)
 2. Se aprovado: git commit -m "feat: <descrição>"  ← checkpoint antes do review
-3. /test    → completar cobertura até a meta do projeto (casos de borda e gaps)
-4. /review  → revisão de qualidade antes do PR
-5. /rc      → criar PR
+3. /dl-test    → completar cobertura até a meta do projeto (casos de borda e gaps)
+4. /dl-review  → revisão de qualidade antes do PR
+5. /dl-rc      → criar PR
 ```

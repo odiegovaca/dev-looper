@@ -4,7 +4,7 @@ tools: [read, edit, search, execute]
 argument-hint: "Descrição da funcionalidade ou caminho da spec para refinar"
 ---
 
-# /spec - Criar Especificação
+# /dl-spec - Criar Especificação
 
 A spec é legível por não-técnicos: linguagem natural, sem código.
 
@@ -36,7 +36,7 @@ O campo `**Data**` recebe `DATA_CAMPO` nos dois modos. O nome do arquivo nunca m
 .github/scripts/spec-status.sh <arquivo> [nova|refinamento]
 ```
 
-Acrescentar um resumo do que mudou. Nunca editar a issue na mão — é o `/issue` que sincroniza.
+Acrescentar um resumo do que mudou. Nunca editar a issue na mão — é o `/dl-issue` que sincroniza.
 
 ## Regras
 
@@ -101,4 +101,4 @@ Descrição direta (2-4 parágrafos). Foque no "o quê" e "por quê", não no "c
 - [ADR ou documento relacionado]
 ```
 
-O `Status` anda `Rascunho` → `Em Revisão` → `Aprovada`; `Issue criada` é gravado pelo `/issue`, não aqui.
+O `Status` anda `Rascunho` → `Em Revisão` → `Aprovada`; `Issue criada` é gravado pelo `/dl-issue`, não aqui.

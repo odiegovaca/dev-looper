@@ -4,20 +4,20 @@
 
 ## Fluxo Completo (Nova Funcionalidade)
 
-1. `/spec` → Especificação funcional
-2. `/issue` → Issue GitHub
-3. `/code` → Código + testes básicos (happy path + erros esperados)
-   - `/test` → _se cobertura abaixo da meta após `/code`_
-4. `/review` → Revisão de qualidade crítica por nível de severidade
-   - `/fix-review [alvo]` → _se houver problemas a tratar; critical e high bloqueiam o `/rc`_
-5. `/rc` → PR → branch de integração (versão RC)
-6. `/release` → PR → produção (versão estável)
+1. `/dl-spec` → Especificação funcional
+2. `/dl-issue` → Issue GitHub
+3. `/dl-code` → Código + testes básicos (happy path + erros esperados)
+   - `/dl-test` → _se cobertura abaixo da meta após `/dl-code`_
+4. `/dl-review` → Revisão de qualidade crítica por nível de severidade
+   - `/dl-fix [alvo]` → _se houver problemas a tratar; critical e high bloqueiam o `/dl-rc`_
+5. `/dl-rc` → PR → branch de integração (versão RC)
+6. `/dl-release` → PR → produção (versão estável)
 
 ## Comandos Auxiliares
 
-- `/setup` → Bootstrap inicial — apenas uma vez por projeto
-- `/status` → Snapshot: branch, versão, cobertura, último review, próximo passo
-- `/lesson [lição]` → Formalizar correção em instrução permanente — use logo após corrigir algo manualmente, antes que a regra se perca
+- `/dl-setup` → Bootstrap inicial — apenas uma vez por projeto
+- `/dl-status` → Snapshot: branch, versão, cobertura, último review, próximo passo
+- `/dl-lesson [lição]` → Formalizar correção em instrução permanente — use logo após corrigir algo manualmente, antes que a regra se perca
 
 ## Parâmetros
 
@@ -29,4 +29,4 @@ grep -H '^argument-hint:' {{PROMPTS_DIR}}/*{{PROMPT_EXT}}
 
 ## Personalização
 
-Tudo o que é projeto-específico fica em `{{INSTRUCTIONS_PATH}}`. Os prompts buscam padrões, comandos e convenções nesse arquivo. Mantenha-o atualizado com `/lesson`.
+Tudo o que é projeto-específico fica em `{{INSTRUCTIONS_PATH}}`. Os prompts buscam padrões, comandos e convenções nesse arquivo. Mantenha-o atualizado com `/dl-lesson`.

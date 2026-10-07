@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # spec-path.sh <título da funcionalidade ou caminho de uma spec>
 #
-# Resolve em qual arquivo o /spec vai escrever, e com que datas.
+# Resolve em qual arquivo o /dl-spec vai escrever, e com que datas.
 # Imprime MODO (nova|refinamento|conflito), SPEC_PATH, DATA_ARQUIVO e DATA_CAMPO
 # em KEY=value; em `conflito` acrescenta CANDIDATAS com as specs que já usam o
 # identificador. Num refinamento o nome do arquivo não muda — a data dele é a de

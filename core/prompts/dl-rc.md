@@ -1,10 +1,10 @@
 ---
 description: Finalizar feature branch e criar Pull Request com versionamento RC
 tools: [read, edit, search, execute]
-argument-hint: "Tipo de versão: patch, minor ou major (ex: /rc patch)"
+argument-hint: "Tipo de versão: patch, minor ou major (ex: /dl-rc patch)"
 ---
 
-# /rc - RC Pull Request
+# /dl-rc - RC Pull Request
 
 ## Processo
 

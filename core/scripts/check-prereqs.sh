@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # check-prereqs.sh
 #
-# Confere o que o fluxo precisa antes do /setup: `gh` instalado e autenticado.
+# Confere o que o fluxo precisa antes do /dl-setup: `gh` instalado e autenticado.
 # Falha com exit 1 e a correção na própria mensagem; a resolução de repositório do
 # gh sai só como aviso, porque os scripts passam --repo e não dependem dela.
 set -euo pipefail

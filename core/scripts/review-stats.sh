@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # review-stats.sh <relatório.md>
 #
-# Conta os problemas de um relatório de /review por severidade e deriva o veredito.
+# Conta os problemas de um relatório de /dl-review por severidade e deriva o veredito.
 # Imprime CRITICAL_COUNT/HIGH_COUNT/MEDIUM_COUNT/LOW_COUNT/VEREDITO em KEY=value.
 # Aborta se algum bloco ficou sem severidade reconhecida, em vez de contar errado.
 set -euo pipefail
 
 REPORT="${1:-}"
 [ -n "$REPORT" ] || { echo "Uso: review-stats.sh <relatório.md>" >&2; exit 1; }
-[ -f "$REPORT" ] || { echo "Relatório não encontrado: $REPORT — rode /review para gerá-lo" >&2; exit 1; }
+[ -f "$REPORT" ] || { echo "Relatório não encontrado: $REPORT — rode /dl-review para gerá-lo" >&2; exit 1; }
 
 CRITICAL_COUNT=$(grep -c '^#### Problema .* — CRITICAL$' "$REPORT" || true)
 HIGH_COUNT=$(grep -c '^#### Problema .* — HIGH$' "$REPORT" || true)

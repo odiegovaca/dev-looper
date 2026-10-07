@@ -4,7 +4,7 @@ tools: [read, edit, search, execute, todo]
 argument-hint: "Meta de cobertura em % (opcional, padrão: a meta do projeto)"
 ---
 
-# /test - Completar Cobertura de Testes
+# /dl-test - Completar Cobertura de Testes
 
 Meta de **statements**: `.github/scripts/coverage.sh --target`, ou o valor passado em `$ARGUMENTS`.
 
@@ -58,5 +58,5 @@ Ignorar código gerado, migrations e arquivos de configuração — não contam 
 
 ## Próximos Passos
 
-- ✅ **Meta atingida**: `git commit -m "test: completa cobertura"` como checkpoint, depois `/review`
+- ✅ **Meta atingida**: `git commit -m "test: completa cobertura"` como checkpoint, depois `/dl-review`
 - ⚠️ **Meta não atingida**: informar lacunas e arquivos prioritários para cobertura manual

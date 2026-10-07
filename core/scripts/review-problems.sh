@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # review-problems.sh <relatório.md>
 #
-# Imprime uma linha por problema do relatório de /review, campos separados por TAB:
+# Imprime uma linha por problema do relatório de /dl-review, campos separados por TAB:
 # número, severidade, Local (`arquivo:linha`, vazio se ausente) e `protegido`.
 # Único lugar que interpreta o formato do bloco "#### Problema {i} — {SEVERIDADE}".
 set -euo pipefail
@@ -11,7 +11,7 @@ TAB="$(printf '\t')"
 
 REPORT="${1:-}"
 [ -n "$REPORT" ] || { echo "Uso: review-problems.sh <relatório.md>" >&2; exit 1; }
-[ -f "$REPORT" ] || { echo "Relatório não encontrado: $REPORT — rode /review para gerá-lo" >&2; exit 1; }
+[ -f "$REPORT" ] || { echo "Relatório não encontrado: $REPORT — rode /dl-review para gerá-lo" >&2; exit 1; }
 
 # Valida o formato antes de listar: lista incompleta passaria por completa.
 "$SCRIPT_DIR/review-stats.sh" "$REPORT" >/dev/null
