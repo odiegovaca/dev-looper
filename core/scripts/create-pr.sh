@@ -3,7 +3,8 @@
 # Resumo do PR via stdin.
 #
 # Push da branch, checagem de PR já aberto, tipo→prefixo de commit convencional
-# e `gh pr create`. Título e resumo vêm de fora porque exigem leitura dos commits.
+# e `gh pr create`. Título e resumo vêm de fora porque exigem leitura dos commits;
+# o resto do corpo (perguntas, achados, rodadas de review) sai do pr-report.sh.
 # Branch base, versão e número da issue saem dos scripts que já os calcularam, não de argumento.
 # Imprime a confirmação pronta para o chat — usar a saída sem alterações.
 set -euo pipefail
@@ -50,6 +51,12 @@ fi
 
 BODY="## Resumo
 $BODY_SUMMARY"
+REVIEW_REPORT="$("$SCRIPT_DIR/pr-report.sh")"
+if [ -n "$REVIEW_REPORT" ]; then
+  BODY="$BODY
+
+$REVIEW_REPORT"
+fi
 if [ -n "$FEATURE_N" ]; then
   BODY="$BODY
 
