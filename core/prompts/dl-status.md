@@ -6,5 +6,5 @@ tools: [read, search, execute]
 # /dl-status - Estado do Workflow
 
 ```bash
-.github/scripts/status-snapshot.sh
+{{SCRIPTS_DIR}}/status-snapshot.sh
 ```

@@ -16,7 +16,7 @@ eval "$BRANCHES"
 RELEASE_VERSION="$("$SCRIPT_DIR/bump-version.sh" current)"
 
 if [[ "$RELEASE_VERSION" == *-rc.* ]]; then
-  echo "Versão nos arquivos ainda é $RELEASE_VERSION (RC) — rode o passo 1 (.github/scripts/release-prepare.sh) antes: é ele que corta a branch de release e grava a versão estável" >&2
+  echo "Versão nos arquivos ainda é $RELEASE_VERSION (RC) — rode o passo 1 ({{SCRIPTS_DIR}}/release-prepare.sh) antes: é ele que corta a branch de release e grava a versão estável" >&2
   exit 1
 fi
 
@@ -27,7 +27,7 @@ print_postmerge_hint() {
   echo
   echo "📋 Depois do merge do PR (não executar agora), o passo final é:"
   echo
-  echo "       .github/scripts/release-postmerge.sh $RELEASE_VERSION"
+  echo "       {{SCRIPTS_DIR}}/release-postmerge.sh $RELEASE_VERSION"
   echo
   echo "   Publica a tag v$RELEASE_VERSION, sincroniza a integração com $PROD_BRANCH"
   echo "   e encerra as issues do ciclo (issue, spec e reviews)."

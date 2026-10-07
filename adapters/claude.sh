@@ -2,16 +2,18 @@
 #
 # Instala no layout do Claude Code: comandos em .claude/commands/ e instruções em
 # AGENTS.md, que o Claude Code carrega pelo `@AGENTS.md` do CLAUDE.md — ele não lê
-# o AGENTS.md sozinho. Os scripts ficam em .github/scripts/, onde os prompts os chamam.
+# o AGENTS.md sozinho. Os scripts ficam em .claude/scripts/, junto do resto do fluxo:
+# num projeto só com Claude Code, o .github/ nem precisa existir.
 
 export DL_PROMPTS_DIR='.claude/commands'
+export DL_SCRIPTS_DIR='.claude/scripts'
 export DL_PROMPT_EXT='.md'
 # Fora de commands/: lá dentro o guia viraria um comando /README.
 export DL_GUIDE_PATH='.claude/dev-looper.md'
 export DL_PROMPTS_PROTECTED='`.claude/commands/*.md`, `.claude/dev-looper.md`'
 export DL_PROMPTS_PROTECTED_ECHO="echo '.claude/commands/*.md'
 echo '.claude/dev-looper.md'"
-export DL_FLOW_FILES='`.github/`, `.claude/`, `AGENTS.md`'
+export DL_FLOW_FILES='`.claude/`, `AGENTS.md`'
 export DL_TODO_LIST='a lista de tarefas'
 
 destino() {
@@ -19,7 +21,7 @@ destino() {
     prompts/*.md)             echo "$DL_PROMPTS_DIR/$(basename "$1")" ;;
     guide.md)                 echo "$DL_GUIDE_PATH" ;;
     instructions.template.md) echo "$TEMPLATE_INSTRUCOES" ;;
-    scripts/*)                echo ".github/$1" ;;
+    scripts/*)                echo "$DL_SCRIPTS_DIR/${1#scripts/}" ;;
   esac
 }
 

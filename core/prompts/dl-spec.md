@@ -13,7 +13,7 @@ A spec é legível por não-técnicos: linguagem natural, sem código.
 ### 1 — Resolver o Arquivo
 
 ```bash
-.github/scripts/spec-path.sh "$ARGUMENTS"
+{{SCRIPTS_DIR}}/spec-path.sh "$ARGUMENTS"
 ```
 
 - `MODO=nova` → escrever o arquivo do zero, com o template abaixo
@@ -33,7 +33,7 @@ O campo `**Data**` recebe `DATA_CAMPO` nos dois modos. O nome do arquivo nunca m
 ### 3 — Apresentar
 
 ```bash
-.github/scripts/spec-status.sh <arquivo> [nova|refinamento]
+{{SCRIPTS_DIR}}/spec-status.sh <arquivo> [nova|refinamento]
 ```
 
 Acrescentar um resumo do que mudou. Nunca editar a issue na mão — é o `/dl-issue` que sincroniza.

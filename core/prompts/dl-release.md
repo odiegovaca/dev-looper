@@ -11,13 +11,13 @@ argument-hint: "Versão de release (opcional, ex: /dl-release 2.5.0)"
 ### 1 — Preparar Branch, Versão e Branch de Release
 
 ```bash
-.github/scripts/release-prepare.sh "$ARGUMENTS"
+{{SCRIPTS_DIR}}/release-prepare.sh "$ARGUMENTS"
 ```
 
 ### 2 — Validar
 
 ```bash
-.github/scripts/validate.sh test lint build
+{{SCRIPTS_DIR}}/validate.sh test lint build
 ```
 
 ### 3 — Commit e PR
@@ -25,7 +25,7 @@ argument-hint: "Versão de release (opcional, ex: /dl-release 2.5.0)"
 Definir resumo de 2-4 linhas (baseado no CHANGELOG consolidado) e chamar:
 
 ```bash
-.github/scripts/release-finalize.sh <<'EOF'
+{{SCRIPTS_DIR}}/release-finalize.sh <<'EOF'
 <resumo consolidado do CHANGELOG>
 EOF
 ```

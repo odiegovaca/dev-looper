@@ -137,7 +137,7 @@ cobertura_indisponivel() {
   if [ -z "$COVERAGE_REPORT" ]; then
     echo "coverage.sh não configurado (COVERAGE_REPORT vazio e read_coverage sem corpo) — rode /dl-setup" >&2
   elif [ ! -f "$COVERAGE_REPORT" ]; then
-    echo "Relatório de cobertura não encontrado em $COVERAGE_REPORT — rode .github/scripts/validate.sh test para gerá-lo" >&2
+    echo "Relatório de cobertura não encontrado em $COVERAGE_REPORT — rode {{SCRIPTS_DIR}}/validate.sh test para gerá-lo" >&2
   else
     echo "Não foi possível ler a cobertura de $COVERAGE_REPORT — confira read_coverage em coverage.sh (preenchido pelo /dl-setup)" >&2
   fi

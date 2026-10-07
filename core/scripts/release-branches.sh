@@ -18,7 +18,7 @@ fi
 # release-postmerge.sh pendente ou hotfix direto; sem `git fetch`, para não pôr rede em todo comando.
 if git rev-parse --verify -q "origin/$PROD_BRANCH" >/dev/null && git rev-parse --verify -q "origin/$INTEGRATION_BRANCH" >/dev/null; then
   if ! git merge-base --is-ancestor "origin/$PROD_BRANCH" "origin/$INTEGRATION_BRANCH" 2>/dev/null; then
-    echo "⚠️ origin/$PROD_BRANCH tem commits que origin/$INTEGRATION_BRANCH não tem — se um release foi mergeado recentemente, rode .github/scripts/release-postmerge.sh (encerramento do /dl-release)." >&2
+    echo "⚠️ origin/$PROD_BRANCH tem commits que origin/$INTEGRATION_BRANCH não tem — se um release foi mergeado recentemente, rode {{SCRIPTS_DIR}}/release-postmerge.sh (encerramento do /dl-release)." >&2
   fi
 fi
 

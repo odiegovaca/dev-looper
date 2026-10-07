@@ -74,7 +74,7 @@ Falha três vezes seguidas no mesmo erro, em qualquer comando, é sinal de parar
 
 ## Modo autônomo
 
-Quando um prompt rodar `.github/scripts/autonomous-mode.sh`, as regras que a saída dele trouxer valem como instrução para a fase inteira.
+Quando um prompt rodar `{{SCRIPTS_DIR}}/autonomous-mode.sh`, as regras que a saída dele trouxer valem como instrução para a fase inteira.
 
 ---
 
@@ -100,7 +100,7 @@ Quando um prompt rodar `.github/scripts/autonomous-mode.sh`, as regras que a sa�
 [DEFINIR: comando exato]
 ```
 
-**Caminho do relatório de cobertura:** ver `COVERAGE_REPORT` em `.github/scripts/coverage.sh`
+**Caminho do relatório de cobertura:** ver `COVERAGE_REPORT` em `{{SCRIPTS_DIR}}/coverage.sh`
 
 ---
 
@@ -122,14 +122,14 @@ Quando um prompt rodar `.github/scripts/autonomous-mode.sh`, as regras que a sa�
 
 [DEFINIR: a estrutura padrão de um teste unitário deste projeto, com um trecho real — onde os arquivos ficam, como se nomeiam, e como as dependências são mockadas.]
 
-**Meta de cobertura:** ver `COVERAGE_TARGET` em `.github/scripts/coverage.sh` — é de lá que `/dl-test` e `/dl-status` a leem
+**Meta de cobertura:** ver `COVERAGE_TARGET` em `{{SCRIPTS_DIR}}/coverage.sh` — é de lá que `/dl-test` e `/dl-status` a leem
 
 ---
 
 ## Release Workflow
 
-- **Branches**: ver `.github/scripts/release-branches.sh`
+- **Branches**: ver `{{SCRIPTS_DIR}}/release-branches.sh`
 - **Features**: `feature/{N}-nome-descritivo` a partir da branch de integração — `{N}` é o número da issue, e é por ele que `/dl-review` e `/dl-fix` acham o relatório da feature
 - **Versionamento**: [DEFINIR: esquema de versão e onde o sufixo de pré-lançamento é usado]
-- **Arquivos de versão**: ver `VERSION_FILES` em `.github/scripts/bump-version.sh`
+- **Arquivos de versão**: ver `VERSION_FILES` em `{{SCRIPTS_DIR}}/bump-version.sh`
 - **CHANGELOG no desenvolvimento**: uma única seção por ciclo, sempre consolidada — cada RC reescreve a do topo com o delta acumulado, header na versão RC atual e `Unreleased` no lugar da data; o `/dl-release` troca esse header pela versão final

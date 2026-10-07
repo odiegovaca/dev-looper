@@ -13,7 +13,7 @@ argument-hint: "--completo para revisar a branch inteira depois de um fix; branc
 ### 1 — Preparação
 
 ```bash
-.github/scripts/review-prepare.sh $ARGUMENTS
+{{SCRIPTS_DIR}}/review-prepare.sh $ARGUMENTS
 ```
 
 ### 2 — Analisar Cada Arquivo
@@ -64,5 +64,5 @@ Com `ESCOPO=incremental`, o diff é só o que mudou desde o review anterior (no 
 ### 3 — Gerar Relatório
 
 ```bash
-.github/scripts/review-finalize.sh "$REPORT" "$DATA" "$ESCOPO" "$BASE"
+{{SCRIPTS_DIR}}/review-finalize.sh "$REPORT" "$DATA" "$ESCOPO" "$BASE"
 ```

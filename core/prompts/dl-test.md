@@ -6,20 +6,20 @@ argument-hint: "Meta de cobertura em % (opcional, padrão: a meta do projeto)"
 
 # /dl-test - Completar Cobertura de Testes
 
-Meta de **statements**: `.github/scripts/coverage.sh --target`, ou o valor passado em `$ARGUMENTS`.
+Meta de **statements**: `{{SCRIPTS_DIR}}/coverage.sh --target`, ou o valor passado em `$ARGUMENTS`.
 
 ## Processo
 
 ### 0 — Modo
 
 ```bash
-.github/scripts/autonomous-mode.sh
+{{SCRIPTS_DIR}}/autonomous-mode.sh
 ```
 
 ### 1 — Executar e Corrigir
 
 ```bash
-.github/scripts/validate.sh test
+{{SCRIPTS_DIR}}/validate.sh test
 ```
 
 Corrigir as falhas identificadas antes de seguir.
@@ -27,7 +27,7 @@ Corrigir as falhas identificadas antes de seguir.
 ### 2 — Priorizar
 
 ```bash
-.github/scripts/coverage.sh --priority
+{{SCRIPTS_DIR}}/coverage.sh --priority
 ```
 
 `FASE1` traz os arquivos da branch, `FASE2` o resto do projeto, os dois já na ordem de ataque. Montar {{TODO_LIST}} com a `FASE1` antes de escrever.
@@ -43,7 +43,7 @@ Ignorar código gerado, migrations e arquivos de configuração — não contam 
 ### 4 — Validar
 
 ```bash
-.github/scripts/validate.sh lint build
+{{SCRIPTS_DIR}}/validate.sh lint build
 ```
 
 ### 5 — Confirmar
@@ -61,7 +61,7 @@ Meta não atingida: listar em seguida as lacunas e os arquivos prioritários par
 ### 6 — Fechamento
 
 ```bash
-.github/scripts/test-finalize.sh $ARGUMENTS
+{{SCRIPTS_DIR}}/test-finalize.sh $ARGUMENTS
 ```
 
 ## Regras

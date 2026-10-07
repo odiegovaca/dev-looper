@@ -11,7 +11,7 @@ argument-hint: "Números e/ou severidades, combináveis, ou 'todos' (ex: /dl-fix
 ### 0 — Modo
 
 ```bash
-.github/scripts/autonomous-mode.sh
+{{SCRIPTS_DIR}}/autonomous-mode.sh
 ```
 
 ### 1 — Selecionar
@@ -19,7 +19,7 @@ argument-hint: "Números e/ou severidades, combináveis, ou 'todos' (ex: /dl-fix
 Sem argumento, perguntar ao usuário o que corrigir antes de seguir.
 
 ```bash
-.github/scripts/fix-review-select.sh $ARGUMENTS
+{{SCRIPTS_DIR}}/fix-review-select.sh $ARGUMENTS
 ```
 
 Com mais de um `SELECIONADOS`, montar {{TODO_LIST}} com um item por problema.
@@ -42,7 +42,7 @@ No modo autônomo, não perguntar: cada contestado vira dispensa no passo 5, com
 ### 4 — Validar
 
 ```bash
-.github/scripts/validate.sh lint build test
+{{SCRIPTS_DIR}}/validate.sh lint build test
 ```
 
 Corrigir o que falhar por causa de uma correção aplicada, em vez de deixar a falha para o `/dl-test`.
@@ -50,7 +50,7 @@ Corrigir o que falhar por causa de uma correção aplicada, em vez de deixar a f
 ### 5 — Confirmar
 
 ```bash
-.github/scripts/fix-review-finalize.sh \
+{{SCRIPTS_DIR}}/fix-review-finalize.sh \
   --applied "#1, #3" \
   --dismissed "#4: o usuário concordou que não é problema"
 ```

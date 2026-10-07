@@ -11,7 +11,7 @@ argument-hint: "Caminho da spec ou descrição da funcionalidade"
 ### 0 — Modo
 
 ```bash
-.github/scripts/autonomous-mode.sh
+{{SCRIPTS_DIR}}/autonomous-mode.sh
 ```
 
 ### 1 — Preparação
@@ -21,7 +21,7 @@ argument-hint: "Caminho da spec ou descrição da funcionalidade"
 3. Confira a branch:
 
    ```bash
-   .github/scripts/code-branch.sh [caminho-da-spec]
+   {{SCRIPTS_DIR}}/code-branch.sh [caminho-da-spec]
    ```
 
    Com `BRANCH_OK=nao`, criar `feature/{FEATURE_N}-nome-descritivo` antes de começar. Com `FEATURE_N` vazio, perguntar o número da issue ao usuário primeiro.
@@ -58,7 +58,7 @@ Testes unitários do código implementado, cobrindo o fluxo principal de cada m�
 ### 3 — Validação Final
 
 ```bash
-.github/scripts/validate.sh lint build test
+{{SCRIPTS_DIR}}/validate.sh lint build test
 ```
 
 Precisa terminar sem erro antes de prosseguir. `test` roda a suíte completa do projeto, não só os testes criados em 2.5.
@@ -66,5 +66,5 @@ Precisa terminar sem erro antes de prosseguir. `test` roda a suíte completa do 
 ### 4 — Fechamento
 
 ```bash
-.github/scripts/code-finalize.sh "<descrição curta da funcionalidade>"
+{{SCRIPTS_DIR}}/code-finalize.sh "<descrição curta da funcionalidade>"
 ```
