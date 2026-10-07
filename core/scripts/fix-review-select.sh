@@ -3,7 +3,8 @@
 #
 # Resolve os seletores do /dl-fix nos problemas a corrigir, no relatório mais
 # recente da feature. Seletor é número, severidade ou `todos`, combináveis em
-# qualquer ordem — o conjunto é a união. Imprime SELECIONADOS e IGNORADOS.
+# qualquer ordem — o conjunto é a união. Imprime SPEC (a spec da feature, régua
+# do que cabe corrigir sem decisão do usuário), SELECIONADOS e IGNORADOS.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -77,6 +78,13 @@ if [ -z "$SELECIONADOS" ] && [ -z "$PROTEGIDOS" ]; then
   exit 1
 fi
 
+# A spec é a do campo **Issue** com o {N} da branch; o `([^0-9]|$)` impede que a
+# issue #3 case com a #30.
+N="$("$SCRIPT_DIR/feature-number.sh" 2>/dev/null || true)"
+SPEC=""
+[ -z "$N" ] || SPEC="$(grep -lE "^\*\*Issue\*\*: \[?#${N}([^0-9]|\$)" docs/issues/spec-*.md 2>/dev/null | head -1 || true)"
+
+echo "SPEC: ${SPEC:-nenhuma}"
 echo "SELECIONADOS:"
 printf '%s' "${SELECIONADOS:-  nenhum
 }"

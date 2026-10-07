@@ -101,6 +101,12 @@ while IFS= read -r line; do
     exit 1
   fi
   motivo="$(sed -E 's/^[^0-9]*[0-9]+[[:space:]]*:?[[:space:]]*//' <<< "$line")"
+  # Sem ninguém no chat, toda dispensa é decisão do agente, e o PR precisa
+  # distinguir pela marca o que ainda é pergunta para o usuário.
+  if [ "$AUTONOMOUS" = true ] && ! grep -qE '^agente — (exige decisão|não é problema): .+' <<< "$motivo"; then
+    echo "Dispensa #$num sem a marca do agente — no modo autônomo use \"#$num: agente — exige decisão: <proposta>\" ou \"#$num: agente — não é problema: <por quê>\"." >&2
+    exit 1
+  fi
   DISMISSED_MAP="$DISMISSED_MAP$num$TAB${motivo:-sem motivo informado}
 "
 done <<< "$DISMISSED_RAW"
