@@ -115,6 +115,7 @@ O prefixo `dl-` evita colisão com os comandos que os próprios agentes já traz
 - O primeiro `/dl-review` da feature é **completo**: tudo desde o merge-base com a branch de integração. O relatório registra o commit que revisou.
 - Os seguintes são **incrementais**: leem só o que mudou desde esse commit (no ciclo normal, o fix), conferem se cada correção aplicada cumpre o **Critério** do problema e só abrem problema para o que está no diff. Algo grave que já estava fora do diff vai para a seção "Fora do escopo", que não conta para o veredito e não reabre o ciclo. `/dl-review --completo` revisa a branch inteira de novo.
 - **Teto de 2 rodadas:** se o review da segunda rodada de `/dl-fix` ainda tiver bloqueantes, o próximo passo deixa de ser outro `/dl-fix` e vira `⛔ Teto`: parar e olhar a spec ou o desenho, não mais uma correção.
+- **O PR do `/dl-rc` carrega o ciclo** (`pr-report.sh`), para quem aprova ler o resumo em vez do diff linha por linha: as dispensas do agente como perguntas, os achados fora do escopo, o que ficou sem corrigir em todas as rodadas, a cobertura abaixo da meta e uma linha por review. Os achados vão inteiros, porque `docs/reviews/` pode não estar versionado. A spec não vai: ela é o corpo da issue, que o PR fecha. Seção vazia não aparece.
 
 ---
 
