@@ -19,6 +19,10 @@
 - `/dl-status` → Snapshot: branch, versão, cobertura, último review, próximo passo
 - `/dl-lesson [lição]` → Formalizar correção em instrução permanente — use logo após corrigir algo manualmente, antes que a regra se perca
 
+## Modo autônomo
+
+Desligado por padrão. Com ele ligado, as fases rodam sem parar nos checkpoints do fluxo interativo, para um orquestrador chamar uma depois da outra. Cada prompt diz o que muda nele. `DEV_LOOPER_AUTONOMOUS=1` liga o modo para uma execução, e `AUTONOMOUS=true` em `.github/scripts/autonomous-mode.sh` muda o padrão do projeto. O `/dl-status` mostra o modo em uso.
+
 ## Parâmetros
 
 Cada prompt declara os seus no `argument-hint` do frontmatter:
