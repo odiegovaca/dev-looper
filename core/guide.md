@@ -29,4 +29,4 @@ grep -H '^argument-hint:' {{PROMPTS_DIR}}/*{{PROMPT_EXT}}
 
 ## Personalização
 
-Tudo o que é projeto-específico fica em `{{INSTRUCTIONS_PATH}}`. Os prompts buscam padrões, comandos e convenções nesse arquivo. Mantenha-o atualizado com `/dl-lesson`.
+Tudo o que é projeto-específico fica em `AGENTS.md`. Os prompts buscam padrões, comandos e convenções nesse arquivo. Mantenha-o atualizado com `/dl-lesson`.

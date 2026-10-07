@@ -53,6 +53,11 @@ if ! git -C "$DEST" rev-parse --git-dir >/dev/null 2>&1; then
   echo "Aviso: $DEST não é um repositório git — rode 'git init' lá antes do /dl-setup." >&2
 fi
 
+# Arquivo de instruções do projeto, o mesmo nos dois agentes: o Copilot lê o
+# AGENTS.md da raiz, e o Claude Code, pelo @AGENTS.md do CLAUDE.md.
+INSTRUCOES="AGENTS.md"
+TEMPLATE_INSTRUCOES="AGENTS.template.md"
+
 EXTRAS=()
 # shellcheck source=/dev/null
 source "$ADAPTER"
@@ -143,7 +148,7 @@ while IFS= read -r -d '' file; do
 
   # O /dl-setup consome o template e o apaga: sem esta guarda, o install.sh devolveria
   # ao projeto uma semente que ele já usou.
-  if [ "$rel" = "$DL_INSTRUCTIONS_TEMPLATE_PATH" ] && [ -f "$DEST/$DL_INSTRUCTIONS_PATH" ]; then
+  if [ "$rel" = "$TEMPLATE_INSTRUCOES" ] && [ -f "$DEST/$INSTRUCOES" ]; then
     TEMPLATE_PULADO=true
     continue
   fi
@@ -182,8 +187,8 @@ fi
 
 if [ "$TEMPLATE_PULADO" = true ]; then
   echo ""
-  echo "Nota: o $DL_INSTRUCTIONS_TEMPLATE foi pulado porque este projeto já tem o"
-  echo "$DL_INSTRUCTIONS preenchido. Se o template mudou nesta versão, ele não chega"
+  echo "Nota: o $TEMPLATE_INSTRUCOES foi pulado porque este projeto já tem o"
+  echo "$INSTRUCOES preenchido. Se o template mudou nesta versão, ele não chega"
   echo "sozinho: rode /dl-setup de novo para reescrever as instruções a partir do template novo."
 fi
 

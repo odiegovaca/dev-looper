@@ -2,7 +2,7 @@
 # list-lesson-targets.sh
 #
 # Lista os destinos elegíveis para /dl-lesson: cada {{PROMPTS_DIR}}/*{{PROMPT_EXT}} com
-# sua description, mais {{INSTRUCTIONS}} e README.md (destinos fixos).
+# sua description, mais AGENTS.md e README.md (destinos fixos).
 # Derivado do .github/ na execução, para prompt novo ou renomeado não passar batido.
 set -euo pipefail
 
@@ -12,5 +12,5 @@ for f in {{PROMPTS_DIR}}/*{{PROMPT_EXT}}; do
   echo "$f: ${DESC:-[sem description no frontmatter]}"
 done
 
-echo "{{INSTRUCTIONS_PATH}}: Convenções e padrões específicos deste projeto"
+echo "AGENTS.md: Convenções e padrões específicos deste projeto"
 echo "{{GUIDE_PATH}}: Documentação do fluxo geral de prompts"

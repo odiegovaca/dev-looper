@@ -1,4 +1,4 @@
-# {{INSTRUCTIONS_TITLE}}: [NOME DO PROJETO]
+# Agent Instructions: [NOME DO PROJETO]
 
 <!-- Onboarding do agente, lido no início de cada sessão. Rode /dl-setup para preencher. -->
 
@@ -66,7 +66,7 @@ Checklist derivado das seções acima — vale para toda implementação ou corr
 
 ## Arquivos Protegidos
 
-{{PROMPTS_PROTECTED}} e este arquivo (`{{INSTRUCTIONS}}`) só podem ser alterados por `/dl-setup` e `/dl-lesson`. Nenhum outro comando deve editá-los, mesmo incidentalmente — mudanças aqui alteram o comportamento de todo o workflow, e precisam passar pela revisão deliberada que esses dois comandos representam.
+{{PROMPTS_PROTECTED}} e este arquivo (`AGENTS.md`) só podem ser alterados por `/dl-setup` e `/dl-lesson`. Nenhum outro comando deve editá-los, mesmo incidentalmente — mudanças aqui alteram o comportamento de todo o workflow, e precisam passar pela revisão deliberada que esses dois comandos representam.
 
 Falha três vezes seguidas no mesmo erro, em qualquer comando, é sinal de parar e reportar ao usuário — não de tentar uma quarta vez.
 

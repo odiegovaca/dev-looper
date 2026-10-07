@@ -20,7 +20,7 @@ argument-hint: "Branch de integração para comparar, sem prefixo origin/ (opcio
 
 Para cada arquivo em `$DIFF`, escrever em `$REPORT` um bloco por achado (template abaixo), a partir do conteúdo completo do arquivo — não só o diff —, seguindo estes critérios:
 
-- **Padrões do projeto** (seguindo `{{INSTRUCTIONS}}`)
+- **Padrões do projeto** (seguindo `AGENTS.md`)
 - **Qualidade e legibilidade**
 - **Simplicidade** (over-engineering?)
 - **Testes** (cobertura adequada?)

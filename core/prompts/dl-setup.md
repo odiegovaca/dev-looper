@@ -1,5 +1,5 @@
 ---
-description: Configurar o workflow de IA para este projeto — detecta stack e gera {{INSTRUCTIONS}}
+description: Configurar o workflow de IA para este projeto — detecta stack e gera AGENTS.md
 tools: [read, edit, search, execute]
 argument-hint: "Descrição do projeto (opcional, usada se não houver README)"
 ---
@@ -25,9 +25,9 @@ Explorar o repositório e identificar: linguagem/runtime, framework, banco de da
 
 Com base no que foi detectado, fazer **apenas as perguntas pontuais e fechadas que não puderam ser inferidas**. Máximo 5, feitas juntas numa única mensagem — não uma a uma — exceto quando uma pergunta depende da resposta de outra. O usuário pode responder só as que quiser.
 
-### 4 — Gerar {{INSTRUCTIONS}}
+### 4 — Gerar AGENTS.md
 
-Base: o `{{INSTRUCTIONS_TEMPLATE}}`, se existir; senão, o `{{INSTRUCTIONS}}` atual, alterando só as seções afetadas pela mudança de stack e preservando o resto.
+Base: o `AGENTS.template.md`, se existir; senão, o `AGENTS.md` atual, alterando só as seções afetadas pela mudança de stack e preservando o resto.
 
 Substituir cada `[DEFINIR: ...]` pelo valor real detectado ou informado. O texto dentro do marcador é o contrato do valor — formato, unidade e o que não incluir.
 
@@ -36,7 +36,7 @@ Substituir cada `[DEFINIR: ...]` pelo valor real detectado ou informado. O texto
 Após gerar o arquivo, remover o template:
 
 ```bash
-rm -f {{INSTRUCTIONS_TEMPLATE_PATH}}
+rm -f AGENTS.template.md
 ```
 
 ### 5 — Configurar Scripts Determinísticos
@@ -69,7 +69,7 @@ Ler `{{PROMPTS_DIR}}/dl-code{{PROMPT_EXT}}` e substituir as subseções `2.N` da
 - Banco: [...]
 
 **Arquivos gerados/atualizados:**
-- `{{INSTRUCTIONS_PATH}}`
+- `AGENTS.md`
 - `{{PROMPTS_DIR}}/dl-code{{PROMPT_EXT}}` → fases adaptadas para [STACK]
 - `.github/scripts/*.sh` → [lista dos scripts preenchidos no Passo 5]
 

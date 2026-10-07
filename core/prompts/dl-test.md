@@ -54,7 +54,7 @@ Ignorar código gerado, migrations e arquivos de configuração — não contam 
 
 - Não reescrever testes existentes que já passam — apenas complementar
 - Nunca alterar código de produção para facilitar testes — adaptar os testes
-- Estrutura, mocks e localização seguem a seção Testing Conventions de `{{INSTRUCTIONS}}`
+- Estrutura, mocks e localização seguem a seção Testing Conventions de `AGENTS.md`
 
 ## Próximos Passos
 

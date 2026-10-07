@@ -4,11 +4,6 @@
 # AGENTS.md, que o Claude Code carrega pelo `@AGENTS.md` do CLAUDE.md — ele não lê
 # o AGENTS.md sozinho. Os scripts ficam em .github/scripts/, onde os prompts os chamam.
 
-export DL_INSTRUCTIONS='AGENTS.md'
-export DL_INSTRUCTIONS_PATH='AGENTS.md'
-export DL_INSTRUCTIONS_TEMPLATE='AGENTS.template.md'
-export DL_INSTRUCTIONS_TEMPLATE_PATH='AGENTS.template.md'
-export DL_INSTRUCTIONS_TITLE='Agent Instructions'
 export DL_PROMPTS_DIR='.claude/commands'
 export DL_PROMPT_EXT='.md'
 # Fora de commands/: lá dentro o guia viraria um comando /README.
@@ -23,7 +18,7 @@ destino() {
   case "$1" in
     prompts/*.md)             echo "$DL_PROMPTS_DIR/$(basename "$1")" ;;
     guide.md)                 echo "$DL_GUIDE_PATH" ;;
-    instructions.template.md) echo "$DL_INSTRUCTIONS_TEMPLATE_PATH" ;;
+    instructions.template.md) echo "$TEMPLATE_INSTRUCOES" ;;
     scripts/*)                echo ".github/$1" ;;
   esac
 }

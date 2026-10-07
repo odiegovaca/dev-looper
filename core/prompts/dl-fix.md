@@ -20,7 +20,7 @@ Com mais de um `SELECIONADOS`, montar {{TODO_LIST}} com um item por problema.
 
 ### 2 — Aplicar
 
-Para cada problema em `SELECIONADOS`: ler o arquivo inteiro, aplicar a correção seguindo os "Padrões Obrigatórios" de `{{INSTRUCTIONS}}`, sem tocar em código não relacionado, e marcar no TODO.
+Para cada problema em `SELECIONADOS`: ler o arquivo inteiro, aplicar a correção seguindo os "Padrões Obrigatórios" de `AGENTS.md`, sem tocar em código não relacionado, e marcar no TODO.
 
 **Se a solução do relatório parecer errada, não aplicar e não interromper** — anotar como contestado e seguir para o próximo.
 

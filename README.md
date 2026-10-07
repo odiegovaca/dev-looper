@@ -41,10 +41,10 @@ O conteúdo dos comandos é o mesmo para os dois agentes; o que muda é onde cad
 | --- | --- | --- |
 | Comandos `/` | `.github/prompts/*.prompt.md` | `.claude/commands/*.md` |
 | Guia do fluxo | `.github/prompts/README.md` | `.claude/dev-looper.md` |
-| Instruções do projeto (geradas pelo `/dl-setup`) | `.github/copilot-instructions.md` | `AGENTS.md`, carregado pelo `@AGENTS.md` do `CLAUDE.md` |
+| Instruções do projeto (geradas pelo `/dl-setup`) | `AGENTS.md`, lido pelo VS Code por padrão | `AGENTS.md`, carregado pelo `@AGENTS.md` do `CLAUDE.md` |
 | Scripts | `.github/scripts/` | `.github/scripts/` |
 
-No Claude Code, o `CLAUDE.md` só é criado se o projeto ainda não tiver um — se já tiver, acrescente a linha `@AGENTS.md` a ele (o script avisa). O Claude Code não lê o `AGENTS.md` sozinho.
+O arquivo de instruções é o mesmo `AGENTS.md` nos dois agentes, então um time com gente nos dois usa as mesmas regras. No Copilot, o VS Code o lê por padrão (configuração `chat.useAgentsMdFile`, ligada de fábrica). No Claude Code, o `CLAUDE.md` só é criado se o projeto ainda não tiver um — se já tiver, acrescente a linha `@AGENTS.md` a ele (o script avisa); o Claude Code não lê o `AGENTS.md` sozinho.
 
 O script é idempotente: por arquivo, se o destino já existe e é diferente do que está sendo instalado, ele pula e reporta em vez de sobrescrever — use `--force` para sobrescrever mesmo assim. Isso protege o que o `/dl-setup` preencheu (`bump-version.sh`, `coverage.sh`, `release-branches.sh` e `validate.sh`) caso o script rode uma segunda vez no mesmo projeto.
 
@@ -74,7 +74,7 @@ O agente vai:
 
 1. Detectar stack (linguagem, framework, banco, CI/CD)
 2. Fazer perguntas pontuais sobre o que não conseguir inferir
-3. Gerar o arquivo de instruções do projeto (`.github/copilot-instructions.md` ou `AGENTS.md`)
+3. Gerar o arquivo de instruções do projeto (`AGENTS.md`)
 4. Configurar `.github/scripts/bump-version.sh`, `coverage.sh`, `validate.sh` e `release-branches.sh` com os arquivos de versão, o comando de cobertura, os comandos de test/lint/build e as branches de release do stack detectado
 5. Adaptar o prompt do `/dl-code` com os padrões do stack detectado
 
@@ -116,15 +116,15 @@ O prefixo `dl-` evita colisão com os comandos que os próprios agentes já traz
 
 O dev-looper é desenhado como **fases disciplinadas em vez de um agente fazendo tudo num turno só**: cada comando (`/dl-spec`, `/dl-code`, `/dl-test`, `/dl-review`...) tem um escopo estreito e produz uma saída que o próximo comando consome. Isso mantém cada turno revisável — um diff de `/dl-code` não se mistura com o de `/dl-fix` — e permite interromper ou corrigir o rumo entre fases em vez de só no final.
 
-O arquivo de instruções (`copilot-instructions.md` no Copilot, `AGENTS.md` no Claude Code) é a **memória central** do agente: qualquer padrão, comando ou armadilha que não estiver lá é reaprendido (ou inventado) do zero a cada sessão. Mantê-lo atualizado é o que faz o workflow escalar para projetos grandes e times com mais de uma pessoa usando os mesmos comandos.
+O `AGENTS.md` é a **memória central** do agente: qualquer padrão, comando ou armadilha que não estiver lá é reaprendido (ou inventado) do zero a cada sessão. Mantê-lo atualizado é o que faz o workflow escalar para projetos grandes e times com mais de uma pessoa usando os mesmos comandos.
 
-`/dl-lesson` é o **mecanismo de melhoria contínua**: em vez de corrigir o agente manualmente toda vez que ele repete um erro, `/dl-lesson` formaliza a correção como instrução permanente no arquivo de instruções ou num prompt específico — o sistema aprende com o uso real do time.
+`/dl-lesson` é o **mecanismo de melhoria contínua**: em vez de corrigir o agente manualmente toda vez que ele repete um erro, `/dl-lesson` formaliza a correção como instrução permanente no `AGENTS.md` ou num prompt específico — o sistema aprende com o uso real do time.
 
 ---
 
 ## Customização
 
-### O arquivo central: `copilot-instructions.md` / `AGENTS.md`
+### O arquivo central: `AGENTS.md`
 
 Esse arquivo é o "onboarding do agente" — ele aprende o projeto lendo esse arquivo no início de cada sessão. Mantenha-o atualizado com:
 
@@ -142,7 +142,7 @@ Use `/dl-lesson` após qualquer correção manual para manter esse arquivo cresc
 - **Prompt do `/dl-rc`**: Ajustar se o projeto não usar versionamento RC.
 - Arquivos de versão e branches de produção/integração **não** ficam em prompt: são o `VERSION_FILES` do `bump-version.sh` e o `PROD_BRANCH`/`INTEGRATION_BRANCH` do `release-branches.sh`, preenchidos pelo `/dl-setup`.
 
-Os demais prompts buscam padrões e comandos no arquivo de instruções — nenhum precisa de alteração manual após o `/dl-setup`.
+Os demais prompts buscam padrões e comandos no `AGENTS.md` — nenhum precisa de alteração manual após o `/dl-setup`.
 
 ---
 
@@ -161,7 +161,7 @@ adapters/
 install.sh                     ← Instala core/ no projeto pelo adaptador do --agent
 ```
 
-O texto que só faz sentido para um agente (caminho do arquivo de instruções, dos prompts, nome da ferramenta de TODO) fica em `core/` como `{{MARCADOR}}`, e cada adaptador dá o valor. Mudança de comportamento vai em `core/`; um adaptador só muda quando o agente muda o que espera.
+O texto que só faz sentido para um agente (onde ficam os prompts e o guia, nome da ferramenta de TODO) fica em `core/` como `{{MARCADOR}}`, e cada adaptador dá o valor. Mudança de comportamento vai em `core/`; um adaptador só muda quando o agente muda o que espera.
 
 No projeto, os comandos executam com acesso a ferramentas (agent mode no Copilot) e são invocados via `/comando` no chat.
 
@@ -173,7 +173,7 @@ O **dev-looper** funciona para qualquer projeto com git. O que muda entre projet
 
 | Arquivo                          | O que adaptar                                 |
 | -------------------------------- | --------------------------------------------- |
-| Arquivo de instruções            | Stack, padrões, comandos, armadilhas          |
+| `AGENTS.md`                      | Stack, padrões, comandos, armadilhas          |
 | Prompt do `/dl-code`                | Fases de implementação do stack               |
 | `scripts/bump-version.sh`        | Lista `VERSION_FILES` do projeto              |
 | `scripts/coverage.sh`            | Comando de cobertura do stack                 |
