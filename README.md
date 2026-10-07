@@ -148,9 +148,9 @@ Os demais prompts buscam padrões e comandos no `AGENTS.md` — nenhum precisa d
 
 ## Modo autônomo (opcional)
 
-Desligado por padrão: o fluxo é o interativo descrito acima, com os checkpoints de sempre. O modo autônomo existe para rodar as fases sem ninguém no chat (um orquestrador chamando uma fase depois da outra), e cada fase que se comporta diferente com ele ligado diz isso no próprio prompt.
+Desligado por padrão: o fluxo é o interativo descrito acima, com os checkpoints de sempre. O modo autônomo existe para rodar as fases sem ninguém no chat (um orquestrador chamando uma fase depois da outra).
 
-O modo vem do `.github/scripts/autonomous-mode.sh`, que os prompts consultam na hora:
+O modo vem do `.github/scripts/autonomous-mode.sh`, que os prompts consultam na hora. Com o modo ligado, ele imprime também as regras que valem em toda fase. O que muda em cada fase fica no script de fechamento dela (o `code-finalize.sh` do `/dl-code`, por exemplo).
 
 - **Para uma execução:** `DEV_LOOPER_AUTONOMOUS=1` no ambiente liga o modo só para aquela execução, por cima do padrão do projeto (`0` desliga). É o caminho de um orquestrador.
 - **Para o projeto:** `AUTONOMOUS=true` no script muda o padrão de todo mundo que usa o projeto.

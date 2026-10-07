@@ -14,7 +14,7 @@ argument-hint: "Caminho da spec ou descrição da funcionalidade"
 .github/scripts/autonomous-mode.sh
 ```
 
-Com `AUTONOMOUS=true` não há ninguém no chat. Onde este prompt manda perguntar ou confirmar algo com o usuário, **pare** em vez de decidir no lugar dele: termine sem commit, com a primeira linha da resposta `⛔ Parado: <motivo>`. Vale também para a validação final que não passa: commit com `validate.sh` falhando nunca. E no fim, em vez do checkpoint, o commit é seu (ver Próximos Passos).
+Seguir o que a saída disser em todos os passos abaixo.
 
 ### 1 — Preparação
 
@@ -65,24 +65,10 @@ Testes unitários do código implementado, cobrindo o fluxo principal de cada m�
 
 Precisa terminar sem erro antes de prosseguir. `test` roda a suíte completa do projeto, não só os testes criados em 2.5.
 
-## Próximos Passos
-
-**Com `AUTONOMOUS=true`**, o checkpoint de commit sai: o diff final, no PR, mostra a mesma coisa. Faça o commit e termine com um resumo de 2 a 4 linhas (o que foi implementado e o hash do commit), sem sugerir próximos passos — quem chama a próxima fase é o orquestrador.
+### 4 — Fechamento
 
 ```bash
-git add .
-.github/scripts/protect-stage.sh
-git commit -m "feat: <descrição>"
+.github/scripts/code-finalize.sh "<descrição curta da funcionalidade>"
 ```
 
-**Com `AUTONOMOUS=false`:**
-
-```markdown
-✅ Implementação concluída. Próximos passos:
-
-1. Revise as Changes da branch (git diff ou painel Source Control)
-2. Se aprovado: git commit -m "feat: <descrição>"  ← checkpoint antes do review
-3. /dl-test    → completar cobertura até a meta do projeto (casos de borda e gaps)
-4. /dl-review  → revisão de qualidade antes do PR
-5. /dl-rc      → criar PR
-```
+Usar a saída sem alterações.
