@@ -8,6 +8,14 @@ argument-hint: "Caminho da spec ou descrição da funcionalidade"
 
 ## Processo
 
+### 0 — Modo
+
+```bash
+.github/scripts/autonomous-mode.sh
+```
+
+Com `AUTONOMOUS=true` não há ninguém no chat. Onde este prompt manda perguntar ou confirmar algo com o usuário, **pare** em vez de decidir no lugar dele: termine sem commit, com a primeira linha da resposta `⛔ Parado: <motivo>`. Vale também para a validação final que não passa: commit com `validate.sh` falhando nunca. E no fim, em vez do checkpoint, o commit é seu (ver Próximos Passos).
+
 ### 1 — Preparação
 
 1. **Leia `AGENTS.md` completamente**
@@ -58,6 +66,16 @@ Testes unitários do código implementado, cobrindo o fluxo principal de cada m�
 Precisa terminar sem erro antes de prosseguir. `test` roda a suíte completa do projeto, não só os testes criados em 2.5.
 
 ## Próximos Passos
+
+**Com `AUTONOMOUS=true`**, o checkpoint de commit sai: o diff final, no PR, mostra a mesma coisa. Faça o commit e termine com um resumo de 2 a 4 linhas (o que foi implementado e o hash do commit), sem sugerir próximos passos — quem chama a próxima fase é o orquestrador.
+
+```bash
+git add .
+.github/scripts/protect-stage.sh
+git commit -m "feat: <descrição>"
+```
+
+**Com `AUTONOMOUS=false`:**
 
 ```markdown
 ✅ Implementação concluída. Próximos passos:

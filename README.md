@@ -155,7 +155,9 @@ O modo vem do `.github/scripts/autonomous-mode.sh`, que os prompts consultam na 
 - **Para uma execução:** `DEV_LOOPER_AUTONOMOUS=1` no ambiente liga o modo só para aquela execução, por cima do padrão do projeto (`0` desliga). É o caminho de um orquestrador.
 - **Para o projeto:** `AUTONOMOUS=true` no script muda o padrão de todo mundo que usa o projeto.
 
-O `/dl-status` mostra o modo em uso.
+O `/dl-status` mostra o modo em uso. Com o modo ligado:
+
+- O `/dl-code` faz o commit no fim, em vez de parar no checkpoint de revisão. Onde perguntaria ou pediria confirmação (spec ainda em rascunho, issue sem número), ele para sem commit, e a resposta começa com `⛔ Parado: <motivo>`.
 
 ---
 
