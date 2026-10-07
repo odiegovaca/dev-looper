@@ -148,14 +148,18 @@ Os demais prompts buscam padrões e comandos no `AGENTS.md` — nenhum precisa d
 
 ## Modo autônomo (opcional)
 
-Desligado por padrão: o fluxo é o interativo descrito acima, com os checkpoints de sempre. O modo autônomo existe para rodar as fases sem ninguém no chat (um orquestrador chamando uma fase depois da outra), e cada fase que se comporta diferente com ele ligado diz isso no próprio prompt.
+Desligado por padrão: o fluxo é o interativo descrito acima, com os checkpoints de sempre. O modo autônomo existe para rodar as fases sem ninguém no chat (um orquestrador chamando uma fase depois da outra).
 
-O modo vem do `.github/scripts/autonomous-mode.sh`, que os prompts consultam na hora:
+O modo vem do `.github/scripts/autonomous-mode.sh`, que os prompts consultam na hora. Com o modo ligado, ele imprime também as regras que valem em toda fase. O que muda em cada fase fica no script de fechamento dela (o `code-finalize.sh` do `/dl-code`, por exemplo).
 
 - **Para uma execução:** `DEV_LOOPER_AUTONOMOUS=1` no ambiente liga o modo só para aquela execução, por cima do padrão do projeto (`0` desliga). É o caminho de um orquestrador.
 - **Para o projeto:** `AUTONOMOUS=true` no script muda o padrão de todo mundo que usa o projeto.
 
-O `/dl-status` mostra o modo em uso.
+O `/dl-status` mostra o modo em uso. Com o modo ligado:
+
+- O `/dl-code` faz o commit no fim, em vez de parar no checkpoint de revisão. Onde perguntaria ou pediria confirmação (spec ainda em rascunho, issue sem número), ele para sem commit, e a resposta começa com `⛔ Parado: <motivo>`.
+- O `/dl-test` faz o commit no fim (`test-finalize.sh`). Meta de cobertura não atingida não para a fase: o commit sai com a cobertura e a meta na mensagem.
+- O `/dl-fix` faz um commit por rodada (`fix-review-finalize.sh`), separado dos outros, e não sugere próximo passo: o orquestrador decide pelo status pós-fix. Sem argumento, ou com uma correção contestada, ele para sem commit.
 
 ---
 

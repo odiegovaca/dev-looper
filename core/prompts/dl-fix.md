@@ -8,6 +8,12 @@ argument-hint: "Números e/ou severidades, combináveis, ou 'todos' (ex: /dl-fix
 
 ## Processo
 
+### 0 — Modo
+
+```bash
+.github/scripts/autonomous-mode.sh
+```
+
 ### 1 — Selecionar
 
 Sem argumento, perguntar ao usuário o que corrigir antes de seguir.

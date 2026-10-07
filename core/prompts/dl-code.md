@@ -8,6 +8,12 @@ argument-hint: "Caminho da spec ou descrição da funcionalidade"
 
 ## Processo
 
+### 0 — Modo
+
+```bash
+.github/scripts/autonomous-mode.sh
+```
+
 ### 1 — Preparação
 
 1. **Leia `AGENTS.md` completamente**
@@ -57,14 +63,8 @@ Testes unitários do código implementado, cobrindo o fluxo principal de cada m�
 
 Precisa terminar sem erro antes de prosseguir. `test` roda a suíte completa do projeto, não só os testes criados em 2.5.
 
-## Próximos Passos
+### 4 — Fechamento
 
-```markdown
-✅ Implementação concluída. Próximos passos:
-
-1. Revise as Changes da branch (git diff ou painel Source Control)
-2. Se aprovado: git commit -m "feat: <descrição>"  ← checkpoint antes do review
-3. /dl-test    → completar cobertura até a meta do projeto (casos de borda e gaps)
-4. /dl-review  → revisão de qualidade antes do PR
-5. /dl-rc      → criar PR
+```bash
+.github/scripts/code-finalize.sh "<descrição curta da funcionalidade>"
 ```
