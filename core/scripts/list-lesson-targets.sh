@@ -3,7 +3,7 @@
 #
 # Lista os destinos elegíveis para /dl-lesson: cada {{PROMPTS_DIR}}/*{{PROMPT_EXT}} com
 # sua description, mais AGENTS.md e README.md (destinos fixos).
-# Derivado do .github/ na execução, para prompt novo ou renomeado não passar batido.
+# Derivado da pasta de prompts na execução, para prompt novo ou renomeado não passar batido.
 set -euo pipefail
 
 # `|| true` para prompt sem `description:` não derrubar a lista.

@@ -21,7 +21,7 @@
 
 ## Modo autônomo
 
-Desligado por padrão. Com ele ligado, as fases rodam sem parar nos checkpoints do fluxo interativo, para um orquestrador chamar uma depois da outra. Onde a fase perguntaria algo, ela para sem commit, com `⛔ Parado: <motivo>`; onde haveria checkpoint, o script de fechamento da fase age no lugar dele. `DEV_LOOPER_AUTONOMOUS=1` liga o modo para uma execução, e `AUTONOMOUS=true` em `.github/scripts/autonomous-mode.sh` muda o padrão do projeto. O `/dl-status` mostra o modo em uso.
+Desligado por padrão. Com ele ligado, as fases rodam sem parar nos checkpoints do fluxo interativo, para um orquestrador chamar uma depois da outra. Onde a fase perguntaria algo, ela para sem commit, com `⛔ Parado: <motivo>`; onde haveria checkpoint, o script de fechamento da fase age no lugar dele. `DEV_LOOPER_AUTONOMOUS=1` liga o modo para uma execução, e `AUTONOMOUS=true` em `{{SCRIPTS_DIR}}/autonomous-mode.sh` muda o padrão do projeto. O `/dl-status` mostra o modo em uso.
 
 ## Parâmetros
 

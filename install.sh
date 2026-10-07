@@ -164,7 +164,7 @@ done
 
 # Prompts e scripts se chamam direto, sem `bash`: sem o bit de execução a chamada
 # morre em Linux/macOS, e o `cp` traz 100644 de um Windows com core.filemode=false.
-find "$DEST/.github" -type f -name '*.sh' -exec chmod +x {} +
+find "$DEST/$DL_SCRIPTS_DIR" -type f -name '*.sh' -exec chmod +x {} +
 
 echo "Agente: $AGENT"
 echo "Instalados/atualizados: ${#COPIED[@]}"
@@ -203,5 +203,5 @@ if [ "$(git -C "$DEST" config --get core.filemode 2>/dev/null || true)" = "false
   echo "Aviso: este repositório está com core.filemode=false — o bit de execução"
   echo "dos scripts não sobrevive ao commit. No diretório do projeto, antes de"
   echo "commitar, rode (o add é necessário: update-index só aceita rastreado):"
-  echo "  git add .github/scripts && git update-index --chmod=+x .github/scripts/*.sh"
+  echo "  git add $DL_SCRIPTS_DIR && git update-index --chmod=+x $DL_SCRIPTS_DIR/*.sh"
 fi

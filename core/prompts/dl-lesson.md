@@ -27,7 +27,7 @@ A lição que sai aqui é anotada com o que a substitui — qual mudança e onde
 ### 3 — Classificar o Destino
 
 ```bash
-.github/scripts/list-lesson-targets.sh
+{{SCRIPTS_DIR}}/list-lesson-targets.sh
 ```
 
 Escolher pela `description` de cada um; se nenhuma decidir, abrir o candidato e conferir. Uma regra pode ir para mais de um arquivo.

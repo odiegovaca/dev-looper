@@ -62,7 +62,7 @@ if [ "$ESCOPO" = completo ]; then
     eval "$BRANCHES"
   fi
   if ! RAW_CHANGED_FILES="$("$SCRIPT_DIR/changed-files.sh" "$INTEGRATION_BRANCH")"; then
-    echo "Falha ao obter arquivos alterados em relação a $INTEGRATION_BRANCH — rode 'git fetch origin $INTEGRATION_BRANCH' e, se a branch não existir no remoto, confira INTEGRATION_BRANCH em .github/scripts/release-branches.sh" >&2
+    echo "Falha ao obter arquivos alterados em relação a $INTEGRATION_BRANCH — rode 'git fetch origin $INTEGRATION_BRANCH' e, se a branch não existir no remoto, confira INTEGRATION_BRANCH em {{SCRIPTS_DIR}}/release-branches.sh" >&2
     exit 1
   fi
   BASE="$(git merge-base HEAD "origin/$INTEGRATION_BRANCH")"

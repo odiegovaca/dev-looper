@@ -11,8 +11,8 @@ argument-hint: "Descrição do projeto (opcional, usada se não houver README)"
 ### 1 — Verificar Pré-requisitos
 
 ```bash
-chmod +x .github/scripts/*.sh
-.github/scripts/check-prereqs.sh
+chmod +x {{SCRIPTS_DIR}}/*.sh
+{{SCRIPTS_DIR}}/check-prereqs.sh
 ```
 
 Se falhar, repassar a mensagem e parar.
@@ -44,8 +44,8 @@ rm -f AGENTS.template.md
 Preencher os `[DEFINIR]` de `bump-version.sh`, `coverage.sh`, `validate.sh` e `release-branches.sh` com os dados do Passo 2 — cada marcador declara o que espera.
 
 ```bash
-chmod +x .github/scripts/*.sh
-bash -n .github/scripts/{bump-version,coverage,validate,release-branches}.sh
+chmod +x {{SCRIPTS_DIR}}/*.sh
+bash -n {{SCRIPTS_DIR}}/{bump-version,coverage,validate,release-branches}.sh
 ```
 
 Corrigir qualquer erro de sintaxe antes de seguir.
@@ -57,7 +57,7 @@ Ler `{{PROMPTS_DIR}}/dl-code{{PROMPT_EXT}}` e substituir as subseções `2.N` da
 ### 7 — Confirmar
 
 ```bash
-.github/scripts/setup-check.sh
+{{SCRIPTS_DIR}}/setup-check.sh
 ```
 
 ```markdown
@@ -71,7 +71,7 @@ Ler `{{PROMPTS_DIR}}/dl-code{{PROMPT_EXT}}` e substituir as subseções `2.N` da
 **Arquivos gerados/atualizados:**
 - `AGENTS.md`
 - `{{PROMPTS_DIR}}/dl-code{{PROMPT_EXT}}` → fases adaptadas para [STACK]
-- `.github/scripts/*.sh` → [lista dos scripts preenchidos no Passo 5]
+- `{{SCRIPTS_DIR}}/*.sh` → [lista dos scripts preenchidos no Passo 5]
 
 **Pendências:** [a saída do setup-check.sh]
 

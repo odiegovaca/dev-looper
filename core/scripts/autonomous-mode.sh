@@ -14,7 +14,7 @@ set -euo pipefail
 AUTONOMOUS=false
 
 if [ "$AUTONOMOUS" != true ] && [ "$AUTONOMOUS" != false ]; then
-  echo "AUTONOMOUS='$AUTONOMOUS' inválido em .github/scripts/autonomous-mode.sh — use true ou false" >&2
+  echo "AUTONOMOUS='$AUTONOMOUS' inválido em {{SCRIPTS_DIR}}/autonomous-mode.sh — use true ou false" >&2
   exit 1
 fi
 

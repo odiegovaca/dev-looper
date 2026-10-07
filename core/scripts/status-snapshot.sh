@@ -16,7 +16,7 @@ BRANCH="$(git branch --show-current)"
 # só falha se a branch nem existir no remoto.
 git fetch origin "$PROD_BRANCH" --quiet 2>/dev/null || true
 if ! git rev-parse --verify --quiet "origin/${PROD_BRANCH}" >/dev/null; then
-  echo "Branch 'origin/${PROD_BRANCH}' não encontrada — confira PROD_BRANCH em .github/scripts/release-branches.sh (rode /dl-setup se ainda não configurou) e se o fetch alcançou o remoto" >&2
+  echo "Branch 'origin/${PROD_BRANCH}' não encontrada — confira PROD_BRANCH em {{SCRIPTS_DIR}}/release-branches.sh (rode /dl-setup se ainda não configurou) e se o fetch alcançou o remoto" >&2
   exit 1
 fi
 

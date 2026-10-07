@@ -5,6 +5,7 @@
 # (chat.useAgentsMdFile).
 
 export DL_PROMPTS_DIR='.github/prompts'
+export DL_SCRIPTS_DIR='.github/scripts'
 export DL_PROMPT_EXT='.prompt.md'
 export DL_GUIDE_PATH='.github/prompts/README.md'
 export DL_PROMPTS_PROTECTED='`.github/prompts/*.md`'
@@ -18,7 +19,7 @@ destino() {
     prompts/*.md)             echo "$DL_PROMPTS_DIR/$(basename "$1" .md)$DL_PROMPT_EXT" ;;
     guide.md)                 echo "$DL_GUIDE_PATH" ;;
     instructions.template.md) echo "$TEMPLATE_INSTRUCOES" ;;
-    scripts/*)                echo ".github/$1" ;;
+    scripts/*)                echo "$DL_SCRIPTS_DIR/${1#scripts/}" ;;
   esac
 }
 

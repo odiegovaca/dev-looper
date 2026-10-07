@@ -42,7 +42,7 @@ O conteúdo dos comandos é o mesmo para os dois agentes; o que muda é onde cad
 | Comandos `/` | `.github/prompts/*.prompt.md` | `.claude/commands/*.md` |
 | Guia do fluxo | `.github/prompts/README.md` | `.claude/dev-looper.md` |
 | Instruções do projeto (geradas pelo `/dl-setup`) | `AGENTS.md`, lido pelo VS Code por padrão | `AGENTS.md`, carregado pelo `@AGENTS.md` do `CLAUDE.md` |
-| Scripts | `.github/scripts/` | `.github/scripts/` |
+| Scripts | `.github/scripts/` | `.claude/scripts/` |
 
 O arquivo de instruções é o mesmo `AGENTS.md` nos dois agentes, então um time com gente nos dois usa as mesmas regras. No Copilot, o VS Code o lê por padrão (configuração `chat.useAgentsMdFile`, ligada de fábrica). No Claude Code, o `CLAUDE.md` só é criado se o projeto ainda não tiver um — se já tiver, acrescente a linha `@AGENTS.md` a ele (o script avisa); o Claude Code não lê o `AGENTS.md` sozinho.
 
@@ -75,7 +75,7 @@ O agente vai:
 1. Detectar stack (linguagem, framework, banco, CI/CD)
 2. Fazer perguntas pontuais sobre o que não conseguir inferir
 3. Gerar o arquivo de instruções do projeto (`AGENTS.md`)
-4. Configurar `.github/scripts/bump-version.sh`, `coverage.sh`, `validate.sh` e `release-branches.sh` com os arquivos de versão, o comando de cobertura, os comandos de test/lint/build e as branches de release do stack detectado
+4. Configurar, na pasta de scripts, `bump-version.sh`, `coverage.sh`, `validate.sh` e `release-branches.sh` com os arquivos de versão, o comando de cobertura, os comandos de test/lint/build e as branches de release do stack detectado
 5. Adaptar o prompt do `/dl-code` com os padrões do stack detectado
 
 ### 4. Validar
@@ -157,7 +157,7 @@ Os demais prompts buscam padrões e comandos no `AGENTS.md` — nenhum precisa d
 
 Desligado por padrão: o fluxo é o interativo descrito acima, com os checkpoints de sempre. O modo autônomo existe para rodar as fases sem ninguém no chat (um orquestrador chamando uma fase depois da outra).
 
-O modo vem do `.github/scripts/autonomous-mode.sh`, que os prompts consultam na hora. Com o modo ligado, ele imprime também as regras que valem em toda fase. O que muda em cada fase fica no script de fechamento dela (o `code-finalize.sh` do `/dl-code`, por exemplo).
+O modo vem do `autonomous-mode.sh`, na pasta de scripts, que os prompts consultam na hora. Com o modo ligado, ele imprime também as regras que valem em toda fase. O que muda em cada fase fica no script de fechamento dela (o `code-finalize.sh` do `/dl-code`, por exemplo).
 
 - **Para uma execução:** `DEV_LOOPER_AUTONOMOUS=1` no ambiente liga o modo só para aquela execução, por cima do padrão do projeto (`0` desliga). É o caminho de um orquestrador.
 - **Para o projeto:** `AUTONOMOUS=true` no script muda o padrão de todo mundo que usa o projeto.

@@ -7,7 +7,7 @@ set -euo pipefail
 
 INTEGRATION_BRANCH="${1:-}"
 [ -n "$INTEGRATION_BRANCH" ] || {
-  echo "Uso: changed-files.sh <branch_integracao> — o valor vem de .github/scripts/release-branches.sh" >&2
+  echo "Uso: changed-files.sh <branch_integracao> — o valor vem de {{SCRIPTS_DIR}}/release-branches.sh" >&2
   exit 1
 }
 
