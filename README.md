@@ -158,6 +158,8 @@ O modo vem do `.github/scripts/autonomous-mode.sh`, que os prompts consultam na 
 O `/dl-status` mostra o modo em uso. Com o modo ligado:
 
 - O `/dl-code` faz o commit no fim, em vez de parar no checkpoint de revisão. Onde perguntaria ou pediria confirmação (spec ainda em rascunho, issue sem número), ele para sem commit, e a resposta começa com `⛔ Parado: <motivo>`.
+- O `/dl-test` faz o commit no fim (`test-finalize.sh`). Meta de cobertura não atingida não para a fase: o commit sai com a cobertura e a meta na mensagem.
+- O `/dl-fix` faz um commit por rodada (`fix-review-finalize.sh`), separado dos outros, e não sugere próximo passo: o orquestrador decide pelo status pós-fix. Sem argumento, ou com uma correção contestada, ele para sem commit.
 
 ---
 

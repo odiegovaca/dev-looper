@@ -10,6 +10,14 @@ Meta de **statements**: `.github/scripts/coverage.sh --target`, ou o valor passa
 
 ## Processo
 
+### 0 — Modo
+
+```bash
+.github/scripts/autonomous-mode.sh
+```
+
+Seguir o que a saída disser em todos os passos abaixo.
+
 ### 1 — Executar e Corrigir
 
 ```bash
@@ -50,13 +58,18 @@ Ignorar código gerado, migrations e arquivos de configuração — não contam 
 **Arquivos testados:** N (Fase 1: n1, Fase 2: n2)
 ```
 
+Meta não atingida: listar em seguida as lacunas e os arquivos prioritários para cobertura manual.
+
+### 6 — Fechamento
+
+```bash
+.github/scripts/test-finalize.sh $ARGUMENTS
+```
+
+Usar a saída sem alterações.
+
 ## Regras
 
 - Não reescrever testes existentes que já passam — apenas complementar
 - Nunca alterar código de produção para facilitar testes — adaptar os testes
 - Estrutura, mocks e localização seguem a seção Testing Conventions de `AGENTS.md`
-
-## Próximos Passos
-
-- ✅ **Meta atingida**: `git commit -m "test: completa cobertura"` como checkpoint, depois `/dl-review`
-- ⚠️ **Meta não atingida**: informar lacunas e arquivos prioritários para cobertura manual

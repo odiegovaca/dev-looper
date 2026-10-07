@@ -42,5 +42,5 @@ fi
 cat <<'EOF'
 AUTONOMOUS_RULES='Modo autônomo: não há ninguém no chat.
 - Onde o prompt mandar perguntar ou confirmar algo com o usuário, ou um passo obrigatório falhar sem conserto (a validação, por exemplo), pare: termine sem commit e comece a resposta com `⛔ Parado: <motivo>`. Não decida no lugar do usuário.
-- Os checkpoints de revisão humana saem. O script de fechamento da fase diz o que fazer no lugar deles; use a saída dele como resposta final, sem sugerir próximos passos — quem chama a próxima fase é o orquestrador.'
+- Os checkpoints de revisão humana saem. O script de fechamento da fase diz o que fazer no lugar deles; use a saída dele sem alterações e não sugira próximos passos — quem chama a próxima fase é o orquestrador.'
 EOF

@@ -3,7 +3,9 @@
 #
 # Fecha uma rodada de /dl-fix no relatório mais recente da feature: registra o
 # que foi aplicado e o que foi dispensado, deriva o status pós-fix e imprime a
-# confirmação pronta para o chat — usar a saída sem alterações.
+# confirmação pronta para o chat — usar a saída sem alterações. No modo autônomo,
+# o checkpoint de commit sai e o commit da rodada é feito aqui, separado dos
+# outros para o review seguinte poder ler só o fix.
 #
 # O status não é argumento: sai do cruzamento entre a severidade de cada bloco e
 # os números acumulados no relatório, que acumulam entre rodadas.
@@ -40,6 +42,10 @@ while [ "$#" -gt 0 ]; do
       ;;
   esac
 done
+
+# Antes de tocar no relatório: modo inválido para aqui, sem deixar nada pela metade.
+MODE_VARS="$("$SCRIPT_DIR/autonomous-mode.sh")" || exit 1
+eval "$MODE_VARS"
 
 # Número, severidade, Local e flag de protegido — um por problema.
 PROBLEMS="$("$SCRIPT_DIR/review-problems.sh" "$REPORT")"
@@ -220,6 +226,24 @@ mv "$TMP" "$REPORT"
 trap - EXIT
 
 N="$("$SCRIPT_DIR/feature-number.sh" 2>/dev/null || true)"
+MESSAGE="fix: aplica correções do review${N:+ #$N}"
+
+COMMIT_LINE=""
+if [ "$AUTONOMOUS" = true ]; then
+  git add .
+  "$SCRIPT_DIR/protect-stage.sh"
+  if ! git diff --cached --quiet; then
+    git commit -q -m "$MESSAGE"
+    COMMIT_LINE="Commit: $(git log -1 --format='%h %s')"
+  elif [ -n "$(sorted "$APPLIED_RAW")" ]; then
+    # Correção informada sem nenhuma mudança no stage: algo deu errado (ou só
+    # arquivo protegido mudou). O relatório já foi atualizado; o commit não sai.
+    echo "Correções informadas como aplicadas, mas nada para commitar depois do protect-stage.sh — confira se as correções geraram mudanças fora dos Arquivos Protegidos" >&2
+    exit 1
+  else
+    COMMIT_LINE="Commit: nenhum — nada mudou nesta rodada"
+  fi
+fi
 
 PENDENCIAS=""
 for n in $(sorted "$VIOLACOES"); do
@@ -250,7 +274,12 @@ echo
 echo "   Pendências:"
 printf '%s' "$PENDENCIAS"
 echo
-echo "   Checkpoint sugerido: git commit -m \"fix: aplica correções do review${N:+ #$N}\""
+# No modo autônomo, quem escolhe a próxima fase é o orquestrador, pelo status.
+if [ "$AUTONOMOUS" = true ]; then
+  echo "   $COMMIT_LINE"
+  exit 0
+fi
+echo "   Checkpoint sugerido: git commit -m \"$MESSAGE\""
 echo
 echo "   Próximo passo:"
 echo "   - $("$SCRIPT_DIR/next-step.sh" "" "$STATUS" "$BLOQUEANTES_SEL")"
