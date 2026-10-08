@@ -74,24 +74,22 @@ if [ -n "$SPEC_FILES" ]; then
   done <<< "$SPEC_FILES")"
 fi
 
-LATEST_REVIEW="$("$SCRIPT_DIR/latest-review.sh" 2>/dev/null || echo "nenhum")"
+while IFS='=' read -r key value; do
+  case "$key" in
+    REPORT)         LATEST_REVIEW="$value" ;;
+    VEREDITO)       VEREDITO="$value" ;;
+    STATUS_POS_FIX) STATUS_POS_FIX="$value" ;;
+    BLOQUEANTES)    BLOQUEANTES="$value" ;;
+    DATA)           REVIEW_DATA="$value" ;;
+    STATS)          REVIEW_STATS="$value" ;;
+  esac
+done < <("$SCRIPT_DIR/review-state.sh")
 
-# Lê o que o review-finalize.sh já gravou no relatório, em vez de reparsear os blocos.
-VEREDITO=""
-STATUS_POS_FIX=""
-BLOQUEANTES=""
 REVIEW_SUMMARY="Nenhum review realizado ainda."
-if [ "$LATEST_REVIEW" != "nenhum" ] && [ -f "$LATEST_REVIEW" ]; then
-  # `|| true` para relatório em formato antigo cair nos fallbacks abaixo.
-  VEREDITO="$(grep -m1 '^\*\*Veredito:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Veredito:\*\*[[:space:]]*//' || true)"
-  STATUS_POS_FIX="$(grep -m1 '^\*\*Status pós-fix:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Status pós-fix:\*\*[[:space:]]*//' || true)"
-  # Escrita pelo fix-review-finalize.sh; sem ela o next-step.sh sugeriria "/dl-fix"
-  # sem seletor. "nenhum" é o vazio no relatório, e volta a ser vazio aqui.
-  BLOQUEANTES="$(grep -m1 '^\*\*Bloqueantes pendentes:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Bloqueantes pendentes:\*\*[[:space:]]*//' || true)"
-  [ "$BLOQUEANTES" != "nenhum" ] || BLOQUEANTES=""
-  REVIEW_DATA="$(grep -m1 '^\*\*Data:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Data:\*\*[[:space:]]*//' || true)"
-  REVIEW_STATS="$(grep -m1 '^\*\*Estatísticas:\*\*' "$LATEST_REVIEW" | sed -E 's/^\*\*Estatísticas:\*\*[[:space:]]*//' || true)"
+if [ -n "$LATEST_REVIEW" ]; then
   REVIEW_SUMMARY="${REVIEW_DATA:-sem data} — ${REVIEW_STATS:-sem estatísticas}${STATUS_POS_FIX:+ (pós-fix: $STATUS_POS_FIX)}"
+else
+  LATEST_REVIEW="nenhum"
 fi
 
 IS_PROTECTED=false
