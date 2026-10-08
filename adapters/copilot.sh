@@ -4,6 +4,7 @@
 # As instruções ficam no AGENTS.md da raiz, que o VS Code lê por padrão
 # (chat.useAgentsMdFile).
 
+export DL_AGENT='copilot'
 export DL_PROMPTS_DIR='.github/prompts'
 export DL_SCRIPTS_DIR='.github/scripts'
 export DL_PROMPT_EXT='.prompt.md'

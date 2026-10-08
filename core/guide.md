@@ -23,6 +23,8 @@
 
 Desligado por padrão. Com ele ligado, as fases rodam sem parar nos checkpoints do fluxo interativo, para um orquestrador chamar uma depois da outra. Onde a fase perguntaria algo, ela para sem commit, com `⛔ Parado: <motivo>`; onde haveria checkpoint, o script de fechamento da fase age no lugar dele. `DEV_LOOPER_AUTONOMOUS=1` liga o modo para uma execução, e `AUTONOMOUS=true` em `{{SCRIPTS_DIR}}/autonomous-mode.sh` muda o padrão do projeto. O `/dl-status` mostra o modo em uso.
 
+O orquestrador leva uma spec aprovada até o PR, cada fase numa sessão nova: `{{SCRIPTS_DIR}}/orchestrate.sh <spec>`. Quando para, diz o motivo e o comando para retomar (`--desde`). O log fica em `.git/dev-looper/runs/`. Por enquanto, só com o Claude Code.
+
 ## Parâmetros
 
 Cada prompt declara os seus no `argument-hint` do frontmatter:

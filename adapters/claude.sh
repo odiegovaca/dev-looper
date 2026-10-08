@@ -5,6 +5,7 @@
 # o AGENTS.md sozinho. Os scripts ficam em .claude/scripts/, junto do resto do fluxo:
 # num projeto só com Claude Code, o .github/ nem precisa existir.
 
+export DL_AGENT='claude'
 export DL_PROMPTS_DIR='.claude/commands'
 export DL_SCRIPTS_DIR='.claude/scripts'
 export DL_PROMPT_EXT='.md'
