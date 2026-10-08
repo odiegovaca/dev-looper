@@ -58,11 +58,15 @@ else
   SPEC_FILES="$(ls docs/issues/spec-*.md 2>/dev/null || true)"
 fi
 
+spec_status() {
+  grep -m1 '^\*\*Status\*\*:' "$1" | sed -E 's/^\*\*Status\*\*:[[:space:]]*`([^`]+)`.*/\1/' || true
+}
+
 # Cada spec sai pronta para exibir: "- `arquivo` → Status emoji".
 SPEC_LINES="- Nenhuma spec encontrada."
 if [ -n "$SPEC_FILES" ]; then
   SPEC_LINES="$(while IFS= read -r f; do
-    STATUS="$(grep -m1 '^\*\*Status\*\*:' "$f" | sed -E 's/^\*\*Status\*\*:[[:space:]]*`([^`]+)`.*/\1/' || true)"
+    STATUS="$(spec_status "$f")"
     case "$STATUS" in
       Rascunho) EMOJI="📝" ;;
       "Em Revisão") EMOJI="👀" ;;
@@ -73,6 +77,21 @@ if [ -n "$SPEC_FILES" ]; then
     echo "- \`$(basename "$f")\` → ${STATUS:-desconhecido} ${EMOJI}"
   done <<< "$SPEC_FILES")"
 fi
+
+# Primeira spec aprovada ainda sem issue: sem o número dela, o /dl-code não tem
+# como nomear a branch, então o passo antes dele é o /dl-issue.
+SPEC_SEM_ISSUE=""
+while IFS= read -r f; do
+  [ -n "$f" ] || continue
+  case "$(spec_status "$f")" in
+    Aprovada|Aprovado) ;;
+    *) continue ;;
+  esac
+  if ! grep -qE '^\*\*Issue\*\*: \[?#[0-9]+' "$f"; then
+    SPEC_SEM_ISSUE="$f"
+    break
+  fi
+done <<< "$SPEC_FILES"
 
 while IFS='=' read -r key value; do
   case "$key" in
@@ -100,6 +119,8 @@ fi
 # Primeira regra que bater, nesta ordem.
 if [ -z "$BRANCH" ]; then
   NEXT_STEP="git checkout — HEAD destacado, não dá pra determinar o workflow sem uma branch"
+elif [ "$IS_PROTECTED" = true ] && [ -n "$SPEC_SEM_ISSUE" ]; then
+  NEXT_STEP="/dl-issue $SPEC_SEM_ISSUE — spec aprovada sem issue; o número dela nomeia a branch que o /dl-code cria"
 elif [ "$IS_PROTECTED" = true ] && [ "$PENDING_COUNT" -gt 0 ]; then
   NEXT_STEP="/dl-code — mudanças pendentes fora de uma feature branch; cria a branch certa a partir da issue e preserva as mudanças"
 elif [ "$IS_PROTECTED" = true ]; then
