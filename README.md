@@ -168,6 +168,20 @@ O `/dl-status` mostra o modo em uso. Com o modo ligado:
 - O `/dl-test` faz o commit no fim (`test-finalize.sh`). Meta de cobertura não atingida não para a fase: o commit sai com a cobertura e a meta na mensagem.
 - O `/dl-fix` faz um commit por rodada (`fix-review-finalize.sh`), separado dos outros, e não sugere próximo passo: o orquestrador decide pelo status pós-fix. Sem argumento, ele para sem commit. Correção contestada não para a fase: vira dispensa com o motivo marcado como do agente (`agente — exige decisão: <proposta>` ou `agente — não é problema: <por quê>`), que chega ao usuário no PR.
 
+### Orquestrador
+
+O `orchestrate.sh`, na pasta de scripts, leva uma issue da spec aprovada até o PR sem ninguém no chat. Os gates humanos ficam nas pontas: você aprova a spec na entrada e lê o PR na saída.
+
+```bash
+.claude/scripts/orchestrate.sh docs/issues/spec-AAAA-MM-DD-<id>.md
+```
+
+- **Entrada:** spec com `Status` aprovado (ou `Issue criada`), sem Questões em Aberto e com issue vinculada; árvore limpa; e a branch de integração igual à do `origin`. A esteira cria `feature/<N>-<id>` a partir dela.
+- **Fases:** `/dl-code` → `/dl-test` → `/dl-review` → (`/dl-fix` → `/dl-review`)… → `/dl-rc`, cada uma numa sessão nova do agente (`run-phase.sh`), no modo autônomo. Depois de cada review ou fix, a próxima fase sai do `next-step.sh`, o mesmo do `/dl-status`, com o teto de rodadas.
+- **Paradas:** a fase responde `⛔ Parado`; a sessão falha; sobra mudança sem commit; a fase troca de branch; o review não gera relatório; a mesma fase vem duas vezes seguidas (um fix que não mudou o estado); o teto de rodadas; ou o `/dl-rc` termina sem PR aberto. A mensagem final traz o comando de retomada (`--desde code|test|review|rc`, de dentro da branch da issue).
+- **Log:** em `.git/dev-looper/runs/<N>-<data>/`, uma linha por fase em `run.md` e a resposta inteira de cada uma ao lado. Fica dentro do `.git` para nunca entrar num commit.
+- **Agente:** só o Claude Code por enquanto (`claude -p`, com `jq`). As fases rodam com edição liberada e com os scripts do fluxo, `git` e `gh` sem confirmação. Comandos do projeto que o agente roda soltos (um teste isolado, por exemplo) vão nas permissões do `.claude/settings.json` do projeto. Ferramenta negada aparece no log como `⚠️ negado`.
+
 ---
 
 ## Arquitetura
