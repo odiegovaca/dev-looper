@@ -131,6 +131,10 @@ duracao() {
 # Vai para o terminal e para o log, o mesmo texto nos dois.
 log() { printf '%s\n' "$*" | tee -a "$LOG"; }
 
+# A saída do orquestrador também no descritor 4: dentro do $(...) que captura a
+# resposta da fase, o stdout é a captura, e as ações do agente saem por aqui.
+exec 4>&1
+
 INICIO="$(date +%s)"
 FASE_ATUAL=""
 
@@ -148,6 +152,11 @@ parar() {
     log "Para retomar, depois de resolver: $0 $SPEC --desde $retomar"
   fi
   log "Respostas de cada fase: $RUN_DIR"
+  # Fase interrompida no meio deixa só o stderr, com as ações até ali.
+  local err
+  for err in "$RUN_DIR"/*.err; do
+    [ ! -f "$err" ] || mv "$err" "${err%.err}"
+  done
   exit 1
 }
 trap 'parar "interrompida pelo usuário"' INT
@@ -183,7 +192,9 @@ fase() {
   inicio="$(date +%s)"
   printf '▶ %s /dl-%s%s\n' "$(hora)" "$nome" "${*:+ $*}"
 
-  if ! RESPOSTA="$("$SCRIPT_DIR/run-phase.sh" "$nome" "$@" 2> "$arquivo.err")"; then
+  # As ações do agente vão para o terminal pelo descritor 3 e, com o resto do
+  # stderr, para o arquivo da fase.
+  if ! RESPOSTA="$("$SCRIPT_DIR/run-phase.sh" "$nome" "$@" 3>&4 2> "$arquivo.err")"; then
     { echo "## stderr"; echo; cat "$arquivo.err"; } > "$arquivo"
     rm -f "$arquivo.err"
     log "- $(hora) \`/dl-$nome${*:+ $*}\` — $(duracao $(( $(date +%s) - inicio ))) — a sessão não terminou"
