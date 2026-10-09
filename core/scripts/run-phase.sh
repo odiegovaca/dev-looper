@@ -46,18 +46,33 @@ case "$AGENT" in
       command -v "$cmd" >/dev/null 2>&1 || { echo "$cmd não encontrado — o adaptador do Claude precisa dele no PATH" >&2; exit 1; }
     done
 
+    # Em diretório que o Claude Code ainda não marcou como confiável, ele ignora as
+    # permissões do .claude/settings*.json do projeto só com um aviso no stderr, e
+    # a fase roda com comandos do projeto negados (no Ordis, em 2026-10-08, o
+    # /dl-code escreveu à mão o código gerado porque o build_runner foi negado).
+    RAIZ="$(git rev-parse --show-toplevel)"
+    CONFIG="${CLAUDE_CONFIG_DIR:-$HOME}/.claude.json"
+    if ls "$RAIZ"/.claude/settings*.json >/dev/null 2>&1 && [ -f "$CONFIG" ] \
+      && ! jq -e --arg p "$RAIZ" '.projects[$p].hasTrustDialogAccepted == true' "$CONFIG" >/dev/null; then
+      echo "O Claude Code ainda não confia em $RAIZ e ignoraria as permissões de .claude/settings*.json — abra \`claude\` nesse diretório uma vez, aceite a pergunta de confiança e rode de novo." >&2
+      exit 1
+    fi
+
     # Sem ninguém para confirmar, ferramenta negada faz a fase desistir no meio.
     # Daqui saem só as do fluxo: edição, os scripts, git e gh. O que é do projeto
     # (o teste que o agente roda solto, por exemplo) vai nas permissões do
     # .claude/settings.json dele, que valem por cima destas.
     # stdin fechado: sem ele, o `claude -p` espera entrada quando roda sem terminal.
+    # Sem tarefas em segundo plano: no -p, a sessão acaba quando o agente encerra a
+    # vez, e quem rodou a validação em segundo plano para esperar o aviso de fim
+    # termina a fase no meio (o /dl-test do Ordis, em 2026-10-08).
     # O stream traz um evento por mensagem: as ações saem enquanto a fase roda, e o
     # resultado da sessão é o último evento, guardado em $EVENTOS.
     EVENTOS="$(mktemp)"
     trap 'rm -f "$EVENTOS" "$EVENTOS.codigo"' EXIT
     {
       CODIGO=0
-      DEV_LOOPER_AUTONOMOUS=1 claude -p "$PROMPT" \
+      DEV_LOOPER_AUTONOMOUS=1 CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1 claude -p "$PROMPT" \
         --output-format stream-json --verbose \
         --permission-mode acceptEdits \
         --allowedTools 'Bash({{SCRIPTS_DIR}}/*)' 'Bash(git *)' 'Bash(gh *)' \
