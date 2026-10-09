@@ -179,7 +179,8 @@ O `orchestrate.sh`, na pasta de scripts, leva uma issue da spec aprovada até o 
 - **Entrada:** spec com `Status` aprovado (ou `Issue criada`), sem Questões em Aberto e com issue vinculada; árvore limpa; e a branch de integração igual à do `origin`. A esteira cria `feature/<N>-<id>` a partir dela.
 - **Fases:** `/dl-code` → `/dl-test` → `/dl-review` → (`/dl-fix` → `/dl-review`)… → `/dl-rc`, cada uma numa sessão nova do agente (`run-phase.sh`), no modo autônomo. Depois de cada review ou fix, a próxima fase sai do `next-step.sh`, o mesmo do `/dl-status`, com o teto de rodadas.
 - **Paradas:** a fase responde `⛔ Parado`; a sessão falha; sobra mudança sem commit; a fase troca de branch; o review não gera relatório; a mesma fase vem duas vezes seguidas (um fix que não mudou o estado); o teto de rodadas; ou o `/dl-rc` termina sem PR aberto. A mensagem final traz o comando de retomada (`--desde code|test|review|rc`, de dentro da branch da issue).
-- **Log:** em `.git/dev-looper/runs/<N>-<data>/`, uma linha por fase em `run.md` e a resposta inteira de cada uma ao lado. Fica dentro do `.git` para nunca entrar num commit.
+- **Acompanhamento:** enquanto a fase roda, cada ação do agente sai numa linha com a hora (`· 20:31 Bash .claude/scripts/validate.sh lint build test`). Sem elas, uma fase de meia hora parece travada.
+- **Log:** em `.git/dev-looper/runs/<N>-<data>/`, uma linha por fase em `run.md` e, ao lado, a resposta inteira de cada uma, com as ações dela. Fica dentro do `.git` para nunca entrar num commit.
 - **Agente:** só o Claude Code por enquanto (`claude -p`, com `jq`). As fases rodam com edição liberada e com os scripts do fluxo, `git` e `gh` sem confirmação. Comandos do projeto que o agente roda soltos (um teste isolado, por exemplo) vão nas permissões do `.claude/settings.json` do projeto. Ferramenta negada aparece no log como `⚠️ negado`.
 
 ---
