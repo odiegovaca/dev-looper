@@ -55,10 +55,14 @@ case "$AGENT" in
     # permissões do .claude/settings*.json do projeto só com um aviso no stderr, e
     # a fase roda com comandos do projeto negados (no Ordis, em 2026-10-08, o
     # /dl-code escreveu à mão o código gerado porque o build_runner foi negado).
+    # Num git worktree, o Claude Code não pergunta nem registra nada para a pasta
+    # dele: a confiança é a do repositório principal (fábrica do Ordis, 2026-10-26).
     RAIZ="$(git rev-parse --show-toplevel)"
+    PRINCIPAL="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
     CONFIG="${CLAUDE_CONFIG_DIR:-$HOME}/.claude.json"
     if ls "$RAIZ"/.claude/settings*.json >/dev/null 2>&1 && [ -f "$CONFIG" ] \
-      && ! jq -e --arg p "$RAIZ" '.projects[$p].hasTrustDialogAccepted == true' "$CONFIG" >/dev/null; then
+      && ! jq -e --arg p "$RAIZ" --arg q "$PRINCIPAL" \
+        '.projects[$p].hasTrustDialogAccepted == true or .projects[$q].hasTrustDialogAccepted == true' "$CONFIG" >/dev/null; then
       echo "O Claude Code ainda não confia em $RAIZ e ignoraria as permissões de .claude/settings*.json — abra \`claude\` nesse diretório uma vez, aceite a pergunta de confiança e rode de novo." >&2
       exit 1
     fi
