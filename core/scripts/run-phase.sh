@@ -12,6 +12,10 @@
 # e as ferramentas negadas, se houver. Com o descritor 3 aberto, as ações vão
 # também para ele: é por onde o orquestrador as mostra no terminal enquanto
 # guarda o stderr no log.
+#
+# DEV_LOOPER_NOTA, quando definida (orchestrate.sh --nota), chega ao agente como
+# instrução da sessão, e não no texto do comando: lá viraria argumento, e o
+# /dl-code a leria como parte do caminho da spec.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -39,6 +43,7 @@ case "$FASE" in
 esac
 shift
 PROMPT="/dl-$FASE${*:+ $*}"
+NOTA="${DEV_LOOPER_NOTA:-}"
 
 case "$AGENT" in
   claude)
@@ -70,12 +75,17 @@ case "$AGENT" in
     # resultado da sessão é o último evento, guardado em $EVENTOS.
     EVENTOS="$(mktemp)"
     trap 'rm -f "$EVENTOS" "$EVENTOS.codigo"' EXIT
+    EXTRA=()
+    if [ -n "$NOTA" ]; then
+      EXTRA=(--append-system-prompt "Nota de quem disparou a esteira, que vale para esta fase além da spec: $NOTA")
+    fi
     {
       CODIGO=0
       DEV_LOOPER_AUTONOMOUS=1 CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1 claude -p "$PROMPT" \
         --output-format stream-json --verbose \
         --permission-mode acceptEdits \
         --allowedTools 'Bash({{SCRIPTS_DIR}}/*)' 'Bash(git *)' 'Bash(gh *)' \
+        ${EXTRA[@]+"${EXTRA[@]}"} \
         < /dev/null || CODIGO=$?
       echo "$CODIGO" > "$EVENTOS.codigo"
     } | tee "$EVENTOS" \

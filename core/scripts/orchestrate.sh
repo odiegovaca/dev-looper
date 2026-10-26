@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# orchestrate.sh <spec> [--desde code|test|review|rc]
+# orchestrate.sh <spec> [--desde code|test|review|rc] [--nota "texto"]
 #
 # Leva uma issue da spec aprovada até o PR sem ninguém no meio. Cada fase roda
 # numa sessão nova do agente (run-phase.sh), no modo autônomo, e entre uma e
@@ -11,12 +11,16 @@
 # fix, a próxima fase sai do next-step.sh, que é o dono da tabela e do teto de
 # rodadas. --desde retoma de uma fase depois de uma parada, já na branch da issue.
 #
+# --nota é o que quem dispara a esteira tem a dizer além da spec — as pendências
+# de um PR que volta, por exemplo. Vale para toda fase: o run-phase.sh a recebe
+# em DEV_LOOPER_NOTA e a entrega ao agente fora dos argumentos do comando.
+#
 # O log fica em <git-dir>/dev-looper/runs/: fora da árvore de trabalho, para o
 # `git add .` dos scripts de fechamento nunca levá-lo para um commit.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-USO="Uso: orchestrate.sh <spec> [--desde code|test|review|rc]"
+USO="Uso: orchestrate.sh <spec> [--desde code|test|review|rc] [--nota \"texto\"]"
 
 # Fases rodadas antes de desistir. O caminho mais longo que as regras permitem é
 # code, test, três reviews, dois fixes (o teto do next-step.sh) e rc: oito.
@@ -24,6 +28,7 @@ MAX_FASES=10
 
 SPEC=""
 DESDE=code
+NOTA=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --desde)
@@ -32,6 +37,12 @@ while [ $# -gt 0 ]; do
       shift
       ;;
     --desde=*) DESDE="${1#--desde=}" ;;
+    --nota)
+      [ $# -ge 2 ] || { echo "$USO" >&2; exit 1; }
+      NOTA="$2"
+      shift
+      ;;
+    --nota=*) NOTA="${1#--nota=}" ;;
     -*) echo "Argumento desconhecido: $1 — $USO" >&2; exit 1 ;;
     *) SPEC="$1" ;;
   esac
@@ -44,6 +55,8 @@ case "$DESDE" in
 esac
 [ -n "$SPEC" ] || { echo "$USO" >&2; exit 1; }
 [ -f "$SPEC" ] || { echo "Spec não encontrada: $SPEC" >&2; exit 1; }
+# Exportada mesmo vazia: uma nota herdada do ambiente não vaza para esta esteira.
+export DEV_LOOPER_NOTA="$NOTA"
 
 # --- Gate de entrada: a esteira só parte de spec aprovada e com issue ----------
 
@@ -167,6 +180,7 @@ trap 'parar "interrompida pelo usuário"' INT
   echo "- **Spec:** \`$SPEC\`"
   echo "- **Branch:** \`$BRANCH\`, PR para \`$INTEGRATION_BRANCH\`"
   echo "- **Início:** $("$SCRIPT_DIR/hoje.sh" '%Y-%m-%d %H:%M'), desde \`$DESDE\`"
+  [ -z "$NOTA" ] || echo "- **Nota:** $NOTA"
   echo
   echo "## Fases"
   echo
